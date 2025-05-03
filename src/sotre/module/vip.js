@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { postVipList, postNewVipList, getAllPixivImg } from '@/service/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { emunProxyUrl } from '@/utils/ProxyUrl'
+import { sortArray } from '@/utils/handleArray'
 const useVip = defineStore('vip', {
   state: () => {
     return {
@@ -16,25 +17,32 @@ const useVip = defineStore('vip', {
       const list = await getAllPixivImg(uid)
       for (const url of list) {
         let index = 0
+        let preLoadPromises = []
+        let imgList = []
         while (true) {
           const newUrl = emunProxyUrl(url, index)
-          console.log(`尝试加载图片: ${newUrl}`)
-          try {
-            await new Promise((resolve, reject) => {
-              const img = new Image()
-              img.src = newUrl
-              img.onload = () => {
-                this.vipImgList.push(img.src)
-                resolve()
-              }
-              img.onerror = () => {
-                console.log(`作品加载完成，共加载 ${index + 1} 页`)
-                reject('end')
-              }
-            })
-            index++
-          } catch (error) {
-            break
+          const preLoadPromise = new Promise((resolve, reject) => {
+            const img = new Image()
+            img.src = newUrl
+            img.onload = () => {
+              // console.log(`找到此页,${img.src}`)
+              imgList.push(img.src)
+              resolve()
+            }
+            img.onerror = () => {
+              reject('end')
+            }
+          })
+          preLoadPromises.push(preLoadPromise)
+          index++
+          if (index > 20) break
+        }
+        try {
+          await Promise.all(preLoadPromises)
+        } catch (error) {
+          if (error === 'end') {
+            console.log('当前作品加载完毕，进入下一个作品')
+            this.vipImgList.push(...sortArray(imgList))
           }
         }
       }
@@ -51,7 +59,7 @@ const useVip = defineStore('vip', {
           await preLoadImg(currentImgSrc)
           this.showVipImgSrc = currentImgSrc
           // console.log(index)
-          index = (index + 1)
+          index = index + 1
         }
         timerId = setTimeout(switchImage, 5000)
       }

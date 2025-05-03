@@ -1,6 +1,6 @@
 import { switchProxyUrl } from '@/utils/ProxyUrl'
 import MyRequest from '../request/index'
-import { shuffleArray } from '@/utils/randomArray'
+import { shuffleArray } from '@/utils/handleArray'
 export function postVipList() {
   MyRequest.setBaseUrl('https://api.mossia.top/duckMo')
   return MyRequest.post({
@@ -40,7 +40,9 @@ export async function getAllPixivImg(uid) {
     const pidUrl = pidRes.data.master
     return switchProxyUrl(pidUrl)
   })
-  let pidList = await Promise.all(pidPromises)
+  const pidSlicePromises = pidPromises.slice(0, 20)
+  let pidList = await Promise.all(pidSlicePromises)
   pidList = shuffleArray(pidList)
+  console.log(pidList)
   return pidList
 }
