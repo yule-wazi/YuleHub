@@ -40,7 +40,6 @@ const users = agentStore.users
 const activeIndex = ref(0)
 // 检测角色等级
 const userInfo = myCache.get('userInfo')
-console.log(userInfo)
 if (userInfo.role) {
   vipStore.isVip = true
 } else {
@@ -68,7 +67,7 @@ const logoutClick = () => {
   router.replace('/login')
 }
 // 展示vip图片
-const clearSwitchImg = vipStore.getCurrentImg()
+const clearSwitchImg = vipStore.getCurrentImg(6353561)
 </script>
 
 <style scoped>
