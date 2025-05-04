@@ -10,14 +10,13 @@
           @click="userClick(userName, index, image)"
         />
       </template>
+      <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">漫画</div>
       <div class="logout" @click="logoutClick">登出</div>
     </div>
     <div
       class="right"
       :style="{
-        '--background-img': vipStore.isVip
-          ? `url(${vipStore.showVipImgSrc})`
-          : `url('${agentStore.backgroundImg}')`,
+        '--background-img': `url('${agentStore.backgroundImg}')`,
       }"
     >
       <ChatPage :title="agentStore.currentUser" />
@@ -32,8 +31,8 @@ import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
 import useAgent from '@/sotre/module/agent'
 import useVip from '@/sotre/module/vip'
-import myCache from '@/utils/cacheStorage'
 import allUsers from '@/sotre/agentUsersConfig'
+import myCache from '@/utils/cacheStorage'
 const agentStore = useAgent()
 const vipStore = useVip()
 const users = agentStore.users
@@ -62,12 +61,18 @@ const userClick = (userName, index, image) => {
 const router = useRouter()
 // 用户登出
 const logoutClick = () => {
-  if (clearSwitchImg) clearSwitchImg()
   myCache.remove('userInfo')
   router.replace('/login')
 }
+// 进入漫画
+const comicsClick = () => {
+  router.push('/comics')
+}
 // 展示vip图片
-const clearSwitchImg = vipStore.getCurrentImg(41106591)
+if (!vipStore.isFetch) {
+  const usersUID = myCache.get('usersUID')
+  vipStore.fetchImgList(usersUID ?? 98214099)
+}
 </script>
 
 <style scoped>
@@ -93,7 +98,8 @@ const clearSwitchImg = vipStore.getCurrentImg(41106591)
     min-width: 70px;
     height: 100%;
     background-color: #282828;
-    .logout {
+    .logout,
+    .comics {
       position: fixed;
       bottom: 0;
       display: flex;
@@ -107,6 +113,10 @@ const clearSwitchImg = vipStore.getCurrentImg(41106591)
       @media (max-width: 1000px) {
         position: static;
       }
+    }
+    .comics {
+      left: 50px;
+      background-color: #0096fa;
     }
     @media (max-width: 1000px) {
       position: fixed;

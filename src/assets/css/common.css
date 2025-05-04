@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -6,8 +7,17 @@ html, body {
   overflow: hidden;
   background-color: #666;
 }
-li, a, h1, h2 {
+li,
+a,
+h1,
+h2 {
   padding: 0;
   margin: 0;
   list-style: none;
+}
+input {
+  box-sizing: border-box;
+  outline: none;
+  border: none;
+  background-color: transparent;
 }

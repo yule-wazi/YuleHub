@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { postVipList, postNewVipList, getAllPixivImg } from '@/service/module/vip'
+import { getAllPixivImg } from '@/service/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { emunProxyUrl } from '@/utils/ProxyUrl'
 import { sortArray } from '@/utils/handleArray'
@@ -7,14 +7,15 @@ const useVip = defineStore('vip', {
   state: () => {
     return {
       isVip: false,
+      isFetch: false,
       vipImgList: [],
-      showVipImgSrc: '',
     }
   },
   actions: {
     // 请求预加载图片
     async fetchImgList(uid) {
       const list = await getAllPixivImg(uid)
+      this.isFetch = true
       for (const url of list) {
         let index = 0
         let preLoadPromises = []
