@@ -15,8 +15,8 @@ export function postNewVipList() {
   MyRequest.setBaseUrl('https://image.anosu.top/pixiv?num=30&&r18=1&&db=0')
   return MyRequest.post()
 }
-const HOST = '192.168.204.247'
-// const HOST = 'localhost'
+// const HOST = '192.168.204.247'
+const HOST = 'localhost'
 // 获取画师作品id列表
 function getPixivUID(uid) {
   MyRequest.setBaseUrl(
@@ -34,15 +34,14 @@ function getPixivPID(pid) {
 // 获取作者所有作品图片
 export async function getAllPixivImg(uid) {
   const uidRes = await getPixivUID(uid)
-  const uidList = uidRes.data.body.user_illust_ids
+  const uidList = shuffleArray([...uidRes.data.body.user_illust_ids]).slice(0, 10)
+  console.log(uidList)
   const pidPromises = uidList.map(async (pid) => {
     const pidRes = await getPixivPID(pid)
     const pidUrl = pidRes.data.master
     return switchProxyUrl(pidUrl)
   })
-  const pidSlicePromises = pidPromises.slice(0, 20)
-  let pidList = await Promise.all(pidSlicePromises)
-  pidList = shuffleArray(pidList)
+  let pidList = await Promise.all(pidPromises)
   console.log(pidList)
   return pidList
 }

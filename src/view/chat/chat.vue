@@ -67,7 +67,7 @@ const logoutClick = () => {
   router.replace('/login')
 }
 // 展示vip图片
-const clearSwitchImg = vipStore.getCurrentImg(31874437)
+const clearSwitchImg = vipStore.getCurrentImg(41106591)
 </script>
 
 <style scoped>

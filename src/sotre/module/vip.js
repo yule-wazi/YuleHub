@@ -19,32 +19,28 @@ const useVip = defineStore('vip', {
         let index = 0
         let preLoadPromises = []
         let imgList = []
+        const PAGESIZE = 30
         while (true) {
           const newUrl = emunProxyUrl(url, index)
-          const preLoadPromise = new Promise((resolve, reject) => {
+          const preLoadPromise = new Promise((resolve) => {
             const img = new Image()
             img.src = newUrl
             img.onload = () => {
-              // console.log(`找到此页,${img.src}`)
+              console.log(`找到此页,${img.src}`)
               imgList.push(img.src)
               resolve()
             }
             img.onerror = () => {
-              reject('end')
+              resolve()
             }
           })
           preLoadPromises.push(preLoadPromise)
           index++
-          if (index > 20) break
+          if (index > PAGESIZE) break
         }
-        try {
-          await Promise.all(preLoadPromises)
-        } catch (error) {
-          if (error === 'end') {
-            console.log('当前作品加载完毕，进入下一个作品')
-            this.vipImgList.push(...sortArray(imgList))
-          }
-        }
+        await Promise.all(preLoadPromises)
+        console.log(`当前作品加载完毕进入下一个作品`)
+        this.vipImgList.push(...sortArray(imgList))
       }
       console.log('所有图片加载完毕，再次请求新数据')
     },
@@ -61,7 +57,7 @@ const useVip = defineStore('vip', {
           // console.log(index)
           index = index + 1
         }
-        timerId = setTimeout(switchImage, 5000)
+        timerId = setTimeout(switchImage, 3000)
       }
       switchImage()
       return () => {
