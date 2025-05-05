@@ -1,6 +1,6 @@
 <template>
   <div class="comics">
-    <Tip :is-show="vipStore.isFetch" />
+    <Tip :isShow="vipStore.isFetch && !vipStore.fetchError" :fetchError="vipStore.fetchError" />
     <div class="header">
       <div class="back" @click="backClick">
         <img class="backIcon" src="@/assets/img/left.png" alt="" />
@@ -24,10 +24,8 @@
 
 <script setup>
 import { ref } from 'vue'
-const A = ref(false)
 import { useRouter } from 'vue-router'
 import useVip from '@/sotre/module/vip'
-import myCache from '@/utils/cacheStorage'
 import Tip from '@/components/tip/tip.vue'
 const router = useRouter()
 const vipStore = useVip()
@@ -41,9 +39,9 @@ const searchValue = ref('')
 const searchClick = () => {
   const searchUID = searchValue.value * 1
   searchValue.value = ''
-  vipStore.isFetch = false
-  myCache.set('usersUID', searchUID)
   vipStore.fetchImgList(searchUID)
+  vipStore.isFetch = false
+  vipStore.fetchError = false
 }
 </script>
 
