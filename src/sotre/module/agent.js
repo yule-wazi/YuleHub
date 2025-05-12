@@ -8,7 +8,7 @@ const useAgent = defineStore('agent', {
   state: () => {
     return {
       currentUser: '和睦一家人',
-      backgroundImg: 'https://haowallpaper.com/link/common/file/previewFileImg/15838540283482432',
+      backgroundImg: '/userImg/bgImg.png',
       isPlay: true,
       isMute: true,
       audioDuration: 0,

@@ -71,7 +71,8 @@ const comicsClick = () => {
 // 展示vip图片
 if (!vipStore.isFetch) {
   const usersUID = myCache.get('usersUID')
-  vipStore.fetchImgList(usersUID ?? 98214099)
+  // 默认展示wlop作品
+  vipStore.fetchImgList(usersUID ?? 2188232)
 }
 </script>
 
@@ -136,7 +137,6 @@ if (!vipStore.isFetch) {
     width: 75%;
     flex: 1;
     background-image: linear-gradient(60deg, #29323c 0%, #485563 100%);
-    transition: 0.5s all;
     @media (max-width: 1000px) {
       background: var(--background-img) center / cover;
     }

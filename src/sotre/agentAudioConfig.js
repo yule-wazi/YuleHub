@@ -108,7 +108,7 @@ const audioConfig = [
     },
   },
   {
-    userName: '莉莉丝',
+    userName: '沈初云',
     data: {
       model: 'speech-02-hd',
       text: '',

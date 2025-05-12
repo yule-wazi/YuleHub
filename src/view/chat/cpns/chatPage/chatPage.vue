@@ -67,11 +67,11 @@ const btnClick = () => {
   const inputValue = inputRef.value.value
   if (!inputValue) return
 
-  // 塞入消息队列
+  // "我"的消息塞入消息队列
   targetUser.value.message.push({
     isMe: true,
     message: inputValue,
-    image: 'https://haowallpaper.com/link/common/file/previewFileImg/15459096103063872',
+    image: '/userImg/userImg-7.png',
   })
   // 更新dom滚动底部
   nextTick(() => {

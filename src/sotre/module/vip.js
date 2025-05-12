@@ -53,7 +53,7 @@ const useVip = defineStore('vip', {
       }
       console.log('所有图片加载完毕，再次请求新数据')
     },
-    // 单张图片展示
+    // 单张图片展示（弃用）
     getCurrentImg(uid) {
       if (!this.isVip) return
       this.fetchImgList(uid)
