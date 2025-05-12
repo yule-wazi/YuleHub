@@ -91,3 +91,8 @@ AI 聊天室是一个基于现代 Web 技术构建的实时聊天应用，提供
 
    - **Express.js**：用于处理 API 请求和后端逻辑。
    - **Node.js**：作为后端运行环境。
+
+## 源码仓库
+
+   - GitHub仓库 [点击进入](https://github.com/yule-wazi/aiChat.git)
+   - Gitee仓库 [点击进入](https://gitee.com/yule-wazi/ai-chat-room.git)
