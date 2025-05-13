@@ -2,7 +2,7 @@
   <div class="messageShow" :class="{ isMe: messageInfo.isMe }">
     <template v-if="messageInfo.isMe">
       <div class="message">
-        <div class="text">{{ messageInfo.message }}</div>
+        <div class="text" v-html="messageInfo.message"></div>
       </div>
       <div class="image">
         <img :src="messageInfo.image" alt="" />
@@ -13,7 +13,7 @@
         <img :src="messageInfo.image" alt="" />
       </div>
       <div class="message">
-        <div class="text">{{ messageInfo.message }}</div>
+        <div class="text" v-html="messageInfo.message"></div>
         <div class="audio" @click="playAudioClick">
           <img class="audioImg" src="@/assets/img/audio.png" alt="" />
         </div>
@@ -65,7 +65,7 @@ const playAudioClick = () => {
       line-height: 40px;
       word-wrap: break-word;
       font-size: 18px;
-      margin: 0 10px 35px;
+      margin: 0 5px 10px;
       padding: 0 8px;
       border-radius: 8px;
     }
@@ -102,5 +102,14 @@ const playAudioClick = () => {
       background-color: #6666668f;
     }
   }
+}
+:deep(.desc) {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(60, 60, 60, 0.7);
+  border-radius: 8px;
+  color: #ffdca8;
+  font-size: 14px;
+  line-height: 1.5;
 }
 </style>

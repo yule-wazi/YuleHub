@@ -1,5 +1,5 @@
 import { nextTick } from 'vue'
-const delay = 100
+const delay = 30
 export function updateMessage({
   targetUser,
   isMe,

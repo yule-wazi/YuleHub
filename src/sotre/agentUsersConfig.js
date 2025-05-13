@@ -37,5 +37,13 @@ const allUsers = [
     isVip: true,
     message: [],
   },
+  {
+    userName: '枫江月',
+    image: '/userImg/userImg-8.png',
+    url: '/api/v1/apps/d1992231465e48c5816e2ceaa718bce8/completion',
+    session_id: '',
+    isVip: true,
+    message: [],
+  },
 ]
 export default allUsers

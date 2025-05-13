@@ -14,15 +14,19 @@ export function formatOutputMessageToAgent(userName, message) {
 }
 // 格式化输出(展示)
 export function formatOutPutMessage(message) {
-  console.log(message)
   const pattern = /t.*?\|/
   const emotionReg = /\[(.*?)\]/g
+  const descReg = /\{([\s\S]*?)\}/g // 匹配{}内内容
   const emotionMatch = emotionReg.exec(message)
   let emotion = ''
-  if(emotionMatch) {
+  if (emotionMatch) {
     emotion = emotionMatch[1]
   }
-  const newMessage = message.replace(pattern, '').replace(emotionReg, '')
+  let newMessage = message.replace(pattern, '').replace(emotionReg, '')
+  // 将{}内内容用div.desc包裹，并处理换行
+  newMessage = newMessage.replace(descReg, (match, p1) => {
+    return `<div class="desc">${p1.replace(/\n/g, '<br>')}</div>`
+  })
   return [newMessage, emotion]
 }
 // 对内容进行审查
