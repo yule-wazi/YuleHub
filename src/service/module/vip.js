@@ -17,10 +17,10 @@ export function postNewVipList() {
   MyRequest.setBaseUrl('https://image.anosu.top/pixiv?num=30&&r18=1&&db=0')
   return MyRequest.post()
 }
-// const HOST = 'localhost'
-const HOST = '192.168.204.247'
+const HOST = import.meta.env.VITE_HOST || 'localhost'
 // 获取画师作品id列表
 function getPixivUID(uid) {
+  console.log(HOST)
   MyRequest.setBaseUrl(
     `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://open.pximg.org/works.php?uid=${uid}`)}`,
   )

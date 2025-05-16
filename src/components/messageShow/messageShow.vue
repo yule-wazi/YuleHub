@@ -58,6 +58,7 @@ const playAudioClick = () => {
   }
   .message {
     position: relative;
+    max-width: 90%;
     .text {
       background-color: #6666668f;
       border: 1px solid #aaa;
@@ -65,7 +66,7 @@ const playAudioClick = () => {
       line-height: 40px;
       word-wrap: break-word;
       font-size: 18px;
-      margin: 0 5px 10px;
+      margin: 0 5px 35px;
       padding: 0 8px;
       border-radius: 8px;
     }
@@ -104,12 +105,19 @@ const playAudioClick = () => {
   }
 }
 :deep(.desc) {
+  width: 100%;
+  box-sizing: border-box;
   margin: 10px 0;
   padding: 10px;
   background: rgba(60, 60, 60, 0.7);
   border-radius: 8px;
   color: #ffdca8;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.7;
+  white-space: nowrap;
+  overflow-x: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>
