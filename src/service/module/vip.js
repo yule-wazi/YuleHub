@@ -1,6 +1,8 @@
 import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { shuffleArray } from '@/utils/handleArray'
 import MyRequest from '../request/index'
+const HOST = import.meta.env.VITE_HOST || 'localhost'
+
 // 福利图API-1（弃用）
 export function postVipList() {
   MyRequest.setBaseUrl('https://api.mossia.top/duckMo')
@@ -12,12 +14,7 @@ export function postVipList() {
     },
   })
 }
-// 福利图APIT-2(弃用)
-export function postNewVipList() {
-  MyRequest.setBaseUrl('https://image.anosu.top/pixiv?num=30&&r18=1&&db=0')
-  return MyRequest.post()
-}
-const HOST = import.meta.env.VITE_HOST || 'localhost'
+//--------------------------------------------------弃用-------------------------------//
 // 获取画师作品id列表
 function getPixivUID(uid) {
   console.log(HOST)
@@ -46,4 +43,10 @@ export async function getAllPixivImg(uid) {
   let pidList = await Promise.all(pidPromises)
   console.log(pidList)
   return pidList
+}
+//--------------------------------------------------弃用-------------------------------//
+// 福利图APIT-2
+export function postNewVipList() {
+  MyRequest.setBaseUrl('https://image.anosu.top/pixiv?num=30&r18=0&db=0&size=small')
+  return MyRequest.post()
 }
