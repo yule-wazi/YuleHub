@@ -11,14 +11,19 @@ const useVip = defineStore('vip', {
       isFetch: false,
       fetchError: false,
       vipImgData: [],
-      vipImgList: []
+      vipImgList: [],
     }
   },
   actions: {
     // 请求组图片
-    async fetchGroupImgList() {
-      const list = await postNewVipList()
-      this.vipImgData.push(...list.data)
+    async fetchGroupImgList({ isRefresh = false, options } = {}) {
+      console.log('发起请求', options)
+      const list = await postNewVipList(options)
+      if (isRefresh) {
+        this.vipImgData = list.data
+      } else {
+        this.vipImgData.push(...list.data)
+      }
     },
     // 请求预加载图片(pixiv)(弃用)
     async fetchImgList(uid) {

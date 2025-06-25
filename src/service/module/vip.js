@@ -46,7 +46,11 @@ export async function getAllPixivImg(uid) {
 }
 //--------------------------------------------------弃用-------------------------------//
 // 福利图APIT-2
-export function postNewVipList() {
-  MyRequest.setBaseUrl('https://image.anosu.top/pixiv?num=30&r18=0&db=0&size=small')
+export function postNewVipList(options) {
+  let queryString = ''
+  for (const k in options) {
+    queryString += `&${k}=${options[k]}`
+  }
+  MyRequest.setBaseUrl(`https://image.anosu.top/pixiv?num=30&r18=0&db=0&size=small${queryString}`)
   return MyRequest.post()
 }

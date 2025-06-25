@@ -22,7 +22,26 @@ const router = createRouter({
     {
       path: '/comics',
       name: 'comics',
+      meta: { keepAlive: true },
       component: () => import('@/view/comics/comics.vue'),
+      children: [
+        {
+          path: '/comics',
+          redirect: '/comics/home',
+        },
+        {
+          path: 'home',
+          component: () => import('@/view/comics/view/home/home.vue'),
+        },
+        {
+          path: 'category',
+          component: () => import('@/view/comics/view/category/category.vue'),
+        },
+        {
+          path: 'detail',
+          component: () => import('@/view/comics/view/detail/detail.vue'),
+        },
+      ],
       meta: { keepAlive: false },
     },
   ],

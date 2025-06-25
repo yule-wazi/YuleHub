@@ -72,7 +72,7 @@ const comicsClick = () => {
 if (!vipStore.isFetch) {
   const usersUID = myCache.get('usersUID')
   // 默认展示wlop作品
-  vipStore.fetchImgList(usersUID ?? 2188232)
+  // vipStore.fetchImgList(usersUID ?? 2188232)
 }
 </script>
 

@@ -1,16 +1,16 @@
 <template>
   <div class="imageItem">
     <div class="item" :style="{ height: imgDefaultHeight }">
-      <div class="image">
+      <div class="image" @click="getDetail">
         <img :src="itemData.url" alt="" @error="handleImgError" @load="handleImgLoad" />
       </div>
       <div class="content">
         <div class="desc">
-          <div class="title">{{ itemData.title }}</div>
+          <div class="title" @click="getDetail">{{ itemData.title }}</div>
         </div>
         <div class="tagList">
           <template v-for="tag in itemData.tags.slice(0, 3)">
-            <div class="tag">#{{ tag }}</div>
+            <div class="tag" @click="getTag(tag)">#{{ tag }}</div>
           </template>
         </div>
       </div>
@@ -19,8 +19,9 @@
 </template>
 
 <script setup>
+import useVip from '@/sotre/module/vip'
 import { ref } from 'vue'
-
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   itemData: {
@@ -39,18 +40,34 @@ const handleImgError = (e) => {
 let imgDefaultHeight = ref('70vh')
 // 图片加载完毕
 const handleImgLoad = () => {
-  // 修改图片高度为系统自定义高度
   imgDefaultHeight.value = undefined
 }
+const router = useRouter()
+// 进入详情页
+const getDetail = () => {
+  router.push('/comics/detail')
+}
+const vipStore = useVip()
+// 搜索分类
+const getTag = (tag) => {
+  console.log(tag)
 
+  // 删除之前列表
+  vipStore.vipImgData = []
+  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
+
+  router.replace({
+    path: '/comics/category',
+    query: { tag },
+  })
+}
 </script>
 
 <style lang="less" scoped>
 .imageItem {
   .item {
-    // height: 70vh;
     width: 92vw;
-    margin: 5px 0;
+    margin: 10px 0;
     background-color: #fff;
     border-radius: 5px;
     overflow: hidden;
