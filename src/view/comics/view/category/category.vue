@@ -9,7 +9,7 @@
         <ImageItem :itemData="item" />
       </template>
     </div>
-    <Loading />
+    <Loading :options="{ keyword: route.query.tag }" />
   </div>
 </template>
 
@@ -17,12 +17,22 @@
 import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
-import { watch } from 'vue'
 import Loading from '../../cpns/loading.vue'
+import { watch, watchEffect } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
+// 页面刷新自动给tagName赋值
+vipStore.tagName = route.query.tag
 // 发起图片组请求
-vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: route.query.tag } })
+watch(
+  () => vipStore.vipImgData,
+  () => {
+    if (!vipStore.vipImgData.length) {
+      vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style lang="less" scoped>
@@ -45,6 +55,9 @@ vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: route.query.ta
     background-color: #fff;
     .tag {
       color: #ff007a;
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
     }
   }
 }

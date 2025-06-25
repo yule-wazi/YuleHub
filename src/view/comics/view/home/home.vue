@@ -11,10 +11,12 @@
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '../../cpns/loading.vue'
-
+import { watch } from 'vue'
 const vipStore = useVip()
 // 发起图片组请求
-vipStore.fetchGroupImgList()
+if (!vipStore.vipImgData.length) {
+  vipStore.fetchGroupImgList({ isRefresh: true })
+}
 </script>
 
 <style lang="less" scoped>

@@ -3,8 +3,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import useVip from '@/sotre/module/vip'
+
+const props = defineProps({
+  options: {
+    type: Object,
+    default: {},
+  },
+})
+
 // 触底刷新
 let ob = null
 const loadingRef = ref(null)
@@ -15,32 +23,17 @@ watch(loadingRef, () => {
     (entires) => {
       if (entires[0].isIntersecting) {
         console.log('刷新···')
-        vipStore.fetchGroupImgList()
+        vipStore.fetchGroupImgList({ options: props.options })
       }
     },
     {
       threshold: 0,
     },
   )
-  if (loadingRef) {
+  if (loadingRef.value) {
     ob.observe(loadingRef.value)
   }
 })
-
-// onMounted(() => {
-//   ob = new IntersectionObserver(
-//     (entires) => {
-//       if (entires[0].isIntersecting) {
-//         console.log('刷新···')
-//         vipStore.fetchGroupImgList()
-//       }
-//     },
-//     {
-//       threshold: 0,
-//     },
-//   )
-//   ob.observe(loadingRef.value)
-// })
 </script>
 
 <style lang="less" scoped>

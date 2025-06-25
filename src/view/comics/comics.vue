@@ -6,7 +6,16 @@
 </template>
 
 <script setup>
+import { onUnmounted } from 'vue'
 import ComicsHeader from './cpns/comicsHeader.vue'
+import useVip from '@/sotre/module/vip'
+
+const vipStore = useVip()
+// 移除图片
+onUnmounted(() => {
+  console.log("销毁图片列表")
+  vipStore.vipImgData = []
+})
 </script>
 
 <style lang="less" scoped>

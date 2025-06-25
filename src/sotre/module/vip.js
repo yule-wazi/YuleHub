@@ -10,7 +10,9 @@ const useVip = defineStore('vip', {
       isVip: false,
       isFetch: false,
       fetchError: false,
+      tagName: '',
       vipImgData: [],
+      detailData: {},
       vipImgList: [],
     }
   },

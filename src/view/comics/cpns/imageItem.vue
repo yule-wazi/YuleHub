@@ -46,16 +46,15 @@ const router = useRouter()
 // 进入详情页
 const getDetail = () => {
   router.push('/comics/detail')
+  vipStore.detailData = props.itemData
 }
 const vipStore = useVip()
 // 搜索分类
 const getTag = (tag) => {
   console.log(tag)
-
   // 删除之前列表
+  vipStore.tagName = tag
   vipStore.vipImgData = []
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
-
   router.replace({
     path: '/comics/category',
     query: { tag },
