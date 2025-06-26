@@ -23,7 +23,8 @@ onUnmounted(() => {
   height: 100vh;
   width: 100%;
   overflow: auto;
-  margin-top: 60px;
+  padding-top: 60px;
+  box-sizing: border-box;
   background-color: #f4f4f4;
   &::-webkit-scrollbar {
     display: none;

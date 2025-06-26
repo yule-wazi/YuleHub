@@ -103,7 +103,7 @@ const getTag = (tag) => {
         .tag {
           font-size: 11px;
           color: #ff007a;
-          font-weight: 900;
+          font-weight: 600;
           margin: 5px 10px 0 0;
           white-space: nowrap;
         }

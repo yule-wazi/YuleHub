@@ -9,3 +9,8 @@ export function emunProxyUrl(url, index) {
   const newUrl = url.replace(regex, newIndex)
   return newUrl
 }
+// 切换高清图
+export function switchOriginImgUrl(url) {
+  const reg = /c[^/]*\/[^/]*\//
+  return url.replace(reg, '')
+}
