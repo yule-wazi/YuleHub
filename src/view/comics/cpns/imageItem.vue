@@ -10,7 +10,7 @@
         </div>
         <div class="tagList">
           <template v-for="tag in itemData.tags.slice(0, 3)">
-            <div class="tag" @click="getTag(tag)">#{{ tag }}</div>
+            <Tag :tag="tag" />
           </template>
         </div>
       </div>
@@ -19,11 +19,12 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import Tag from '@/view/comics/cpns/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 const props = defineProps({
   itemData: {
@@ -59,17 +60,6 @@ const getDetail = () => {
   vipStore.detailData = props.itemData
 }
 const vipStore = useVip()
-// 搜索分类
-const getTag = (tag) => {
-  console.log(tag)
-  // 删除之前列表
-  vipStore.tagName = tag
-  vipStore.vipImgData = []
-  router.replace({
-    path: '/comics/category',
-    query: { tag },
-  })
-}
 </script>
 
 <style lang="less" scoped>
@@ -111,11 +101,8 @@ const getTag = (tag) => {
       .tagList {
         display: flex;
         .tag {
-          font-size: 11px;
-          color: #ff007a;
-          font-weight: 600;
+          font-size: 12px;
           margin: 5px 10px 0 0;
-          white-space: nowrap;
         }
       }
     }

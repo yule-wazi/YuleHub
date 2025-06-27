@@ -1,19 +1,25 @@
 <template>
   <div class="detail">
-    <div class="title">{{ detailData.title }}</div>
+    <div class="title">
+      <div class="text">{{ detailData.title }}</div>
+      <div class="pid">(PID：{{ detailData.pid }})</div>
+    </div>
     <div class="headerImg">
       <img :src="showImg" alt="" />
     </div>
     <div class="desc">
       <div class="author">
-        <div class="text">作者:</div>
-        <div class="name">{{ detailData.user }}</div>
+        <div class="authorName">
+          <div class="text">作者:</div>
+          <div class="name">{{ detailData.user }}</div>
+        </div>
+        <div class="uid">(UID：{{ detailData.uid }})</div>
       </div>
       <div class="tagArea">
         <div class="tagTitle">文本标签</div>
         <div class="tagList">
-          <template v-for="item in detailData.tags">
-            <div class="tag">#{{ item }}</div>
+          <template v-for="tag in detailData.tags">
+            <Tag :tag="tag" />
           </template>
         </div>
       </div>
@@ -26,10 +32,11 @@
 </template>
 
 <script setup>
+import { onUnmounted, ref } from 'vue'
+import Tag from '@/view/comics/cpns/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
-import { onUnmounted, ref } from 'vue'
 import myCache from '@/utils/cacheStorage'
 
 const vipStore = useVip()
@@ -57,11 +64,16 @@ onUnmounted(() => {
 <style lang="less" scoped>
 .detail {
   .title {
-    margin: 15px;
     text-align: center;
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 700;
     color: #323232;
+    padding: 0 10px;
+    .pid {
+      margin-bottom: 5px;
+      font-size: 11px;
+      color: #666;
+    }
   }
   .headerImg {
     width: 100%;
@@ -76,13 +88,20 @@ onUnmounted(() => {
   .desc {
     padding: 0 15px;
     .author {
-      display: flex;
-      justify-content: end;
+      color: #323232;
       font-weight: 700;
-      color: #9a9a9a;
-      margin-top: 10px;
-      .text {
+      .authorName {
+        display: flex;
+        justify-content: end;
+        margin-top: 10px;
+        .text {
+          margin-right: 10px;
+        }
+      }
+      .uid {
         margin-right: 10px;
+        text-align: end;
+        font-size: 11px;
       }
     }
     .tagArea {
@@ -97,8 +116,6 @@ onUnmounted(() => {
         flex-wrap: wrap;
         .tag {
           font-size: 14px;
-          font-weight: 600;
-          color: #ff007a;
           border-radius: 5px;
           padding: 7px 13px;
           border: 1px solid #969696;
