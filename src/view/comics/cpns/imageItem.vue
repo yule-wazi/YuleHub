@@ -40,9 +40,10 @@ const handleImgError = (e) => {
 }
 // 缩略图占位
 const LQIPImg = switchImgResolutionUrl(props.itemData.url)
+const originImg = switchImgResolutionUrl(props.itemData.url, 'origin')
 let showImg = ref(LQIPImg)
-preLoadImg(props.itemData.url).then(() => {
-  showImg.value = props.itemData.url
+preLoadImg(originImg).then(() => {
+  showImg.value = originImg
 })
 
 // 初始化默认图片高度

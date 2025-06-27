@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getAllPixivImg, postNewVipList } from '@/service/module/vip'
+import { getAllPixivImg, postLoliconList, postNewVipList } from '@/service/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { emunProxyUrl } from '@/utils/ProxyUrl'
 import { sortArray } from '@/utils/handleArray'
@@ -20,11 +20,28 @@ const useVip = defineStore('vip', {
     // 请求组图片
     async fetchGroupImgList({ isRefresh = false, options } = {}) {
       console.log('发起请求', options)
+
       const list = await postNewVipList(options)
+      const formatList = list.data
+
+      // //LoliconAPI
+      // const list = await postLoliconList(options)
+      // // 格式化数据
+      // const formatList = list.data.data.map((item) => {
+      //   return {
+      //     pid: item.pid,
+      //     uid: item.uid,
+      //     title: item.title,
+      //     user: item.author,
+      //     tags: item.tags,
+      //     url: item.urls.small,
+      //   }
+      // })
+      
       if (isRefresh) {
-        this.vipImgData = list.data
+        this.vipImgData = formatList
       } else {
-        this.vipImgData.push(...list.data)
+        this.vipImgData.push(...formatList)
       }
     },
     // 请求预加载图片(pixiv)(弃用)

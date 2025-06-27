@@ -54,3 +54,14 @@ export function postNewVipList(options) {
   MyRequest.setBaseUrl(`https://image.anosu.top/pixiv?num=30&r18=0&db=0&size=small${queryString}`)
   return MyRequest.post()
 }
+// Lolicon
+export function postLoliconList(options) {
+  let queryString = ''
+  for (const k in options) {
+    queryString += `&${k}=${options[k]}`
+  }
+  MyRequest.setBaseUrl(
+    `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=0&size=small${queryString}`)}`,
+  )
+  return MyRequest.get()
+}

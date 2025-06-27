@@ -9,10 +9,12 @@ export function emunProxyUrl(url, index) {
   const newUrl = url.replace(regex, newIndex)
   return newUrl
 }
-// 切换高清图
+// 切换图片分辨率
 export function switchImgResolutionUrl(url, quality = 'low') {
   let newUrl = ''
   const reg = /c[^/]*\/[^/]*\//
+  const regex = /_p.*?\./
+
   switch (quality) {
     case 'origin':
       newUrl = url.replace(reg, '')
@@ -24,5 +26,8 @@ export function switchImgResolutionUrl(url, quality = 'low') {
       newUrl = url
       break
   }
+  const proxyUrl = /i\.pixiv\.re/
+  //切换代理服务器（如果觉得卡可以不换）
+  newUrl = newUrl.replace(proxyUrl, 'i.pximg.org')
   return newUrl
 }
