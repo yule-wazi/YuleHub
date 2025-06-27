@@ -1,6 +1,6 @@
 export function switchProxyUrl(url) {
   const regex = /i\.pximg\.net/
-  const newUrl = url.replace(regex, 'i.pixiv.re')
+  const newUrl = url.replace(regex, 'i.pximg.org')
   return newUrl
 }
 export function emunProxyUrl(url, index) {
@@ -13,8 +13,6 @@ export function emunProxyUrl(url, index) {
 export function switchImgResolutionUrl(url, quality = 'low') {
   let newUrl = ''
   const reg = /c[^/]*\/[^/]*\//
-  const regex = /_p.*?\./
-
   switch (quality) {
     case 'origin':
       newUrl = url.replace(reg, '')

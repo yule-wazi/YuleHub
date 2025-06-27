@@ -11,7 +11,6 @@
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '../../cpns/loading.vue'
-console.log('home')
 const vipStore = useVip()
 // 发起图片组请求
 if (!vipStore.vipImgData.length) {

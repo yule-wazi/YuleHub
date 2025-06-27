@@ -25,7 +25,13 @@
       </div>
       <div class="otherArts">
         <div class="artsTitle">其他作品</div>
-        <div class="imgList"></div>
+        <div class="imgList">
+          <template v-for="item in vipStore.authorOtherImg">
+            <div class="image">
+              <img :src="item" alt="" />
+            </div>
+          </template>
+        </div>
       </div>
     </div>
   </div>
@@ -40,6 +46,8 @@ import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import myCache from '@/utils/cacheStorage'
 
 const vipStore = useVip()
+// 清空其他作品列表
+vipStore.authorOtherImg = []
 // 数据持久化保存
 let detailData = {}
 if (Object.keys(vipStore.detailData).length !== 0) {
@@ -55,6 +63,8 @@ const origin = switchImgResolutionUrl(detailData.url, 'origin')
 preLoadImg(origin).then(() => {
   showImg.value = origin
 })
+// 其他作品
+vipStore.fetchOtherImgList(detailData.uid)
 
 onUnmounted(() => {
   myCache.remove('detailData')
@@ -129,6 +139,22 @@ onUnmounted(() => {
         font-weight: 900;
         font-size: 18px;
         margin-bottom: 10px;
+      }
+      .imgList {
+        margin-left: -15px;
+        margin-right: -15px;
+        width: calc(100% + 30px);
+        display: flex;
+        flex-wrap: wrap;
+        .image {
+          width: 50%;
+          img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+          }
+        }
       }
     }
   }

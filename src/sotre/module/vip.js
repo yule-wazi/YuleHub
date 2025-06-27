@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getAllPixivImg, postLoliconList, postNewVipList } from '@/service/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
-import { emunProxyUrl } from '@/utils/ProxyUrl'
+import { emunProxyUrl, switchProxyUrl } from '@/utils/ProxyUrl'
 import { sortArray } from '@/utils/handleArray'
 import myCache from '@/utils/cacheStorage'
 const useVip = defineStore('vip', {
@@ -13,6 +13,7 @@ const useVip = defineStore('vip', {
       tagName: '',
       vipImgData: [],
       detailData: {},
+      authorOtherImg: [],
       vipImgList: [],
     }
   },
@@ -37,13 +38,19 @@ const useVip = defineStore('vip', {
       //     url: item.urls.small,
       //   }
       // })
-      
+
       if (isRefresh) {
         this.vipImgData = formatList
       } else {
         this.vipImgData.push(...formatList)
       }
     },
+    // 请求作者其他图片
+    async fetchOtherImgList(uid) {
+      const resList = await getAllPixivImg(uid)
+      this.authorOtherImg = resList.map((item) => switchProxyUrl(item))
+    },
+
     // 请求预加载图片(pixiv)(弃用)
     async fetchImgList(uid) {
       const list = await getAllPixivImg(uid)

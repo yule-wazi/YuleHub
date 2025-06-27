@@ -1,4 +1,4 @@
-import { switchProxyUrl } from '@/utils/ProxyUrl'
+import { switchImgResolutionUrl, switchProxyUrl } from '@/utils/ProxyUrl'
 import { shuffleArray } from '@/utils/handleArray'
 import MyRequest from '../request/index'
 const HOST = import.meta.env.VITE_HOST || 'localhost'
@@ -14,10 +14,8 @@ export function postVipList() {
     },
   })
 }
-//--------------------------------------------------弃用-------------------------------//
 // 获取画师作品id列表
 function getPixivUID(uid) {
-  console.log(HOST)
   MyRequest.setBaseUrl(
     `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://open.pximg.org/works.php?uid=${uid}`)}`,
   )
@@ -33,18 +31,17 @@ function getPixivPID(pid) {
 // 获取作者所有作品图片
 export async function getAllPixivImg(uid) {
   const uidRes = await getPixivUID(uid)
-  const uidList = shuffleArray([...uidRes.data.body.user_illust_ids]).slice(0, 20)
-  console.log(uidList)
+  const uidList = shuffleArray([...uidRes.data.body.user_illust_ids]).slice(0, 8)
   const pidPromises = uidList.map(async (pid) => {
     const pidRes = await getPixivPID(pid)
     const pidUrl = pidRes.data.master
-    return switchProxyUrl(pidUrl)
+    return switchImgResolutionUrl(pidUrl, 'origin')
   })
   let pidList = await Promise.all(pidPromises)
-  console.log(pidList)
+  // console.log(pidList)
   return pidList
 }
-//--------------------------------------------------弃用-------------------------------//
+
 // 福利图APIT-2
 export function postNewVipList(options) {
   let queryString = ''

@@ -32,6 +32,7 @@ const props = defineProps({
     default: {},
   },
 })
+const vipStore = useVip()
 // 移除加载错误图片
 const handleImgError = (e) => {
   const imageItem = e.target.closest('.imageItem')
@@ -59,7 +60,6 @@ const getDetail = () => {
   router.push('/comics/detail')
   vipStore.detailData = props.itemData
 }
-const vipStore = useVip()
 </script>
 
 <style lang="less" scoped>
