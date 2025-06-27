@@ -32,10 +32,12 @@ const router = createRouter({
         {
           path: 'home',
           component: () => import('@/view/comics/view/home/home.vue'),
+          meta: { keepAlive: true },
         },
         {
           path: 'category',
           component: () => import('@/view/comics/view/category/category.vue'),
+          meta: { keepAlive: true },
         },
         {
           path: 'detail',

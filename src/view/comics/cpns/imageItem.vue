@@ -2,7 +2,7 @@
   <div class="imageItem">
     <div class="item" :style="{ height: imgDefaultHeight }">
       <div class="image" @click="getDetail">
-        <img :src="itemData.url" alt="" @error="handleImgError" @load="handleImgLoad" />
+        <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
       </div>
       <div class="content">
         <div class="desc">
@@ -20,6 +20,8 @@
 
 <script setup>
 import useVip from '@/sotre/module/vip'
+import { preLoadImg } from '@/utils/preLoadImg'
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -36,6 +38,13 @@ const handleImgError = (e) => {
     imageItem.remove()
   }
 }
+// 缩略图占位
+const LQIPImg = switchImgResolutionUrl(props.itemData.url)
+let showImg = ref(LQIPImg)
+preLoadImg(props.itemData.url).then(() => {
+  showImg.value = props.itemData.url
+})
+
 // 初始化默认图片高度
 let imgDefaultHeight = ref('70vh')
 // 图片加载完毕

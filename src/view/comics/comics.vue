@@ -1,7 +1,11 @@
 <template>
   <div class="comics">
     <ComicsHeader />
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive include="home,category">
+        <component :is="Component" />
+      </KeepAlive>
+    </RouterView>
   </div>
 </template>
 
@@ -9,11 +13,12 @@
 import { onUnmounted } from 'vue'
 import ComicsHeader from './cpns/comicsHeader.vue'
 import useVip from '@/sotre/module/vip'
+import { RouterView } from 'vue-router'
 
 const vipStore = useVip()
 // 移除图片
 onUnmounted(() => {
-  console.log("销毁图片列表")
+  console.log('销毁图片列表')
   vipStore.vipImgData = []
 })
 </script>

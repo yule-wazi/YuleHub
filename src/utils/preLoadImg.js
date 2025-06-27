@@ -4,6 +4,5 @@ export function preLoadImg(src) {
     const img = new Image()
     img.src = src
     img.onload = resolve
-    img.onerror = reject
   })
 }

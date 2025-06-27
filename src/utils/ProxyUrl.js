@@ -10,7 +10,19 @@ export function emunProxyUrl(url, index) {
   return newUrl
 }
 // 切换高清图
-export function switchOriginImgUrl(url) {
+export function switchImgResolutionUrl(url, quality = 'low') {
+  let newUrl = ''
   const reg = /c[^/]*\/[^/]*\//
-  return url.replace(reg, '')
+  switch (quality) {
+    case 'origin':
+      newUrl = url.replace(reg, '')
+      break
+    case 'low':
+      newUrl = url.replace(reg, 'c/48x48/')
+      break
+    default:
+      newUrl = url
+      break
+  }
+  return newUrl
 }

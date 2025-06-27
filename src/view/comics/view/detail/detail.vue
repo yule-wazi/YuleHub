@@ -28,7 +28,7 @@
 <script setup>
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
-import { switchOriginImgUrl } from '@/utils/ProxyUrl'
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { onUnmounted, ref } from 'vue'
 import myCache from '@/utils/cacheStorage'
 
@@ -44,7 +44,7 @@ if (Object.keys(vipStore.detailData).length !== 0) {
 console.log(detailData)
 // p站获取高清图片
 const showImg = ref(detailData.url)
-const origin = switchOriginImgUrl(detailData.url)
+const origin = switchImgResolutionUrl(detailData.url, 'origin')
 preLoadImg(origin).then(() => {
   showImg.value = origin
 })

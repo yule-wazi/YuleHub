@@ -14,6 +14,7 @@
 </template>
 
 <script setup>
+console.log('category')
 import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
