@@ -24,11 +24,11 @@ const vipStore = useVip()
 // 页面刷新自动给tagName赋值
 vipStore.tagName = route.query.tag
 // 发起图片组请求
-watchEffect(() => {
+// watchEffect(() => {
   if (!vipStore.vipImgData.length) {
     vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
   }
-})
+// })
 </script>
 
 <style lang="less" scoped>

@@ -51,6 +51,8 @@ const searchClick = (tag) => {
   vipStore.vipImgData = []
   // 清空搜索内容
   input1.value = ''
+  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
+
   router.push({
     path: '/comics/category',
     query: { tag },
