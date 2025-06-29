@@ -75,15 +75,16 @@ const searchClick = (tag) => {
   background-color: aliceblue;
   border-bottom: 1px solid #999;
   z-index: 10;
+  padding: 0 10px;
   .menu {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1;
     height: 100%;
+    width: 60px;
     overflow: hidden;
     img {
-      height: 60%;
+      height: 50%;
       width: 50%;
     }
   }
@@ -98,11 +99,11 @@ const searchClick = (tag) => {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1;
+    width: 60px;
     height: 100%;
     overflow: hidden;
     img {
-      height: 60%;
+      height: 50%;
       width: 50%;
     }
   }

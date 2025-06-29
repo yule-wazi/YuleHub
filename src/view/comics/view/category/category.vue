@@ -25,6 +25,7 @@ const vipStore = useVip()
 vipStore.tagName = route.query.tag
 // 发起图片组请求
 // watchEffect(() => {
+  console.log('vipStore.vipImgData.length = ',vipStore.vipImgData.length)
   if (!vipStore.vipImgData.length) {
     vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
   }

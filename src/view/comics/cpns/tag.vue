@@ -15,10 +15,12 @@ defineProps({
 const vipStore = useVip()
 const router = useRouter()
 const getTag = (tag) => {
-  console.log(tag)
   // 删除之前列表
   vipStore.tagName = tag
   vipStore.vipImgData = []
+  if (!vipStore.vipImgData.length) {
+    vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  }
   router.replace({
     path: '/comics/category',
     query: { tag },

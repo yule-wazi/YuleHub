@@ -23,7 +23,6 @@ watch(loadingRef, () => {
     (entires) => {
       if (entires[0].isIntersecting) {
         console.log('刷新···')
-        console.log(vipStore.vipImgData.length)
         vipStore.fetchGroupImgList({ options: props.options })
       }
     },
