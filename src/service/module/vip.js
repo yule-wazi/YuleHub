@@ -1,5 +1,6 @@
 import { switchImgResolutionUrl, switchProxyUrl } from '@/utils/ProxyUrl'
 import { shuffleArray } from '@/utils/handleArray'
+import myCache from '@/utils/cacheStorage'
 import MyRequest from '../request/index'
 const HOST = import.meta.env.VITE_HOST || 'localhost'
 
@@ -44,21 +45,25 @@ export async function getAllPixivImg(uid) {
 
 // 福利图APIT-2
 export function postNewVipList(options) {
-  let queryString = ''
-  for (const k in options) {
-    queryString += `&${k}=${options[k]}`
-  }
-  MyRequest.setBaseUrl(`https://image.anosu.top/pixiv?num=30&r18=0&db=0&size=small${queryString}`)
-  return MyRequest.post()
-}
-// Lolicon
-export function postLoliconList(options) {
+  let isR18 = myCache.get('isNSFW') ?? false
   let queryString = ''
   for (const k in options) {
     queryString += `&${k}=${options[k]}`
   }
   MyRequest.setBaseUrl(
-    `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=0&size=small${queryString}`)}`,
+    `https://image.anosu.top/pixiv?num=30&r18=${isR18 ? 1 : 0}&db=0&size=small${queryString}`,
+  )
+  return MyRequest.post()
+}
+// Lolicon
+export function postLoliconList(options) {
+  let isR18 = myCache.get('isNSFW') ?? false
+  let queryString = ''
+  for (const k in options) {
+    queryString += `&${k}=${options[k]}`
+  }
+  MyRequest.setBaseUrl(
+    `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=${isR18 ? 1 : 0}&size=small${queryString}`)}`,
   )
   return MyRequest.get()
 }

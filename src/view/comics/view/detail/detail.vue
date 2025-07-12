@@ -65,15 +65,6 @@ preLoadImg(origin).then(() => {
 })
 // 其他作品
 vipStore.fetchOtherImgList(detailData.uid)
-
-// 回到顶部
-onMounted(() => {
-  console.log('DeatilonActivated')
-})
-
-onUnmounted(() => {
-  myCache.remove('detailData')
-})
 </script>
 
 <style lang="less" scoped>

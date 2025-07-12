@@ -15,6 +15,7 @@ const useVip = defineStore('vip', {
       detailData: {},
       authorOtherImg: [],
       vipImgList: [],
+      isNSFW: false,
     }
   },
   actions: {

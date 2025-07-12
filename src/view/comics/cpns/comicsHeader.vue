@@ -25,17 +25,23 @@
       </template>
       <template #default>
         <div class="content">
-          <div class="home">首页</div>
+          <div class="home" @click="goHome">首页</div>
           <div class="r18">
             <div class="text">NSFW</div>
-            <el-switch v-model="isNSFW" size="large" />
+            <el-switch
+              v-model="isNSFW"
+              size="large"
+              change="isNSFW = !isNSFW"
+              :active-action-icon="View"
+              :inactive-action-icon="Hide"
+            />
           </div>
           <div class="dark">
             <div class="text">夜间模式</div>
-            <el-switch v-model="isDark" size="large" />
+            <el-switch v-model="isDark" size="large" change="isDark = !isDark" />
           </div>
           <div class="logout">
-            <el-button type="primary" size="large">登出</el-button>
+            <el-button type="primary" size="large" @click="logoutClick">登出</el-button>
           </div>
         </div>
       </template>
@@ -45,11 +51,12 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { Search } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+import { Search, Hide, View } from '@element-plus/icons-vue'
 import searchImg from '@/assets/img/搜索.png'
 import closeImg from '@/assets/img/关闭.png'
 import useVip from '@/sotre/module/vip'
-import { useRouter } from 'vue-router'
+import myCache from '@/utils/cacheStorage'
 
 const input1 = ref('')
 // 点击搜索
@@ -84,9 +91,27 @@ const searchClick = (tag) => {
 
 // 打开菜单
 const drawer = ref(false)
-
-const isNSFW = ref(false)
-const isDark = ref(false)
+// 切换R18
+const isNSFW = ref(myCache.get('isNSFW') ?? false)
+vipStore.isNSFW = isNSFW.value
+watch(isNSFW, () => {
+  vipStore.isNSFW = isNSFW.value
+  myCache.set('isNSFW', isNSFW.value)
+})
+// 切换NSFW
+const isDark = ref(myCache.get('isDark') ?? false)
+watch(isDark, () => {
+  myCache.set('isDark', isDark.value)
+})
+// 回到首页
+const goHome = () => {
+  router.push('/')
+}
+// 用户登出
+const logoutClick = () => {
+  myCache.remove('userInfo')
+  router.replace('/login')
+}
 </script>
 
 <style lang="less" scoped>
