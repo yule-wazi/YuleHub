@@ -18,18 +18,14 @@ import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '../../cpns/loading.vue'
-import { watch, watchEffect } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
 vipStore.tagName = route.query.tag
 // 发起图片组请求
-// watchEffect(() => {
-  console.log('vipStore.vipImgData.length = ',vipStore.vipImgData.length)
-  if (!vipStore.vipImgData.length) {
-    vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
-  }
-// })
+if (!vipStore.vipImgData.length) {
+  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+}
 </script>
 
 <style lang="less" scoped>

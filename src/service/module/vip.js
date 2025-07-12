@@ -58,7 +58,7 @@ export function postLoliconList(options) {
     queryString += `&${k}=${options[k]}`
   }
   MyRequest.setBaseUrl(
-    `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=1&size=small${queryString}`)}`,
+    `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=0&size=small${queryString}`)}`,
   )
   return MyRequest.get()
 }

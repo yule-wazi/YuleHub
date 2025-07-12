@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div class="menu">
-      <img src="@/assets/img/切换表格.png" alt="" />
+      <img src="@/assets/img/切换表格.png" @click="drawer = true" />
     </div>
     <div class="title">YULE漫画</div>
     <div class="search">
@@ -18,10 +18,33 @@
       @change="searchClick"
     />
   </div>
+  <div class="menu">
+    <el-drawer v-model="drawer" direction="ltr" size="70%">
+      <template #header>
+        <div class="menuTitle">YULE漫画</div>
+      </template>
+      <template #default>
+        <div class="content">
+          <div class="home">首页</div>
+          <div class="r18">
+            <div class="text">NSFW</div>
+            <el-switch v-model="isNSFW" size="large" />
+          </div>
+          <div class="dark">
+            <div class="text">夜间模式</div>
+            <el-switch v-model="isDark" size="large" />
+          </div>
+          <div class="logout">
+            <el-button type="primary" size="large">登出</el-button>
+          </div>
+        </div>
+      </template>
+    </el-drawer>
+  </div>
 </template>
 
 <script setup>
-import { ref, watch, watchEffect } from 'vue'
+import { ref, watch } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import searchImg from '@/assets/img/搜索.png'
 import closeImg from '@/assets/img/关闭.png'
@@ -58,6 +81,12 @@ const searchClick = (tag) => {
     query: { tag },
   })
 }
+
+// 打开菜单
+const drawer = ref(false)
+
+const isNSFW = ref(false)
+const isDark = ref(false)
 </script>
 
 <style lang="less" scoped>
@@ -122,6 +151,42 @@ const searchClick = (tag) => {
     .el-input__inner {
       background-color: #f5f5f5;
       padding-left: 10px;
+    }
+  }
+}
+.menu {
+  .menuTitle {
+    flex: 3;
+    text-align: start;
+    margin-left: 10px;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  }
+  .content {
+    .home {
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .r18,
+    .dark {
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .logout {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+
+      .el-button {
+        width: 100%;
+      }
     }
   }
 }

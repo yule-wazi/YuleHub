@@ -25,7 +25,7 @@ const useVip = defineStore('vip', {
       const list = await postNewVipList(options)
       const formatList = list.data
 
-      // // //LoliconAPI
+      // //LoliconAPI
       // const list = await postLoliconList(options)
       // // 格式化数据
       // const formatList = list.data.data.map((item) => {

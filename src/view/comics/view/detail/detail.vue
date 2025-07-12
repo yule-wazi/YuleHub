@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { onActivated, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import Tag from '@/view/comics/cpns/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
@@ -65,6 +65,11 @@ preLoadImg(origin).then(() => {
 })
 // 其他作品
 vipStore.fetchOtherImgList(detailData.uid)
+
+// 回到顶部
+onMounted(() => {
+  console.log('DeatilonActivated')
+})
 
 onUnmounted(() => {
   myCache.remove('detailData')
