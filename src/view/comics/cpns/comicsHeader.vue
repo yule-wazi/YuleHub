@@ -5,7 +5,7 @@
         <Expand />
       </el-icon>
     </div>
-    <div class="title">YULE漫画</div>
+    <div class="title">YULE插画</div>
     <div class="search">
       <el-icon
         :size="30"
@@ -30,7 +30,7 @@
   <div class="menu">
     <el-drawer v-model="drawer" direction="ltr" size="70%">
       <template #header>
-        <div class="menuTitle">YULE漫画</div>
+        <div class="menuTitle">YULE插画</div>
       </template>
       <template #default>
         <div class="content">

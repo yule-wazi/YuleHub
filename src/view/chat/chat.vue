@@ -10,7 +10,7 @@
           @click="userClick(userName, index, image)"
         />
       </template>
-      <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">漫画</div>
+      <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">插画</div>
       <div class="logout" @click="logoutClick">登出</div>
     </div>
     <div

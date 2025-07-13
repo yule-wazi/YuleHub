@@ -37,7 +37,7 @@ onUnmounted(() => {
   @media (min-width: 800px) {
     &::-webkit-scrollbar {
       display: block;
-      width:12px;
+      width:8px;
     }
     &::-webkit-scrollbar-thumb {
       background: #ff007a;

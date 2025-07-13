@@ -72,7 +72,7 @@ const getDetail = () => {
   }
   .item {
     @media (min-width: 800px) {
-      width: 30vw;
+      width: 28vw;
     }
     @media (min-width: 1000px) {
       width: 23vw;
