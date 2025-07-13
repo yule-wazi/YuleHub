@@ -64,7 +64,20 @@ const getDetail = () => {
 
 <style lang="less" scoped>
 .imageItem {
+  @media (min-width: 800px) {
+    padding: 10px;
+  }
+  @media (min-width: 1000px) {
+    padding: 5px;
+  }
   .item {
+    @media (min-width: 800px) {
+      width: 30vw;
+    }
+    @media (min-width: 1000px) {
+      width: 23vw;
+    }
+
     width: 92vw;
     margin: 10px 0;
     background-color: var(--comics-cardBg-color);

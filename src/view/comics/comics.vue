@@ -34,5 +34,19 @@ onUnmounted(() => {
   &::-webkit-scrollbar {
     display: none;
   }
+  @media (min-width: 800px) {
+    &::-webkit-scrollbar {
+      display: block;
+      width:12px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ff007a;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--comics-headerBg-color);
+      border-radius: 4px;
+    }
+  }
 }
 </style>

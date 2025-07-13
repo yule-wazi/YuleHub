@@ -69,6 +69,8 @@ vipStore.fetchOtherImgList(detailData.uid)
 
 <style lang="less" scoped>
 .detail {
+  max-width: 800px;
+  margin: auto;
   .title {
     text-align: center;
     font-size: 22px;
@@ -146,9 +148,6 @@ vipStore.fetchOtherImgList(detailData.uid)
         margin-bottom: 10px;
       }
       .imgList {
-        margin-left: -15px;
-        margin-right: -15px;
-        width: calc(100% + 30px);
         display: flex;
         flex-wrap: wrap;
         .image {
