@@ -74,6 +74,7 @@ vipStore.fetchOtherImgList(detailData.uid)
     font-size: 22px;
     font-weight: 700;
     color: #323232;
+    color: var(--comics-cardTitle-color);
     padding: 0 10px;
     .pid {
       margin-bottom: 5px;
@@ -92,9 +93,9 @@ vipStore.fetchOtherImgList(detailData.uid)
     }
   }
   .desc {
-    padding: 0 15px;
     .author {
-      color: #323232;
+      padding: 0 15px;
+      color: var(--comics-cardTitle-color);
       font-weight: 700;
       .authorName {
         display: flex;
@@ -108,10 +109,14 @@ vipStore.fetchOtherImgList(detailData.uid)
         margin-right: 10px;
         text-align: end;
         font-size: 11px;
+        color: #666;
       }
     }
     .tagArea {
-      margin-top: 10px;
+      padding: 10px 15px;
+      color: var(--comics-cardTitle-color);
+      margin-top: 20px;
+      background-color: var(--comics-cardBg-color);
       .tagTitle {
         font-weight: 900;
         font-size: 18px;
@@ -130,8 +135,12 @@ vipStore.fetchOtherImgList(detailData.uid)
       }
     }
     .otherArts {
-      margin-top: 10px;
+      margin-top: 20px;
+      padding-top: 10px;
+      background-color: var(--comics-cardBg-color);
+      color: var(--comics-cardTitle-color);
       .artsTitle {
+        padding: 0 10px;
         font-weight: 900;
         font-size: 18px;
         margin-bottom: 10px;

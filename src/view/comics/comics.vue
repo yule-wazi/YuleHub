@@ -30,7 +30,7 @@ onUnmounted(() => {
   overflow: auto;
   padding-top: 60px;
   box-sizing: border-box;
-  background-color: #f4f4f4;
+  background-color: var(--comics-bg-color);
   &::-webkit-scrollbar {
     display: none;
   }

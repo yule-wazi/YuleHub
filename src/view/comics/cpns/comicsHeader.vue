@@ -1,11 +1,20 @@
 <template>
   <div class="header">
     <div class="menu">
-      <img src="@/assets/img/切换表格.png" @click="drawer = true" />
+      <el-icon :size="30" @click="drawer = true" color="var(--comics-headerIcon-color)">
+        <Expand />
+      </el-icon>
     </div>
     <div class="title">YULE漫画</div>
     <div class="search">
-      <img :src="isCollapsed ? searchImg : closeImg" alt="" @click="isCollapsed = !isCollapsed" />
+      <el-icon
+        :size="30"
+        @click="isCollapsed = !isCollapsed"
+        color="var(--comics-headerIcon-color)"
+      >
+        <template v-if="isCollapsed"><Search /></template>
+        <template v-else><Close /></template>
+      </el-icon>
     </div>
   </div>
   <div ref="searchAreaRef" class="searchArea">
@@ -38,7 +47,13 @@
           </div>
           <div class="dark">
             <div class="text">夜间模式</div>
-            <el-switch v-model="isDark" size="large" change="isDark = !isDark" />
+            <el-switch
+              v-model="isDark"
+              size="large"
+              change="isDark = !isDark"
+              :active-action-icon="Moon"
+              :inactive-action-icon="Sunny"
+            />
           </div>
           <div class="logout">
             <el-button type="primary" size="large" @click="logoutClick">登出</el-button>
@@ -50,9 +65,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Hide, View } from '@element-plus/icons-vue'
+import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
 import searchImg from '@/assets/img/搜索.png'
 import closeImg from '@/assets/img/关闭.png'
 import useVip from '@/sotre/module/vip'
@@ -91,18 +106,28 @@ const searchClick = (tag) => {
 
 // 打开菜单
 const drawer = ref(false)
-// 切换R18
+// 切换NSFW
 const isNSFW = ref(myCache.get('isNSFW') ?? false)
 vipStore.isNSFW = isNSFW.value
 watch(isNSFW, () => {
   vipStore.isNSFW = isNSFW.value
   myCache.set('isNSFW', isNSFW.value)
 })
-// 切换NSFW
+// 切换暗黑模式
 const isDark = ref(myCache.get('isDark') ?? false)
-watch(isDark, () => {
-  myCache.set('isDark', isDark.value)
+let comicsElement = undefined
+onMounted(() => {
+  comicsElement = document.querySelector('.comics')
+  watch(
+    isDark,
+    () => {
+      myCache.set('isDark', isDark.value)
+      comicsElement.classList.toggle('darkMode', isDark.value)
+    },
+    { immediate: true },
+  )
 })
+
 // 回到首页
 const goHome = () => {
   router.push('/')
@@ -126,7 +151,7 @@ const logoutClick = () => {
   justify-content: space-between;
   align-self: center;
   color: #333;
-  background-color: aliceblue;
+  background-color: var(--comics-headerBg-color);
   border-bottom: 1px solid #999;
   z-index: 10;
   padding: 0 10px;
@@ -145,6 +170,7 @@ const logoutClick = () => {
   .title {
     flex: 3;
     text-align: center;
+    color: var(--comics-headerTitle-color);
     font-size: 28px;
     font-weight: 700;
     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -172,17 +198,28 @@ const logoutClick = () => {
   transition: 0.3s;
   :deep(.el-input__wrapper) {
     border-radius: 0px !important;
+    background-color: var(--comics-headerBg-color);
     font-size: 22px;
     .el-input__inner {
       background-color: #f5f5f5;
+      color: #333;
+      background-color: var(--comics-headerSearchBg-color);
       padding-left: 10px;
     }
   }
 }
 .menu {
+  :deep(.el-drawer) {
+    background-color: var(--comics-bg-color);
+    .el-drawer__close-btn {
+      color: var(--comics-menuText-color);
+    }
+  }
+  color: var(--comics-menuText-color);
   .menuTitle {
     flex: 3;
     text-align: start;
+    color: var(--comics-headerTitle-color);
     margin-left: 10px;
     font-size: 28px;
     font-weight: 700;
@@ -193,8 +230,8 @@ const logoutClick = () => {
       font-size: 22px;
       font-weight: 400;
       margin-bottom: 10px;
-      padding: 10px;
-      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #999;
     }
     .r18,
     .dark {
@@ -207,8 +244,7 @@ const logoutClick = () => {
     .logout {
       margin-top: 20px;
       padding-top: 20px;
-      border-top: 1px solid #333;
-
+      border-top: 1px solid #999;
       .el-button {
         width: 100%;
       }

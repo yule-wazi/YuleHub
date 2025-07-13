@@ -33,7 +33,7 @@ if (!vipStore.vipImgData.length) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f4f4f4;
+  background-color: var(--comics-bg-color);
   height: 100%;
   width: 100%;
   .title {
@@ -45,12 +45,15 @@ if (!vipStore.vipImgData.length) {
     margin: 20px 0;
     font-size: 20px;
     font-weight: 700;
-    background-color: #fff;
+    background-color: var(--comics-cardBg-color);
     .tag {
       color: #ff007a;
       max-width: 250px;
       white-space: nowrap;
       overflow: hidden;
+    }
+    .text {
+      color: var(--comics-cardTitle-color);
     }
   }
 }

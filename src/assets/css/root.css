@@ -1,4 +1,13 @@
 :root {
   --primary-color: #3FB480;
   --primary-deep-color: #34495E;
+
+  --comics-bg-color: #f4f4f4;
+  --comics-cardBg-color: #fff;
+  --comics-cardTitle-color: #323232;
+  --comics-headerBg-color: #f0f8ff;
+  --comics-headerTitle-color: #409EFF;
+  --comics-headerIcon-color: #858585;
+  --comics-headerSearchBg-color: #f5f5f5;
+  --comics-menuText-color: #474747;
 }

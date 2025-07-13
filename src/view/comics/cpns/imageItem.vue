@@ -67,7 +67,7 @@ const getDetail = () => {
   .item {
     width: 92vw;
     margin: 10px 0;
-    background-color: #fff;
+    background-color: var(--comics-cardBg-color);
     border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 1px 1px 0 rgba(131, 131, 131, 0.5);
@@ -89,7 +89,7 @@ const getDetail = () => {
         display: flex;
         height: 50%;
         font-size: 18px;
-        color: #323232;
+        color: var(--comics-cardTitle-color);
         font-weight: 600;
         overflow: hidden;
         white-space: nowrap;
