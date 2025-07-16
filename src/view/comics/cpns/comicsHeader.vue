@@ -27,51 +27,45 @@
       @change="searchClick"
     />
   </div>
-  <div class="menu">
-    <el-drawer v-model="drawer" direction="ltr" size="70%">
-      <template #header>
-        <div class="menuTitle">YULE插画</div>
-      </template>
-      <template #default>
-        <div class="content">
-          <div class="home" @click="goHome">首页</div>
-          <div class="r18">
-            <div class="text">NSFW</div>
-            <el-switch
-              v-model="isNSFW"
-              size="large"
-              change="isNSFW = !isNSFW"
-              :active-action-icon="View"
-              :inactive-action-icon="Hide"
-            />
-          </div>
-          <div class="dark">
-            <div class="text">夜间模式</div>
-            <el-switch
-              v-model="isDark"
-              size="large"
-              change="isDark = !isDark"
-              :active-action-icon="Moon"
-              :inactive-action-icon="Sunny"
-            />
-          </div>
-          <div class="logout">
-            <el-button type="primary" size="large" @click="logoutClick">登出</el-button>
-          </div>
+  <div class="menuDrawer">
+    <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
+      <template #menuHeader> YULE插画 </template>
+      <template #switch>
+        <div class="r18">
+          <div class="text">NSFW</div>
+          <el-switch
+            v-model="isNSFW"
+            size="large"
+            change="isNSFW = !isNSFW"
+            :active-action-icon="View"
+            :inactive-action-icon="Hide"
+          />
+        </div>
+        <div class="dark">
+          <div class="text">夜间模式</div>
+          <el-switch
+            v-model="isDark"
+            size="large"
+            change="isDark = !isDark"
+            :active-action-icon="Moon"
+            :inactive-action-icon="Sunny"
+          />
         </div>
       </template>
-    </el-drawer>
+      <template #menuDefault>
+        <div class="home" @click="goHome">首页</div>
+      </template>
+    </MenuDrawer>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
-import searchImg from '@/assets/img/搜索.png'
-import closeImg from '@/assets/img/关闭.png'
 import useVip from '@/sotre/module/vip'
 import myCache from '@/utils/cacheStorage'
+import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
+import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 
 const input1 = ref('')
 // 点击搜索
@@ -131,11 +125,6 @@ onMounted(() => {
 // 回到首页
 const goHome = () => {
   router.push('/')
-}
-// 用户登出
-const logoutClick = () => {
-  myCache.remove('userInfo')
-  router.replace('/login')
 }
 </script>
 
@@ -208,47 +197,14 @@ const logoutClick = () => {
     }
   }
 }
-.menu {
-  :deep(.el-drawer) {
-    background-color: var(--comics-bg-color);
-    .el-drawer__close-btn {
-      color: var(--comics-menuText-color);
-    }
-  }
-  color: var(--comics-menuText-color);
-  .menuTitle {
-    flex: 3;
-    text-align: start;
-    color: var(--comics-headerTitle-color);
-    margin-left: 10px;
-    font-size: 28px;
-    font-weight: 700;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  }
-  .content {
-    .home {
-      font-size: 22px;
-      font-weight: 400;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #999;
-    }
-    .r18,
-    .dark {
-      font-size: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .logout {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #999;
-      .el-button {
-        width: 100%;
-      }
-    }
+.menuDrawer {
+  .r18,
+  .dark {
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
   }
 }
 </style>
