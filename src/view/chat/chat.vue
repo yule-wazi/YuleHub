@@ -33,10 +33,10 @@ import useAgent from '@/sotre/module/agent'
 import useVip from '@/sotre/module/vip'
 import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
+import { storeToRefs } from 'pinia'
 const agentStore = useAgent()
 const vipStore = useVip()
 const users = agentStore.users
-const activeIndex = ref(0)
 // 检测角色等级
 const userInfo = myCache.get('userInfo')
 if (userInfo.role) {
@@ -45,14 +45,19 @@ if (userInfo.role) {
   vipStore.isVip = false
 }
 // 清除之前users列表
-agentStore.users.length = 0
+// agentStore.users.length = 0
+
 // 根据角色动态插入agent
-allUsers.forEach((item) => {
-  if (!item.isVip || (item.isVip && vipStore.isVip)) {
-    agentStore.users.push(item)
-  }
-})
+if (!agentStore.users.length) {
+  allUsers.forEach((item) => {
+    if (!item.isVip || (item.isVip && vipStore.isVip)) {
+      agentStore.users.push(item)
+    }
+  })
+}
+
 // 用户点击
+const { activeIndex } = storeToRefs(agentStore)
 const userClick = (userName, index, image) => {
   activeIndex.value = index
   agentStore.currentUser = userName
