@@ -4,6 +4,7 @@ const KEYPREFIX = 'PINIA:STATE:'
 
 export default (context) => {
   const { store } = context
+  if(store.$id !== 'agent') return
   const KEY = KEYPREFIX + store.$id
   // 存
   window.addEventListener('beforeunload', () => {
