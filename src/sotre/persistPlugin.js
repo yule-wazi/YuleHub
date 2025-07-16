@@ -4,12 +4,21 @@ const KEYPREFIX = 'PINIA:STATE:'
 
 export default (context) => {
   const { store } = context
+  // 判断是否存储
+  const isMemory = myCache.get('isMemory')
+  console.log('isMemory=',isMemory)
+  if(!isMemory) {
+    console.log('清除')
+    myCache.remove('PINIA:STATE:agent')
+    return;
+  }
+  // 只对agent进行存储
   if(store.$id !== 'agent') return
   const KEY = KEYPREFIX + store.$id
+
   // 存
-  window.addEventListener('beforeunload', () => {
-    myCache.set(KEY, store.$state)
-    console.log('存储state!')
+  store.$subscribe((mutation, state) => {
+    myCache.set(KEY, state)
   })
   // // 取
   try {

@@ -11,6 +11,7 @@
         />
       </template>
       <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">插画</div>
+      <div class="menu" @click="drawer = true">菜单</div>
       <div class="logout" @click="logoutClick">登出</div>
     </div>
     <div
@@ -21,11 +22,31 @@
     >
       <ChatPage :title="agentStore.currentUser" />
     </div>
+    <div class="menuDrawer">
+      <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
+        <template #menuHeader> AI聊天室 </template>
+        <template #switch>
+          <div class="memory">
+            <div class="text">记忆存储</div>
+            <el-switch
+              v-model="isMemory"
+              size="large"
+              change="isMemory = !isMemory"
+              :active-action-icon="Check"
+              :inactive-action-icon="Close"
+            />
+          </div>
+        </template>
+        <template #menuDefault>
+          <div class="home" @click="comicsClick">插画</div>
+        </template>
+      </MenuDrawer>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
@@ -34,6 +55,9 @@ import useVip from '@/sotre/module/vip'
 import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
+import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
+import { Close, Check } from '@element-plus/icons-vue'
+
 const agentStore = useAgent()
 const vipStore = useVip()
 const users = agentStore.users
@@ -73,12 +97,17 @@ const logoutClick = () => {
 const comicsClick = () => {
   router.push('/comics')
 }
-// 展示vip图片
-if (!vipStore.isFetch) {
-  const usersUID = myCache.get('usersUID')
-  // 默认展示wlop作品
-  // vipStore.fetchImgList(usersUID ?? 2188232)
-}
+// 打开菜单
+const drawer = ref(false)
+// 记忆功能
+const isMemory = ref(myCache.get('isMemory') ?? false)
+watch(
+  isMemory,
+  () => {
+    myCache.set('isMemory', isMemory.value)
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>
@@ -104,6 +133,7 @@ if (!vipStore.isFetch) {
     min-width: 70px;
     height: 100%;
     background-color: #282828;
+    .menu,
     .logout,
     .comics {
       position: fixed;
@@ -123,6 +153,10 @@ if (!vipStore.isFetch) {
     .comics {
       left: 50px;
       background-color: #0096fa;
+    }
+    .menu {
+      left: 100px;
+      background-color: var(--primary-color);
     }
     @media (max-width: 1000px) {
       position: fixed;
@@ -148,6 +182,15 @@ if (!vipStore.isFetch) {
   }
   .active {
     background-color: #5c5ad87d;
+  }
+  .menuDrawer {
+    .memory {
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
   }
 }
 </style>
