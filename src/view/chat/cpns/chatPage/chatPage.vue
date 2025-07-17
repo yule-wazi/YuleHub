@@ -119,7 +119,7 @@ const aiResponse = async (inputValue, userName) => {
     isMe: false,
     image: userImg,
     audioSrc: audioSrcCache,
-    content: contentRef.value,
+    contentElem: contentRef.value,
     audioDuration: audioDuration,
   })
   // 判断是否为聊群

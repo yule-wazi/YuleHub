@@ -9,7 +9,7 @@ export function updateMessage({
   message,
   image,
   audioSrc,
-  content,
+  contentElem,
   audioDuration,
   chunk,
 }) {
@@ -28,13 +28,13 @@ export function updateMessage({
   const currentIndex = targetUser.message.length - 1
   let currentMessage = targetUser.message[currentIndex]
   // 将信息请求处理存入message
-  chatWithDZMMAI(currentMessage, messageList)
+  chatWithDZMMAI(currentMessage, messageList, contentElem)
 
   // audioDuration.value = message.length * delay
   // showText(currentMessage, message, content)
 }
 // 流式输出
-async function chatWithDZMMAI(currentMessage, messageList) {
+async function chatWithDZMMAI(currentMessage, messageList, contentElem) {
   try {
     const requestBody = {
       model: 'nalang-turbo-v19',
@@ -78,6 +78,9 @@ async function chatWithDZMMAI(currentMessage, messageList) {
             if (jsonData.choices?.[0]?.delta?.content) {
               const content = jsonData.choices[0].delta.content
               currentMessage.message = formatLightOutput(currentMessage.message + content)
+              nextTick(() => {
+                contentElem.scrollTop = contentElem.scrollHeight
+              })
             }
           } catch (e) {
             if (line.trim()) {
