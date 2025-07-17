@@ -3,12 +3,13 @@ import { postAgent, textToAudio } from '@/service/module/agents'
 import { formatInputMessage } from '@/utils/chatToAgent'
 import { createAudio } from '@/utils/createAudio'
 import audioConfig from '../agentAudioConfig'
+import allUsers from '../agentUsersConfig'
 
 const useAgent = defineStore('agent', {
   state: () => {
     return {
-      currentUser: '和睦一家人',
-      backgroundImg: '/userImg/bgImg.png',
+      currentUser: allUsers[0].userName,
+      backgroundImg: allUsers[0].image,
       isPlay: true,
       isMute: true,
       audioDuration: 0,

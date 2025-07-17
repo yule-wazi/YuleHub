@@ -6,9 +6,7 @@ export default (context) => {
   const { store } = context
   // 判断是否存储
   const isMemory = myCache.get('isMemory')
-  console.log('isMemory=',isMemory)
   if(!isMemory) {
-    console.log('清除')
     myCache.remove('PINIA:STATE:agent')
     return;
   }

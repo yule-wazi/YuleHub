@@ -80,6 +80,7 @@ if (!agentStore.users.length) {
   })
 }
 
+
 // 用户点击
 const { activeIndex } = storeToRefs(agentStore)
 const userClick = (userName, index, image) => {

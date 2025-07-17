@@ -5,7 +5,9 @@
     </div>
     <div ref="contentRef" class="content">
       <template v-for="(item, index) in targetUser.message" :key="index">
-        <MessageShow :messageInfo="item" />
+        <template v-if="item.message">
+          <MessageShow :messageInfo="item" />
+        </template>
       </template>
     </div>
     <div class="inputArea" @click="inputAreaClick" @keydown.enter="btnClick()">
@@ -39,7 +41,7 @@ import {
 import { playAudio } from '@/utils/createAudio'
 import { updateMessage } from '@/utils/pushMessage'
 import { storeToRefs } from 'pinia'
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 defineProps({
   title: {
@@ -78,7 +80,7 @@ const btnClick = () => {
     const content = contentRef.value
     content.scrollTop = content.scrollHeight
   })
-
+  // 清空输入框
   inputRef.value.value = ''
   // 跟AI交互&&判断是否为群聊
   const currentUserName = targetUser.value.userName
@@ -97,24 +99,24 @@ const btnClick = () => {
   }
 }
 // AI交互逻辑
+const messageText = ref('') //流式对话内容
 const aiResponse = async (inputValue, userName) => {
+  messageText.value = ''
   const { audioDuration } = storeToRefs(agentStore)
   const userImg = users.value.find((item) => item.userName === userName).image
-  const res = await agentStore.chatToAgent(inputValue, userName)
+  // const res = await agentStore.chatToAgent(inputValue, userName)
   let audioSrcCache = ''
+  // 插入语音模型
   if (!isMute.value) {
-    // 插入语音模型
     const [audioElem, audioSrc] = await agentStore.audioToAgent(formatOutPutMessage(res), userName)
     audioSrcCache = audioSrc
     // 播放音频&获取时长
     audioDuration.value = await playAudio(audioElem)
   }
-  // 塞入智能体消息队列
-  const [pushMessage, emotion] = formatOutPutMessage(res)
+
   updateMessage({
     targetUser: targetUser.value,
     isMe: false,
-    message: pushMessage,
     image: userImg,
     audioSrc: audioSrcCache,
     content: contentRef.value,
@@ -132,6 +134,71 @@ const aiResponse = async (inputValue, userName) => {
     }, audioDuration.value)
   }
 }
+
+// 流式输出
+async function chatWithDZMMAI(messages) {
+  try {
+    const requestBody = {
+      model: 'nalang-v17-2',
+      messages,
+      stream: true,
+      temperature: 0.7,
+      max_tokens: 800,
+      top_p: 0.35,
+      repetition_penalty: 1.05,
+    }
+    const response = await fetch(
+      'https://www.gpt4novel.com/api/xiaoshuoai/ext/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer 4babcc2c-e859-4cb2-9d9d-11f0b354ed4e',
+        },
+        body: JSON.stringify(requestBody),
+      },
+    )
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const decoder = new TextDecoder()
+    let buffer = ''
+    for await (const chunk of response.body) {
+      buffer += decoder.decode(chunk, { stream: true })
+      let newlineIndex
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newlineIndex)
+        buffer = buffer.slice(newlineIndex + 1)
+        if (line.startsWith('data: ')) {
+          try {
+            const jsonData = JSON.parse(line.slice(6).trim())
+            if (jsonData.completed) {
+              console.log('Stream completed:', jsonData.completed)
+              return
+            }
+            if (jsonData.choices?.[0]?.delta?.content) {
+              const content = jsonData.choices[0].delta.content
+              messageText.value += content
+              // console.log('content=', content)
+            }
+          } catch (e) {
+            if (line.trim()) {
+              console.error('Error parsing JSON:', e)
+            }
+          }
+        }
+      }
+    }
+    console.log('messageText.value=', messageText.value)
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+// 使用示例
+const messages = [
+  { role: 'system', content: '你是一个有帮助的AI助手。' },
+  { role: 'user', content: '你好,请介绍一下自己。' },
+]
 </script>
 
 <style scoped>
