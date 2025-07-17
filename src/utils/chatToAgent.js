@@ -12,7 +12,7 @@ export function formatOutputMessageToAgent(userName, message) {
   newMessage = newMessage.replace(pattern, '')
   return newMessage
 }
-// 格式化输出(展示)
+// 格式化输出(展示)(弃用)
 export function formatOutPutMessage(message) {
   const pattern = /t.*?\|/
   const emotionReg = /\[(.*?)\]/g
@@ -29,6 +29,10 @@ export function formatOutPutMessage(message) {
   })
   return [newMessage, emotion]
 }
+// 新-格式化输出
+export function formatLightOutput(text) {
+  return text.replace(/\*/g, '').replace(/"([^"]*)"/g, '<span class=chat>“$1”</span>')
+}
 // 对内容进行审查
 export function checkContentFirstName(message) {
   const agentStore = useAgent()
@@ -44,4 +48,3 @@ export function checkContentFirstName(message) {
   }
   return undefined
 }
-

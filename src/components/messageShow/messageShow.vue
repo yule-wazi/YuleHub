@@ -60,7 +60,7 @@ const playAudioClick = () => {
     position: relative;
     max-width: 90%;
     .text {
-      background-color: #6666668f;
+      background-color: #666666ed;
       border: 1px solid #aaa;
       color: #fff;
       line-height: 40px;
@@ -100,7 +100,7 @@ const playAudioClick = () => {
   justify-content: end;
   .message {
     .text {
-      background-color: #6666668f;
+      background-color: #666666ed;
     }
   }
 }
@@ -119,5 +119,8 @@ const playAudioClick = () => {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+:deep(.chat) {
+  color: #f59e0b;
 }
 </style>

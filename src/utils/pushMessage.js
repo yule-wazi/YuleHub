@@ -1,4 +1,5 @@
 import { nextTick } from 'vue'
+import { formatLightOutput } from './chatToAgent'
 const DZMMAGENT_TOKEN = '' /*电子魅魔API-Key*/ || import.meta.env.VITE_DZMMAGENT_TOKEN
 
 const delay = 0
@@ -76,7 +77,7 @@ async function chatWithDZMMAI(currentMessage, messageList) {
             }
             if (jsonData.choices?.[0]?.delta?.content) {
               const content = jsonData.choices[0].delta.content
-              currentMessage.message += content
+              currentMessage.message = formatLightOutput(currentMessage.message + content)
             }
           } catch (e) {
             if (line.trim()) {
