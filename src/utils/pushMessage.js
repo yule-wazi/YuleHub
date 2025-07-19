@@ -1,7 +1,8 @@
 import { nextTick } from 'vue'
-import { formatLightOutput } from './chatToAgent'
-const DZMMAGENT_TOKEN = '' /*电子魅魔API-Key*/ || import.meta.env.VITE_DZMMAGENT_TOKEN
-
+import { formatAudioMessage } from './formatOutput'
+import { postDZMMAgent } from '@/service/module/agents'
+import useAgent from '@/sotre/module/agent'
+import { playAudio } from './createAudio'
 const delay = 0
 export function updateMessage({
   targetUser,
@@ -11,52 +12,52 @@ export function updateMessage({
   audioSrc,
   contentElem,
   audioDuration,
-  chunk,
+  getAudio,
 }) {
-  let messageList = targetUser.message.map((item) => {
+  // 获取输入对话内容（对话次数关系到输入Token）
+  let limitLengthMessage = takeLimitLengthMessage(targetUser.message, 10)
+  let messageList = limitLengthMessage.map((item) => {
     if (item.description) {
       return { role: 'system', content: item.description }
     }
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
+
   targetUser.message.push({
     isMe,
     message: '',
     image,
-    audioSrc,
+    audioSrc: '',
   })
   const currentIndex = targetUser.message.length - 1
   let currentMessage = targetUser.message[currentIndex]
   // 将信息请求处理存入message
-  chatWithDZMMAI(currentMessage, messageList, contentElem)
+  chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser)
 
   // audioDuration.value = message.length * delay
   // showText(currentMessage, message, content)
 }
-// 流式输出
-async function chatWithDZMMAI(currentMessage, messageList, contentElem) {
+// 拿取指定长度对话内容
+function takeLimitLengthMessage(messageList, length = 100) {
+  const firstMessage = messageList.slice(0, 1)
+  const limitLengthMessage = messageList.slice(-length)
+  const combined = [...firstMessage, ...limitLengthMessage]
+  return [...new Set(combined)]
+}
+// 发出请求&流式输出
+async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser) {
   try {
     const requestBody = {
-      model: 'nalang-turbo-v19',
+      model: 'nalang-turbo-v23',
       messages: messageList,
       stream: true,
       temperature: 0.7,
-      max_tokens: 800,
+      max_tokens: 10000,
       top_p: 0.35,
       repetition_penalty: 1.05,
     }
-
-    const response = await fetch(
-      'https://www.gpt4novel.com/api/xiaoshuoai/ext/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${DZMMAGENT_TOKEN}`,
-        },
-        body: JSON.stringify(requestBody),
-      },
-    )
+    // ai网络请求
+    const response = await postDZMMAgent(requestBody)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -77,7 +78,7 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem) {
             }
             if (jsonData.choices?.[0]?.delta?.content) {
               const content = jsonData.choices[0].delta.content
-              currentMessage.message = formatLightOutput(currentMessage.message + content)
+              currentMessage.message += content
               nextTick(() => {
                 contentElem.scrollTop = contentElem.scrollHeight
               })
@@ -89,6 +90,17 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem) {
           }
         }
       }
+    }
+    // 判断是否生成语音
+    if (getAudio) {
+      const agentStore = useAgent()
+      const [audioElem, audioSrc] = await agentStore.audioToAgent(
+        formatAudioMessage(currentMessage.message),
+        targetUser.userName,
+      )
+      currentMessage.audioSrc = audioSrc
+      // 播放音频
+      await playAudio(audioElem)
     }
   } catch (error) {
     console.error('Error:', error)

@@ -35,9 +35,10 @@ import MessageShow from '@/components/messageShow/messageShow.vue'
 import useAgent from '@/sotre/module/agent'
 import {
   checkContentFirstName,
+  formatAudioMessage,
   formatOutPutMessage,
   formatOutputMessageToAgent,
-} from '@/utils/chatToAgent'
+} from '@/utils/formatOutput'
 import { playAudio } from '@/utils/createAudio'
 import { updateMessage } from '@/utils/pushMessage'
 import { storeToRefs } from 'pinia'
@@ -106,14 +107,7 @@ const aiResponse = async (inputValue, userName) => {
   const userImg = users.value.find((item) => item.userName === userName).image
   // const res = await agentStore.chatToAgent(inputValue, userName)
   let audioSrcCache = ''
-  // 插入语音模型
-  if (!isMute.value) {
-    const [audioElem, audioSrc] = await agentStore.audioToAgent(formatOutPutMessage(res), userName)
-    audioSrcCache = audioSrc
-    // 播放音频&获取时长
-    audioDuration.value = await playAudio(audioElem)
-  }
-
+  // AI返回对话
   updateMessage({
     targetUser: targetUser.value,
     isMe: false,
@@ -121,6 +115,7 @@ const aiResponse = async (inputValue, userName) => {
     audioSrc: audioSrcCache,
     contentElem: contentRef.value,
     audioDuration: audioDuration,
+    getAudio: !isMute.value,
   })
   // 判断是否为聊群
   if (agentStore.currentUser === '和睦一家人' && audioDuration.value >= 0) {

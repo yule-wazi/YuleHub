@@ -2,7 +2,7 @@
   <div class="messageShow" :class="{ isMe: messageInfo.isMe }">
     <template v-if="messageInfo.isMe">
       <div class="message">
-        <div class="text" v-html="messageInfo.message"></div>
+        <div class="text" v-html="showMessage"></div>
       </div>
       <div class="image">
         <img :src="messageInfo.image" alt="" />
@@ -13,7 +13,7 @@
         <img :src="messageInfo.image" alt="" />
       </div>
       <div class="message">
-        <div class="text" v-html="messageInfo.message"></div>
+        <div class="text" v-html="showMessage"></div>
         <div class="audio" @click="playAudioClick">
           <img class="audioImg" src="@/assets/img/audio.png" alt="" />
         </div>
@@ -23,7 +23,9 @@
 </template>
 
 <script setup>
+import { formatLightOutput } from '@/utils/formatOutput'
 import { createAudio, playAudio } from '@/utils/createAudio'
+import { ref, watchEffect } from 'vue'
 
 const props = defineProps({
   messageInfo: {
@@ -31,6 +33,18 @@ const props = defineProps({
     default: {},
   },
 })
+// 对话高亮处理
+const showMessage = ref('')
+watchEffect(() => {
+  showMessage.value = formatLightOutput(props.messageInfo.message)
+  // console.log(
+  //   'showMessage.value=',
+  //   showMessage.value,
+  //   'props.messageInfo.message=',
+  //   props.messageInfo.message,
+  // )
+})
+
 const playAudioClick = () => {
   const audioElem = createAudio(props.messageInfo.audioSrc)
   playAudio(audioElem)
@@ -60,12 +74,13 @@ const playAudioClick = () => {
     position: relative;
     max-width: 90%;
     .text {
-      background-color: #666666ed;
+      background-color: #393636;
       border: 1px solid #aaa;
       color: #fff;
-      line-height: 40px;
+      line-height: 30px;
       word-wrap: break-word;
-      font-size: 18px;
+      font-size: 17px;
+      text-align: justify;
       margin: 0 5px 35px;
       padding: 0 8px;
       border-radius: 8px;
@@ -100,7 +115,7 @@ const playAudioClick = () => {
   justify-content: end;
   .message {
     .text {
-      background-color: #666666ed;
+      background-color: #393636;
     }
   }
 }

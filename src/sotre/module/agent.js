@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { postAgent, textToAudio } from '@/service/module/agents'
-import { formatInputMessage } from '@/utils/chatToAgent'
+import { formatInputMessage } from '@/utils/formatOutput'
 import { createAudio } from '@/utils/createAudio'
 import audioConfig from '../agentAudioConfig'
 import allUsers from '../agentUsersConfig'
@@ -11,7 +11,7 @@ const useAgent = defineStore('agent', {
       currentUser: allUsers[0].userName,
       backgroundImg: allUsers[0].image,
       isPlay: true,
-      isMute: true,
+      isMute: false,
       audioDuration: 0,
       activeIndex: 0,
       users: [],
@@ -42,11 +42,12 @@ const useAgent = defineStore('agent', {
           })
       })
     },
-    audioToAgent([message, emotion], userName) {
+    audioToAgent(message, userName) {
+      console.log('message=', message)
+      if (!message) return
       // 查找目标智能体配置
       const targetConfig = audioConfig.find((item) => item.userName === userName).data
       targetConfig.text = message
-      targetConfig.voice_setting.emotion = emotion || 'disgusted'
       return new Promise((resolve, reject) => {
         textToAudio(targetConfig)
           .then((res) => {
