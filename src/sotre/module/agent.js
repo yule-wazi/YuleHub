@@ -4,6 +4,7 @@ import { formatInputMessage } from '@/utils/formatOutput'
 import { createAudio } from '@/utils/createAudio'
 import audioConfig from '../agentAudioConfig'
 import allUsers from '../agentUsersConfig'
+const DZMMAGENT_TOKEN = '' /*电子魅魔API-Key*/ || import.meta.env.VITE_DZMMAGENT_TOKEN
 
 const useAgent = defineStore('agent', {
   state: () => {
@@ -11,9 +12,10 @@ const useAgent = defineStore('agent', {
       currentUser: allUsers[0].userName,
       backgroundImg: allUsers[0].image,
       isPlay: true,
-      isMute: false,
+      isMute: true,
       audioDuration: 0,
       activeIndex: 0,
+      aiTokenList: JSON.parse(DZMMAGENT_TOKEN),
       users: [],
     }
   },

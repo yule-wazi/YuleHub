@@ -16,12 +16,12 @@ export function postAgent(data, url) {
 }
 
 // DZMMai
-export function postDZMMAgent(requestBody) {
+export function postDZMMAgent(requestBody, firstToken) {
   return fetch('https://www.gpt4novel.com/api/xiaoshuoai/ext/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${DZMMAGENT_TOKEN}`,
+      Authorization: `Bearer ${firstToken}`,
     },
     body: JSON.stringify(requestBody),
   })

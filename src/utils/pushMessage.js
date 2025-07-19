@@ -57,7 +57,9 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
       repetition_penalty: 1.05,
     }
     // ai网络请求
-    const response = await postDZMMAgent(requestBody)
+    const agentStore = useAgent()
+    const firstToken = agentStore.aiTokenList[0]
+    const response = await postDZMMAgent(requestBody, firstToken)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -72,8 +74,16 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
         if (line.startsWith('data: ')) {
           try {
             const jsonData = JSON.parse(line.slice(6).trim())
-            if (jsonData.completed) {
-              console.log('Stream completed:', jsonData.completed)
+            if (jsonData.error) {
+              console.log('积分不足', jsonData.error)
+              // 弹出多余消息
+              console.log('targetUser.message=',targetUser.message)
+              targetUser.message.splice(-2, 2)
+              console.log('targetUser.message=',targetUser.message)
+              // 转换token
+              agentStore.aiTokenList.shift()
+              agentStore.aiTokenList.push(firstToken)
+              console.log("转换token",agentStore.aiTokenList)
               return
             }
             if (jsonData.choices?.[0]?.delta?.content) {
@@ -93,7 +103,6 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
     }
     // 判断是否生成语音
     if (getAudio) {
-      const agentStore = useAgent()
       const [audioElem, audioSrc] = await agentStore.audioToAgent(
         formatAudioMessage(currentMessage.message),
         targetUser.userName,
