@@ -89,9 +89,9 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
             if (jsonData.choices?.[0]?.delta?.content) {
               const content = jsonData.choices[0].delta.content
               currentMessage.message += content
-              nextTick(() => {
-                contentElem.scrollTop = contentElem.scrollHeight
-              })
+              // nextTick(() => {
+              //   contentElem.scrollTop = contentElem.scrollHeight
+              // })
             }
           } catch (e) {
             if (line.trim()) {

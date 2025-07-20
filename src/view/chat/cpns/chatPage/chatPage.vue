@@ -3,12 +3,17 @@
     <div class="header">
       <div class="title">{{ title }}</div>
     </div>
-    <div ref="contentRef" class="content">
+    <div ref="contentRef" class="content" @scroll="throttleScroll">
       <template v-for="(item, index) in targetUser.message" :key="index">
         <template v-if="item.message">
           <MessageShow :messageInfo="item" />
         </template>
       </template>
+      <Transition>
+        <div v-if="showGoBackButton" class="backBottom" @click="goBackBottom(contentRef)">
+          <el-icon size="35" color="#fff"><Bottom /></el-icon>
+        </div>
+      </Transition>
     </div>
     <div class="inputArea" @click="inputAreaClick" @keydown.enter="btnClick()">
       <div class="question">
@@ -31,25 +36,42 @@
 </template>
 
 <script setup>
-import MessageShow from '@/components/messageShow/messageShow.vue'
-import useAgent from '@/sotre/module/agent'
-import {
-  checkContentFirstName,
-  formatAudioMessage,
-  formatOutPutMessage,
-  formatOutputMessageToAgent,
-} from '@/utils/formatOutput'
-import { playAudio } from '@/utils/createAudio'
-import { updateMessage } from '@/utils/pushMessage'
-import { storeToRefs } from 'pinia'
 import { computed, nextTick, ref, watch } from 'vue'
-
+import MessageShow from '@/components/messageShow/messageShow.vue'
+import { storeToRefs } from 'pinia'
+import useAgent from '@/sotre/module/agent'
+import { checkContentFirstName, formatOutputMessageToAgent } from '@/utils/formatOutput'
+import { updateMessage } from '@/utils/pushMessage'
+import { throttle } from '@/utils/throttle'
+import { Bottom } from '@element-plus/icons-vue'
 defineProps({
   title: {
     type: String,
     default: '',
   },
 })
+
+const showGoBackButton = ref(true)
+// 展示回到底部按钮
+const isShowGoBackButton = (e) => {
+  const content = e.target
+  if (content.scrollHeight - content.scrollTop - content.offsetHeight > 100) {
+    showGoBackButton.value = true
+  } else {
+    showGoBackButton.value = false
+  }
+}
+const throttleScroll = throttle(isShowGoBackButton, 200)
+
+// 回到底部
+const goBackBottom = (contentRef) => {
+  const content = contentRef
+  content.scrollTo({
+    top: content.scrollHeight,
+    behavior: 'smooth',
+  })
+}
+
 const agentStore = useAgent()
 // 监听是否继续输出
 const { isPlay, isMute } = storeToRefs(agentStore)
@@ -105,7 +127,6 @@ const aiResponse = async (inputValue, userName) => {
   messageText.value = ''
   const { audioDuration } = storeToRefs(agentStore)
   const userImg = users.value.find((item) => item.userName === userName).image
-  // const res = await agentStore.chatToAgent(inputValue, userName)
   let audioSrcCache = ''
   // AI返回对话
   updateMessage({
@@ -127,66 +148,6 @@ const aiResponse = async (inputValue, userName) => {
       }
       audioDuration.value = 0
     }, audioDuration.value)
-  }
-}
-
-// 流式输出
-async function chatWithDZMMAI(messages) {
-  try {
-    const requestBody = {
-      model: 'nalang-v17-2',
-      messages,
-      stream: true,
-      temperature: 0.7,
-      max_tokens: 800,
-      top_p: 0.35,
-      repetition_penalty: 1.05,
-    }
-    const response = await fetch(
-      'https://www.gpt4novel.com/api/xiaoshuoai/ext/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer 4babcc2c-e859-4cb2-9d9d-11f0b354ed4e',
-        },
-        body: JSON.stringify(requestBody),
-      },
-    )
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-    const decoder = new TextDecoder()
-    let buffer = ''
-    for await (const chunk of response.body) {
-      buffer += decoder.decode(chunk, { stream: true })
-      let newlineIndex
-      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-        const line = buffer.slice(0, newlineIndex)
-        buffer = buffer.slice(newlineIndex + 1)
-        if (line.startsWith('data: ')) {
-          try {
-            const jsonData = JSON.parse(line.slice(6).trim())
-            if (jsonData.completed) {
-              console.log('Stream completed:', jsonData.completed)
-              return
-            }
-            if (jsonData.choices?.[0]?.delta?.content) {
-              const content = jsonData.choices[0].delta.content
-              messageText.value += content
-              // console.log('content=', content)
-            }
-          } catch (e) {
-            if (line.trim()) {
-              console.error('Error parsing JSON:', e)
-            }
-          }
-        }
-      }
-    }
-    console.log('messageText.value=', messageText.value)
-  } catch (error) {
-    console.error('Error:', error)
   }
 }
 // 使用示例
@@ -220,6 +181,32 @@ const messages = [
     width: 100%;
     overflow: auto;
     flex: 1;
+    .backBottom {
+      position: fixed;
+      bottom: 180px;
+      left: 1200px;
+      width: 35px;
+      height: 35px;
+      padding: 5px;
+      background-color: transparent;
+      border: 2px #aaa solid;
+      border-radius: 50%;
+      transition: all 0.1s;
+      @media (max-width: 1000px) {
+        left: 10px;
+        bottom: 100px;
+      }
+    }
+    .v-enter-from,
+    .v-leave-to {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .v-leave-from,
+    .v-enter-to {
+      opacity: 1;
+      transform: translateY(20px);
+    }
     &::-webkit-scrollbar {
       width: 8px;
     }

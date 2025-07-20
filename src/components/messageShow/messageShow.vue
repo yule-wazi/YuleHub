@@ -37,12 +37,12 @@ const props = defineProps({
 const showMessage = ref('')
 watchEffect(() => {
   showMessage.value = formatSpecialOutput(props.messageInfo.message)
-  console.log(
-    'showMessage.value=',
-    showMessage.value,
-    'props.messageInfo.message=',
-    props.messageInfo.message,
-  )
+  // console.log(
+  //   'showMessage.value=',
+  //   showMessage.value,
+  //   'props.messageInfo.message=',
+  //   props.messageInfo.message,
+  // )
 })
 
 const playAudioClick = () => {
