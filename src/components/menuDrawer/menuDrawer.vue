@@ -11,6 +11,9 @@
           <div class="menuDefault">
             <slot name="menuDefault"></slot>
           </div>
+          <div class="other">
+            <slot name="other"></slot>
+          </div>
           <div class="switch">
             <slot name="switch"></slot>
           </div>
@@ -76,6 +79,9 @@ const logoutClick = () => {
       margin-bottom: 10px;
       padding-bottom: 10px;
       border-bottom: 1px solid #999;
+    }
+    .other {
+      margin: 10px 0;
     }
     .logout {
       margin-top: 20px;

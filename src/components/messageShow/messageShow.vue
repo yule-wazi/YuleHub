@@ -80,14 +80,13 @@ const playAudioClick = () => {
       line-height: 30px;
       word-wrap: break-word;
       font-size: 18px;
-      @media (max-width: 1000px) {
-        font-size: 15px;
-        line-height: 25px;
-      }
       text-align: justify;
       margin: 0 5px 35px;
-      padding: 0 8px 10px;
+      padding: 8px;
       border-radius: 8px;
+      @media (max-width: 1000px) {
+        line-height: 25px;
+      }
     }
     .audio {
       position: absolute;

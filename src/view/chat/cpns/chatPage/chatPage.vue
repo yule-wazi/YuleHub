@@ -51,7 +51,7 @@ defineProps({
   },
 })
 
-const showGoBackButton = ref(true)
+const showGoBackButton = ref(false)
 // 展示回到底部按钮
 const isShowGoBackButton = (e) => {
   const content = e.target
@@ -188,7 +188,7 @@ const messages = [
       width: 35px;
       height: 35px;
       padding: 5px;
-      background-color: transparent;
+      background-color: #666666c6;
       border: 2px #aaa solid;
       border-radius: 50%;
       transition: all 0.1s;

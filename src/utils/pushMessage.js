@@ -51,10 +51,10 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
       model: 'nalang-turbo-v23',
       messages: messageList,
       stream: true,
-      temperature: 0.7,
+      temperature: 1.2,
       max_tokens: 10000,
-      top_p: 0.35,
-      repetition_penalty: 1.05,
+      top_p: 0.9,
+      repetition_penalty: 1.1,
     }
     // ai网络请求
     const agentStore = useAgent()

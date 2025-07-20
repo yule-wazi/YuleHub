@@ -25,6 +25,12 @@
     <div class="menuDrawer">
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
         <template #menuHeader> AI聊天室 </template>
+        <template #menuDefault>
+          <div class="home" @click="comicsClick">插画</div>
+        </template>
+        <template #other>
+          <div class="addUserCard" @click="centerDialogVisible = true">添加角色卡</div>
+        </template>
         <template #switch>
           <div class="memory">
             <div class="text">记忆存储</div>
@@ -37,16 +43,57 @@
             />
           </div>
         </template>
-        <template #menuDefault>
-          <div class="home" @click="comicsClick">插画</div>
-        </template>
       </MenuDrawer>
     </div>
   </div>
+  <el-dialog v-model="centerDialogVisible" title="添加角色卡" width="90vw" center>
+    <el-form ref="ruleFormRef" :model="roleForm">
+      <el-form-item prop="userName">
+        <span>角色名</span>
+        <el-input
+          v-model="roleForm.userName"
+          style="width: 100%"
+          :autosize="{ minRows: 1, maxRows: 2 }"
+          type="textarea"
+          placeholder="请输入角色名称"
+        />
+      </el-form-item>
+      <el-form-item prop="image">
+        <span>头像</span>
+        <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
+      </el-form-item>
+      <el-form-item prop="description">
+        <span>角色卡介绍</span>
+        <el-input
+          v-model="roleForm.description"
+          style="width: 100%"
+          :autosize="{ minRows: 4, maxRows: 8 }"
+          type="textarea"
+          placeholder="请输入角色介绍"
+        />
+      </el-form-item>
+      <el-form-item prop="firstMessage">
+        <span>首条消息</span>
+        <el-input
+          v-model="roleForm.firstMessage"
+          style="width: 100%"
+          :autosize="{ minRows: 4, maxRows: 8 }"
+          type="textarea"
+          placeholder="请输入角色发起的第一条消息"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="centerDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="addRoleCardConfirm"> 确定 </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
@@ -57,6 +104,14 @@ import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 import { Close, Check } from '@element-plus/icons-vue'
+import { systemPrompt } from '@/utils/systemPrompt'
+
+const roleForm = reactive({
+  userName: '',
+  image: '',
+  description: '',
+  firstMessage: '',
+})
 
 const agentStore = useAgent()
 const vipStore = useVip()
@@ -68,9 +123,6 @@ if (userInfo.role) {
 } else {
   vipStore.isVip = false
 }
-// 清除之前users列表
-// agentStore.users.length = 0
-
 // 根据角色动态插入agent
 if (!agentStore.users.length) {
   allUsers.forEach((item) => {
@@ -79,14 +131,28 @@ if (!agentStore.users.length) {
     }
   })
 }
-
-
 // 用户点击
 const { activeIndex } = storeToRefs(agentStore)
 const userClick = (userName, index, image) => {
   activeIndex.value = index
   agentStore.currentUser = userName
   agentStore.backgroundImg = image
+}
+// 添加角色卡
+const centerDialogVisible = ref(false)
+const addRoleCardConfirm = () => {
+  centerDialogVisible.value = false
+  drawer.value = false
+  const { userName, image, description, firstMessage } = roleForm
+  users.push({
+    userName,
+    image,
+    isVip: true,
+    message: [
+      { description: systemPrompt({ firstMessage, description }) },
+      { audioSrc: '', image, isMe: false, message: firstMessage },
+    ],
+  })
 }
 const router = useRouter()
 // 用户登出
@@ -119,7 +185,6 @@ watch(
   transform: translate(-50%, -50%);
   width: 75%;
   height: 85%;
-  /* margin: auto; */
   display: flex;
   background-color: #666;
   @media (max-width: 1000px) {
