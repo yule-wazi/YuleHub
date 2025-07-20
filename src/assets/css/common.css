@@ -10,7 +10,8 @@ body {
 li,
 a,
 h1,
-h2 {
+h2,
+pre {
   padding: 0;
   margin: 0;
   list-style: none;

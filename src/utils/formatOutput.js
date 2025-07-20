@@ -13,13 +13,19 @@ export function formatOutputMessageToAgent(userName, message) {
   return newMessage
 }
 // 格式化输出——高亮对话内容
-export function formatLightOutput(message) {
-  return message.replace(/\*/g, '').replace(/"([^"]*)"/g, '<span class=chat>"$1"</span>')
+export function formatSpecialOutput(message) {
+  return message
+    .replace(/\*/g, '')
+    .replace(/\n/g, `<br>`)
+    .replace(/"([^"]*)"/g, '<span class=chat>"$1"</span>') //高亮处理
+    .replace(/```([\s\S]*?)```/g, `<pre>$1</pre>`) //规则处理
 }
 // 格式化输入audio——截取对话内容
 export function formatAudioMessage(message) {
-  return message.match(/"([^"]*)"/g)?.map((item) => item.slice(1, -1)).join('。')
-
+  return message
+    .match(/"([^"]*)"/g)
+    ?.map((item) => item.slice(1, -1))
+    .join('。')
 }
 // 对内容进行审查
 export function checkContentFirstName(message) {

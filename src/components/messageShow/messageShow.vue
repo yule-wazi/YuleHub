@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { formatLightOutput } from '@/utils/formatOutput'
+import { formatSpecialOutput } from '@/utils/formatOutput'
 import { createAudio, playAudio } from '@/utils/createAudio'
 import { ref, watchEffect } from 'vue'
 
@@ -36,13 +36,13 @@ const props = defineProps({
 // 对话高亮处理
 const showMessage = ref('')
 watchEffect(() => {
-  showMessage.value = formatLightOutput(props.messageInfo.message)
-  // console.log(
-  //   'showMessage.value=',
-  //   showMessage.value,
-  //   'props.messageInfo.message=',
-  //   props.messageInfo.message,
-  // )
+  showMessage.value = formatSpecialOutput(props.messageInfo.message)
+  console.log(
+    'showMessage.value=',
+    showMessage.value,
+    'props.messageInfo.message=',
+    props.messageInfo.message,
+  )
 })
 
 const playAudioClick = () => {
@@ -79,10 +79,14 @@ const playAudioClick = () => {
       color: #fff;
       line-height: 30px;
       word-wrap: break-word;
-      font-size: 17px;
+      font-size: 18px;
+      @media (max-width: 1000px) {
+        font-size: 15px;
+        line-height: 25px;
+      }
       text-align: justify;
       margin: 0 5px 35px;
-      padding: 0 8px;
+      padding: 0 8px 10px;
       border-radius: 8px;
     }
     .audio {
@@ -137,5 +141,14 @@ const playAudioClick = () => {
 }
 :deep(.chat) {
   color: #f59e0b;
+}
+:deep(pre) {
+  padding: 5px;
+  font-weight: 700;
+  text-wrap: wrap;
+  line-height: 1.42857143;
+  color: var(--primary-color);
+  background-color: #666;
+  border-radius: 4px;
 }
 </style>
