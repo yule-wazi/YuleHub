@@ -3,7 +3,7 @@
     <template v-if="messageInfo.isMe">
       <div class="message">
         <div class="text" v-html="showMessage"></div>
-        <div class="editPen" @click="centerDialogVisible = true">
+        <div class="editPen" @click="openEditCard(true)">
           <el-icon :size="16" color="#fff"><EditPen /></el-icon>
         </div>
       </div>
@@ -17,21 +17,27 @@
       </div>
       <div class="message">
         <div class="text" v-html="showMessage"></div>
-        <div class="audio" @click="playAudioClick">
-          <img class="audioImg" src="@/assets/img/audio.png" alt="" />
+        <div class="operation">
+          <div class="audio" @click="playAudioClick">
+            <img class="audioImg" src="@/assets/img/audio.png" alt="" />
+          </div>
+          <div class="editPen" @click="openEditCard(false)">
+            <el-icon :size="16" color="#fff"><EditPen /></el-icon>
+          </div>
         </div>
       </div>
     </template>
   </div>
   <el-dialog
     v-model="centerDialogVisible"
-    title="编辑用户消息"
+    :title="editUserMessage ? '编辑用户消息' : '编辑AI回复'"
     width="90vw"
     style="max-width: 700px"
   >
     <el-input
-      v-model="showMessage"
+      v-model="changeText"
       style="width: 100%"
+      show-word-limit
       :autosize="{ minRows: 8, maxRows: 16 }"
       type="textarea"
       placeholder="请输入角色介绍"
@@ -39,7 +45,9 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="centerDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="editUserMessageConfirm"> 保存并重新生成回复 </el-button>
+        <el-button type="primary" @click="editUserMessageConfirm">
+          {{ editUserMessage ? '保存并重新生成回复' : '保存新版本' }}
+        </el-button>
       </div>
     </template>
   </el-dialog>
@@ -70,10 +78,19 @@ watchEffect(() => {
   //   props.messageInfo.message,
   // )
 })
+// 打开编辑面板
+const editUserMessage = ref(true)
+const openEditCard = (isUser) => {
+  changeText.value = props.messageInfo.message
+  editUserMessage.value = isUser
+  centerDialogVisible.value = true
+}
+const changeText = ref('')
 // 修改对话内容
 const editUserMessageConfirm = () => {
   centerDialogVisible.value = false
-  emit('sliceEmit', showMessage)
+  props.messageInfo.message = changeText.value
+  emit('sliceEmit', props.messageInfo)
 }
 // 播放音频
 const playAudioClick = () => {
@@ -142,6 +159,9 @@ const emit = defineEmits(['sliceEmit'])
         background-color: #777;
       }
     }
+    .editPen {
+      right: 40px;
+    }
     &:hover {
       .audio,
       .editPen {
@@ -155,6 +175,9 @@ const emit = defineEmits(['sliceEmit'])
   .message {
     .text {
       background-color: var(--chat-card-bg-color);
+    }
+    .editPen {
+      right: 10px;
     }
   }
 }

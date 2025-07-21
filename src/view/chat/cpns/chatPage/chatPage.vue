@@ -8,7 +8,7 @@
         <template v-if="item.message">
           <MessageShow
             :messageInfo="item"
-            @sliceEmit="(message) => sliceCurrentMessage(message, index)"
+            @sliceEmit="(messageInfo) => sliceCurrentMessage(messageInfo, index)"
           />
         </template>
       </template>
@@ -128,11 +128,13 @@ const aiResponse = async (userName) => {
   })
 }
 // 截取到当前对话
-const sliceCurrentMessage = (message, index) => {
+const sliceCurrentMessage = (messageInfo, index) => {
   const currentMessage = targetUser.value.message
-  currentMessage[index].message = message._value
+  currentMessage[index].message = messageInfo.message
   targetUser.value.message = currentMessage.slice(0, index + 1)
-  aiResponse(targetUser.value.userName)
+  if (messageInfo.isMe) {
+    aiResponse(targetUser.value.userName)
+  }
 }
 </script>
 
