@@ -14,9 +14,7 @@ export function updateMessage({
   audioDuration,
   getAudio,
 }) {
-  // 获取输入对话内容（对话次数关系到输入Token）
-  let limitLengthMessage = takeLimitLengthMessage(targetUser.message, 10)
-  let messageList = limitLengthMessage.map((item) => {
+  let messageList = targetUser.message.map((item) => {
     if (item.description) {
       return { role: 'system', content: item.description }
     }
@@ -33,16 +31,6 @@ export function updateMessage({
   let currentMessage = targetUser.message[currentIndex]
   // 将信息请求处理存入message
   chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser)
-
-  // audioDuration.value = message.length * delay
-  // showText(currentMessage, message, content)
-}
-// 拿取指定长度对话内容
-function takeLimitLengthMessage(messageList, length = 100) {
-  const firstMessage = messageList.slice(0, 1)
-  const limitLengthMessage = messageList.slice(-length)
-  const combined = [...firstMessage, ...limitLengthMessage]
-  return [...new Set(combined)]
 }
 // 发出请求&流式输出
 async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser) {
@@ -51,9 +39,9 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
       model: 'nalang-turbo-v23',
       messages: messageList,
       stream: true,
-      temperature: 1.2,
-      max_tokens: 10000,
-      top_p: 0.9,
+      temperature: 0.7,
+      max_tokens: 8000,
+      top_p: 0.4,
       repetition_penalty: 1.1,
     }
     // ai网络请求
@@ -77,13 +65,13 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
             if (jsonData.error) {
               console.log('积分不足', jsonData.error)
               // 弹出多余消息
-              console.log('targetUser.message=',targetUser.message)
+              console.log('targetUser.message=', targetUser.message)
               targetUser.message.splice(-2, 2)
-              console.log('targetUser.message=',targetUser.message)
+              console.log('targetUser.message=', targetUser.message)
               // 转换token
               agentStore.aiTokenList.shift()
               agentStore.aiTokenList.push(firstToken)
-              console.log("转换token",agentStore.aiTokenList)
+              console.log('转换token', agentStore.aiTokenList)
               return
             }
             if (jsonData.choices?.[0]?.delta?.content) {
@@ -114,21 +102,4 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
   } catch (error) {
     console.error('Error:', error)
   }
-}
-function showText(currentMessage, text, content) {
-  let index = 0
-  let timerId
-  function displayNextChar() {
-    if (index < text.length) {
-      currentMessage.message += text.charAt(index)
-      nextTick(() => {
-        content.scrollTop = content.scrollHeight
-      })
-      index++
-      timerId = setTimeout(displayNextChar, delay)
-    } else {
-      clearTimeout(timerId)
-    }
-  }
-  displayNextChar()
 }

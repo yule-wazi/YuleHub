@@ -3,6 +3,9 @@
     <template v-if="messageInfo.isMe">
       <div class="message">
         <div class="text" v-html="showMessage"></div>
+        <div class="editPen" @click="centerDialogVisible = true">
+          <el-icon :size="16" color="#fff"><EditPen /></el-icon>
+        </div>
       </div>
       <div class="image">
         <img :src="messageInfo.image" alt="" />
@@ -20,12 +23,33 @@
       </div>
     </template>
   </div>
+  <el-dialog
+    v-model="centerDialogVisible"
+    title="编辑用户消息"
+    width="90vw"
+    style="max-width: 700px"
+  >
+    <el-input
+      v-model="showMessage"
+      style="width: 100%"
+      :autosize="{ minRows: 4, maxRows: 8 }"
+      type="textarea"
+      placeholder="请输入角色介绍"
+    />
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="centerDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="editUserMessageConfirm"> 保存并重新生成回复 </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
+import { ref, watchEffect } from 'vue'
 import { formatSpecialOutput } from '@/utils/formatOutput'
 import { createAudio, playAudio } from '@/utils/createAudio'
-import { ref, watchEffect } from 'vue'
+import { EditPen } from '@element-plus/icons-vue'
 
 const props = defineProps({
   messageInfo: {
@@ -33,6 +57,8 @@ const props = defineProps({
     default: {},
   },
 })
+const centerDialogVisible = ref(false)
+
 // 对话高亮处理
 const showMessage = ref('')
 watchEffect(() => {
@@ -44,11 +70,17 @@ watchEffect(() => {
   //   props.messageInfo.message,
   // )
 })
-
+// 修改对话内容
+const editUserMessageConfirm = () => {
+  centerDialogVisible.value = false
+  emit('sliceEmit', showMessage)
+}
+// 播放音频
 const playAudioClick = () => {
   const audioElem = createAudio(props.messageInfo.audioSrc)
   playAudio(audioElem)
 }
+const emit = defineEmits(['sliceEmit'])
 </script>
 
 <style lang="less" scoped>
@@ -88,16 +120,19 @@ const playAudioClick = () => {
         line-height: 25px;
       }
     }
-    .audio {
+    .audio,
+    .editPen {
       position: absolute;
       display: none;
-      height: 20px;
-      width: 20px;
-      left: 10px;
-      bottom: 0px;
+      height: 16px;
+      width: 16px;
+      right: 10px;
+      bottom: 5px;
       padding: 5px;
+      border-bottom: 1px #fff solid;
       border-radius: 5px;
-      background-color: #555;
+      backdrop-filter: blur(8px);
+      background-color: #66666650;
       cursor: pointer;
       .audioImg {
         height: 100%;
@@ -108,7 +143,8 @@ const playAudioClick = () => {
       }
     }
     &:hover {
-      .audio {
+      .audio,
+      .editPen {
         display: block;
       }
     }

@@ -46,7 +46,13 @@
       </MenuDrawer>
     </div>
   </div>
-  <el-dialog v-model="centerDialogVisible" title="添加角色卡" width="90vw" center>
+  <el-dialog
+    v-model="centerDialogVisible"
+    title="添加角色卡"
+    width="90vw"
+    style="max-width: 700px"
+    center
+  >
     <el-form ref="ruleFormRef" :model="roleForm">
       <el-form-item prop="userName">
         <span>角色名</span>
@@ -73,7 +79,7 @@
         />
       </el-form-item>
       <el-form-item prop="firstMessage">
-        <span>首条消息</span>
+        <span>角色开场白</span>
         <el-input
           v-model="roleForm.firstMessage"
           style="width: 100%"

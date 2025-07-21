@@ -6,7 +6,10 @@
     <div ref="contentRef" class="content" @scroll="throttleScroll">
       <template v-for="(item, index) in targetUser.message" :key="index">
         <template v-if="item.message">
-          <MessageShow :messageInfo="item" />
+          <MessageShow
+            :messageInfo="item"
+            @sliceEmit="(message) => sliceCurrentMessage(message, index)"
+          />
         </template>
       </template>
       <Transition>
@@ -40,7 +43,6 @@ import { computed, nextTick, ref, watch } from 'vue'
 import MessageShow from '@/components/messageShow/messageShow.vue'
 import { storeToRefs } from 'pinia'
 import useAgent from '@/sotre/module/agent'
-import { checkContentFirstName, formatOutputMessageToAgent } from '@/utils/formatOutput'
 import { updateMessage } from '@/utils/pushMessage'
 import { throttle } from '@/utils/throttle'
 import { Bottom } from '@element-plus/icons-vue'
@@ -105,25 +107,11 @@ const btnClick = () => {
   })
   // 清空输入框
   inputRef.value.value = ''
-  // 跟AI交互&&判断是否为群聊
-  const currentUserName = targetUser.value.userName
-  if (currentUserName === '和睦一家人') {
-    const targetName = checkContentFirstName(inputValue)
-    if (targetName) {
-      aiResponse(inputValue, targetName)
-    } else {
-      for (const item of users.value) {
-        if (item.userName === '和睦一家人') continue
-        aiResponse(inputValue, item.userName)
-      }
-    }
-  } else {
-    aiResponse(inputValue, currentUserName)
-  }
+  aiResponse(targetUser.value.userName)
 }
 // AI交互逻辑
 const messageText = ref('') //流式对话内容
-const aiResponse = async (inputValue, userName) => {
+const aiResponse = async (userName) => {
   messageText.value = ''
   const { audioDuration } = storeToRefs(agentStore)
   const userImg = users.value.find((item) => item.userName === userName).image
@@ -138,23 +126,14 @@ const aiResponse = async (inputValue, userName) => {
     audioDuration: audioDuration,
     getAudio: !isMute.value,
   })
-  // 判断是否为聊群
-  if (agentStore.currentUser === '和睦一家人' && audioDuration.value >= 0) {
-    setTimeout(() => {
-      const targetName = checkContentFirstName(res)
-      if (targetName) {
-        // 对ai回复的内容进行审查是否为对第三人发出对话若是延迟递归调用aiResponse
-        aiResponse(formatOutputMessageToAgent(userName, res), targetName)
-      }
-      audioDuration.value = 0
-    }, audioDuration.value)
-  }
 }
-// 使用示例
-const messages = [
-  { role: 'system', content: '你是一个有帮助的AI助手。' },
-  { role: 'user', content: '你好,请介绍一下自己。' },
-]
+// 截取到当前对话
+const sliceCurrentMessage = (message, index) => {
+  const currentMessage = targetUser.value.message
+  currentMessage[index].message = message._value
+  targetUser.value.message = currentMessage.slice(0, index + 1)
+  aiResponse(targetUser.value.userName)
+}
 </script>
 
 <style scoped>
