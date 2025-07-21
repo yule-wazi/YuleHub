@@ -81,7 +81,7 @@ const logoutClick = () => {
       border-bottom: 1px solid #999;
     }
     .other {
-      margin: 10px 0;
+      margin: 15px 0;
     }
     .logout {
       margin-top: 20px;

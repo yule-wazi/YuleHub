@@ -1,4 +1,8 @@
 .darkMode {
+  --chat-card-bg-color: #18191c;
+  --chat-card-text-color: #ffffff;
+  --chat-card-inputBg-color: #1c1c1c;
+
   --comics-bg-color: #000;
   --comics-cardBg-color: #1f1f1f;
   --comics-cardTitle-color: #d6d6d6;
@@ -6,6 +10,4 @@
   --comics-headerIcon-color: #858585;
   --comics-headerSearchBg-color: #858585;
   --comics-menuText-color: #d6d6d6;
-
-  
 }

@@ -42,64 +42,74 @@
               :inactive-action-icon="Close"
             />
           </div>
+          <div class="dark">
+            <div class="text">夜间模式</div>
+            <el-switch
+              v-model="isDark"
+              size="large"
+              change="isDark = !isDark"
+              :active-action-icon="Moon"
+              :inactive-action-icon="Sunny"
+            />
+          </div>
         </template>
       </MenuDrawer>
     </div>
+    <el-dialog
+      v-model="centerDialogVisible"
+      title="添加角色卡"
+      width="90vw"
+      style="max-width: 700px"
+      center
+    >
+      <el-form ref="ruleFormRef" :model="roleForm">
+        <el-form-item prop="userName">
+          <span>角色名</span>
+          <el-input
+            v-model="roleForm.userName"
+            style="width: 100%"
+            :autosize="{ minRows: 1, maxRows: 2 }"
+            type="textarea"
+            placeholder="请输入角色名称"
+          />
+        </el-form-item>
+        <el-form-item prop="image">
+          <span>头像</span>
+          <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
+        </el-form-item>
+        <el-form-item prop="description">
+          <span>角色卡介绍</span>
+          <el-input
+            v-model="roleForm.description"
+            style="width: 100%"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            type="textarea"
+            placeholder="请输入角色介绍"
+          />
+        </el-form-item>
+        <el-form-item prop="firstMessage">
+          <span>角色开场白</span>
+          <el-input
+            v-model="roleForm.firstMessage"
+            style="width: 100%"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            type="textarea"
+            placeholder="请输入角色发起的第一条消息"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="centerDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="addRoleCardConfirm"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
-  <el-dialog
-    v-model="centerDialogVisible"
-    title="添加角色卡"
-    width="90vw"
-    style="max-width: 700px"
-    center
-  >
-    <el-form ref="ruleFormRef" :model="roleForm">
-      <el-form-item prop="userName">
-        <span>角色名</span>
-        <el-input
-          v-model="roleForm.userName"
-          style="width: 100%"
-          :autosize="{ minRows: 1, maxRows: 2 }"
-          type="textarea"
-          placeholder="请输入角色名称"
-        />
-      </el-form-item>
-      <el-form-item prop="image">
-        <span>头像</span>
-        <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
-      </el-form-item>
-      <el-form-item prop="description">
-        <span>角色卡介绍</span>
-        <el-input
-          v-model="roleForm.description"
-          style="width: 100%"
-          :autosize="{ minRows: 4, maxRows: 8 }"
-          type="textarea"
-          placeholder="请输入角色介绍"
-        />
-      </el-form-item>
-      <el-form-item prop="firstMessage">
-        <span>角色开场白</span>
-        <el-input
-          v-model="roleForm.firstMessage"
-          style="width: 100%"
-          :autosize="{ minRows: 4, maxRows: 8 }"
-          type="textarea"
-          placeholder="请输入角色发起的第一条消息"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="centerDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="addRoleCardConfirm"> 确定 </el-button>
-      </div>
-    </template>
-  </el-dialog>
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
@@ -109,7 +119,7 @@ import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
-import { Close, Check } from '@element-plus/icons-vue'
+import { Close, Check, Sunny, Moon } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
 
 const roleForm = reactive({
@@ -181,6 +191,20 @@ watch(
   },
   { immediate: true },
 )
+// 切换暗黑模式
+const isDark = ref(myCache.get('isDark') ?? false)
+let appElement = undefined
+onMounted(() => {
+  appElement = document.getElementById('app')
+  watch(
+    isDark,
+    () => {
+      myCache.set('isDark', isDark.value)
+      appElement.classList.toggle('darkMode', isDark.value)
+    },
+    { immediate: true },
+  )
+})
 </script>
 
 <style scoped>
@@ -256,12 +280,34 @@ watch(
     background-color: #5c5ad87d;
   }
   .menuDrawer {
-    .memory {
+    .memory,
+    .dark {
       font-size: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+    }
+  }
+}
+:deep(.el-dialog) {
+  background-color: var(--chat-card-bg-color);
+  .el-dialog__title {
+    color: var(--chat-card-text-color);
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .el-form-item__content {
+    color: var(--chat-card-text-color);
+  }
+  .el-textarea__inner {
+    background-color: var(--chat-card-inputBg-color);
+    color: var(--chat-card-text-color);
+  }
+  .el-input__wrapper {
+    background-color: var(--chat-card-inputBg-color);
+    .el-input__inner {
+      color: var(--chat-card-text-color);
     }
   }
 }

@@ -32,7 +32,7 @@
     <el-input
       v-model="showMessage"
       style="width: 100%"
-      :autosize="{ minRows: 4, maxRows: 8 }"
+      :autosize="{ minRows: 8, maxRows: 16 }"
       type="textarea"
       placeholder="请输入角色介绍"
     />
@@ -106,9 +106,9 @@ const emit = defineEmits(['sliceEmit'])
     position: relative;
     max-width: 90%;
     .text {
-      background-color: #393636;
+      background-color: var(--chat-card-bg-color);
       border: 1px solid #aaa;
-      color: #fff;
+      color: var(--chat-card-text-color);
       line-height: 30px;
       word-wrap: break-word;
       font-size: 18px;
@@ -154,7 +154,7 @@ const emit = defineEmits(['sliceEmit'])
   justify-content: end;
   .message {
     .text {
-      background-color: #393636;
+      background-color: var(--chat-card-bg-color);
     }
   }
 }

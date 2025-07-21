@@ -109,14 +109,14 @@ watch(isNSFW, () => {
 })
 // 切换暗黑模式
 const isDark = ref(myCache.get('isDark') ?? false)
-let comicsElement = undefined
+let appElement = undefined
 onMounted(() => {
-  comicsElement = document.querySelector('.comics')
+  appElement = document.getElementById('app')
   watch(
     isDark,
     () => {
       myCache.set('isDark', isDark.value)
-      comicsElement.classList.toggle('darkMode', isDark.value)
+      appElement.classList.toggle('darkMode', isDark.value)
     },
     { immediate: true },
   )
