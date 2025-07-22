@@ -46,6 +46,27 @@ const router = createRouter({
       ],
       meta: { keepAlive: false },
     },
+    {
+      path: '/noval',
+      name: 'noval',
+      meta: { keepAlive: true },
+      component: () => import('@/view/noval/noval.vue'),
+      children: [
+        {
+          path: '/noval',
+          redirect: '/noval/home',
+        },
+        {
+          path: 'home',
+          component: () => import('@/view/noval/view/home/home.vue'),
+          meta: { keepAlive: true },
+        },
+        {
+          path: 'detail',
+          component: () => import('@/view/noval/view/detail/detail.vue'),
+        },
+      ],
+    },
   ],
 })
 router.beforeEach((to) => {

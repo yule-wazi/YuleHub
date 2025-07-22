@@ -1,5 +1,5 @@
 <template>
-  <div class="comics">
+  <div class="noval">
     <headerCompoment />
     <RouterView v-slot="{ Component }">
       <KeepAlive include="home,category">
@@ -10,21 +10,11 @@
 </template>
 
 <script setup>
-import { onUnmounted } from 'vue'
 import headerCompoment from '@/components/headerComponent/headerCompoment.vue'
-import useVip from '@/sotre/module/vip'
-import { RouterView } from 'vue-router'
-
-const vipStore = useVip()
-// 移除图片
-onUnmounted(() => {
-  console.log('销毁图片列表')
-  vipStore.vipImgData = []
-})
 </script>
 
 <style lang="less" scoped>
-.comics {
+.noval {
   height: 100vh;
   width: 100%;
   overflow: auto;
@@ -37,7 +27,7 @@ onUnmounted(() => {
   @media (min-width: 800px) {
     &::-webkit-scrollbar {
       display: block;
-      width:8px;
+      width: 8px;
     }
     &::-webkit-scrollbar-thumb {
       background: #ff007a;
