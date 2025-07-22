@@ -46,6 +46,7 @@ import useAgent from '@/sotre/module/agent'
 import { updateMessage } from '@/utils/pushMessage'
 import { throttle } from '@/utils/throttle'
 import { Bottom } from '@element-plus/icons-vue'
+import myCache from '@/utils/cacheStorage'
 defineProps({
   title: {
     type: String,
@@ -93,7 +94,12 @@ const targetUser = computed(() =>
 const btnClick = () => {
   const inputValue = inputRef.value.value
   if (!inputValue) return
-
+  // 判断是否有token
+  const tokenList = myCache.get('TokenList')
+  if (!tokenList || tokenList.length === 0) {
+    ElMessage.error('尚未存入API Token')
+    return
+  }
   // "我"的消息塞入消息队列
   targetUser.value.message.push({
     isMe: true,

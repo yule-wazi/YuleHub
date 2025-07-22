@@ -15,7 +15,6 @@ const useAgent = defineStore('agent', {
       isMute: true,
       audioDuration: 0,
       activeIndex: 0,
-      aiTokenList: JSON.parse(DZMMAGENT_TOKEN),
       users: [],
     }
   },

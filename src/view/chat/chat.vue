@@ -29,7 +29,8 @@
           <div class="home" @click="comicsClick">插画</div>
         </template>
         <template #other>
-          <div class="addUserCard" @click="centerDialogVisible = true">添加角色卡</div>
+          <div class="addUserCard" @click="openEditCard(true)">添加角色卡</div>
+          <div class="apiToken" @click="openEditCard(false)">API Token</div>
         </template>
         <template #switch>
           <div class="memory">
@@ -57,46 +58,64 @@
     </div>
     <el-dialog
       v-model="centerDialogVisible"
-      title="添加角色卡"
+      :title="addUserCard ? '添加角色卡' : '管理API Token'"
       width="90vw"
       style="max-width: 700px"
       center
+      @closed="addUserCard = false"
     >
       <el-form ref="ruleFormRef" :model="roleForm">
-        <el-form-item prop="userName">
-          <span>角色名</span>
-          <el-input
-            v-model="roleForm.userName"
-            style="width: 100%"
-            :autosize="{ minRows: 1, maxRows: 2 }"
-            type="textarea"
-            placeholder="请输入角色名称"
-          />
-        </el-form-item>
-        <el-form-item prop="image">
-          <span>头像</span>
-          <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
-        </el-form-item>
-        <el-form-item prop="description">
-          <span>角色卡介绍</span>
-          <el-input
-            v-model="roleForm.description"
-            style="width: 100%"
-            :autosize="{ minRows: 4, maxRows: 8 }"
-            type="textarea"
-            placeholder="请输入角色介绍"
-          />
-        </el-form-item>
-        <el-form-item prop="firstMessage">
-          <span>角色开场白</span>
-          <el-input
-            v-model="roleForm.firstMessage"
-            style="width: 100%"
-            :autosize="{ minRows: 4, maxRows: 8 }"
-            type="textarea"
-            placeholder="请输入角色发起的第一条消息"
-          />
-        </el-form-item>
+        <template v-if="addUserCard">
+          <el-form-item prop="userName">
+            <span>角色名</span>
+            <el-input
+              v-model="roleForm.userName"
+              style="width: 100%"
+              :autosize="{ minRows: 1, maxRows: 2 }"
+              type="textarea"
+              placeholder="请输入角色名称"
+            />
+          </el-form-item>
+          <el-form-item prop="image">
+            <span>头像</span>
+            <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
+          </el-form-item>
+          <el-form-item prop="description">
+            <span>角色卡介绍</span>
+            <el-input
+              v-model="roleForm.description"
+              style="width: 100%"
+              :autosize="{ minRows: 4, maxRows: 8 }"
+              type="textarea"
+              placeholder="请输入角色介绍"
+            />
+          </el-form-item>
+          <el-form-item prop="firstMessage">
+            <span>角色开场白</span>
+            <el-input
+              v-model="roleForm.firstMessage"
+              style="width: 100%"
+              :autosize="{ minRows: 4, maxRows: 8 }"
+              type="textarea"
+              placeholder="请输入角色发起的第一条消息"
+            />
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item prop="firstMessage">
+            <span>请输入至少一个API Token</span>
+            <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
+              <template #tag="{ value }">
+                <div class="flex items-center">
+                  <el-icon class="mr-1">
+                    <Key />
+                  </el-icon>
+                  <span>{{ value }}</span>
+                </div>
+              </template>
+            </el-input-tag>
+          </el-form-item>
+        </template>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -119,7 +138,7 @@ import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
-import { Close, Check, Sunny, Moon } from '@element-plus/icons-vue'
+import { Close, Check, Sunny, Moon, Key } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
 
 const roleForm = reactive({
@@ -154,21 +173,35 @@ const userClick = (userName, index, image) => {
   agentStore.currentUser = userName
   agentStore.backgroundImg = image
 }
-// 添加角色卡
 const centerDialogVisible = ref(false)
+const addUserCard = ref(false)
+// 打开编辑模板
+const openEditCard = (isaddUser) => {
+  centerDialogVisible.value = true
+  if (isaddUser) {
+    addUserCard.value = true
+  }
+}
+const inputToken = ref(myCache.get('TokenList') ?? [])
+// 确定添加APIToken
+// 确认添加
 const addRoleCardConfirm = () => {
   centerDialogVisible.value = false
   drawer.value = false
-  const { userName, image, description, firstMessage } = roleForm
-  users.push({
-    userName,
-    image,
-    isVip: true,
-    message: [
-      { description: systemPrompt({ firstMessage, description }) },
-      { audioSrc: '', image, isMe: false, message: firstMessage },
-    ],
-  })
+  if (addUserCard.value) {
+    const { userName, image, description, firstMessage } = roleForm
+    users.push({
+      userName,
+      image,
+      isVip: true,
+      message: [
+        { description: systemPrompt({ firstMessage, description }) },
+        { audioSrc: '', image, isMe: false, message: firstMessage },
+      ],
+    })
+  } else {
+    myCache.set('TokenList', inputToken.value)
+  }
 }
 const router = useRouter()
 // 用户登出
@@ -288,6 +321,9 @@ onMounted(() => {
       align-items: center;
       margin-bottom: 10px;
     }
+    .apiToken {
+      margin: 15px 0;
+    }
   }
 }
 :deep(.el-dialog) {
@@ -308,6 +344,13 @@ onMounted(() => {
     background-color: var(--chat-card-inputBg-color);
     .el-input__inner {
       color: var(--chat-card-text-color);
+    }
+  }
+  .is-draggable {
+    background-color: var(--chat-card-inputBg-color);
+    .el-tag {
+      background-color: transparent;
+      margin: 2px;
     }
   }
 }
