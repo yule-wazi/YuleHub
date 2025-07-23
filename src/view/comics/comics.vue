@@ -1,6 +1,6 @@
 <template>
   <div class="comics">
-    <headerCompoment />
+    <headerCompoment title="YULE插画" @searchClickEmit="searchClick" />
     <RouterView v-slot="{ Component }">
       <KeepAlive include="home,category">
         <component :is="Component" />
@@ -13,7 +13,7 @@
 import { onUnmounted } from 'vue'
 import headerCompoment from '@/components/headerComponent/headerCompoment.vue'
 import useVip from '@/sotre/module/vip'
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 
 const vipStore = useVip()
 // 移除图片
@@ -21,6 +21,18 @@ onUnmounted(() => {
   console.log('销毁图片列表')
   vipStore.vipImgData = []
 })
+// 点击搜索
+const router = useRouter()
+const searchClick = (tag) => {
+  vipStore.tagName = tag
+  // 清空之前列表
+  vipStore.vipImgData = []
+  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
+  router.push({
+    path: '/comics/category',
+    query: { tag },
+  })
+}
 </script>
 
 <style lang="less" scoped>
@@ -37,7 +49,7 @@ onUnmounted(() => {
   @media (min-width: 800px) {
     &::-webkit-scrollbar {
       display: block;
-      width:8px;
+      width: 8px;
     }
     &::-webkit-scrollbar-thumb {
       background: #ff007a;

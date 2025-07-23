@@ -47,23 +47,27 @@ const router = createRouter({
       meta: { keepAlive: false },
     },
     {
-      path: '/noval',
-      name: 'noval',
+      path: '/novel',
+      name: 'novel',
       meta: { keepAlive: true },
-      component: () => import('@/view/noval/noval.vue'),
+      component: () => import('@/view/novel/novel.vue'),
       children: [
         {
-          path: '/noval',
-          redirect: '/noval/home',
+          path: '/novel',
+          redirect: '/novel/home',
         },
         {
           path: 'home',
-          component: () => import('@/view/noval/view/home/home.vue'),
+          component: () => import('@/view/novel/view/home/home.vue'),
           meta: { keepAlive: true },
         },
         {
           path: 'detail',
-          component: () => import('@/view/noval/view/detail/detail.vue'),
+          component: () => import('@/view/novel/view/detail/detail.vue'),
+        },
+        {
+          path: 'category',
+          component: () => import('@/view/novel/view/category/category.vue'),
         },
       ],
     },

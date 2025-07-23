@@ -11,6 +11,7 @@
         />
       </template>
       <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">插画</div>
+      <div v-if="userInfo.role === 1" class="novel" @click="novelClick">小说</div>
       <div class="menu" @click="drawer = true">菜单</div>
       <div class="logout" @click="logoutClick">登出</div>
     </div>
@@ -213,6 +214,10 @@ const logoutClick = () => {
 const comicsClick = () => {
   router.push('/comics')
 }
+// 进入小数
+const novelClick = () => {
+  router.push('/novel')
+}
 // 打开菜单
 const drawer = ref(false)
 // 记忆功能
@@ -263,6 +268,7 @@ onMounted(() => {
     height: 100%;
     background-color: #282828;
     .menu,
+    .novel,
     .logout,
     .comics {
       position: fixed;
@@ -283,8 +289,12 @@ onMounted(() => {
       left: 50px;
       background-color: #0096fa;
     }
-    .menu {
+    .novel {
       left: 100px;
+      background-color: rgb(255, 178, 34);
+    }
+    .menu {
+      left: 150px;
       background-color: var(--primary-color);
     }
     @media (max-width: 1000px) {

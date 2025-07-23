@@ -1,5 +1,5 @@
 <template>
-  <div ref="loadingRef" v-if="vipStore.vipImgData.length" class="loading">加载中···</div>
+  <div ref="loadingRef" v-if="dataList.length" class="loading">加载中···</div>
 </template>
 
 <script setup>
@@ -7,12 +7,11 @@ import { ref, watch } from 'vue'
 import useVip from '@/sotre/module/vip'
 
 const props = defineProps({
-  options: {
-    type: Object,
-    default: {},
+  dataList: {
+    type: Array,
+    default: [],
   },
 })
-
 // 触底刷新
 let ob = null
 const loadingRef = ref(null)
@@ -22,8 +21,7 @@ watch(loadingRef, () => {
   ob = new IntersectionObserver(
     (entires) => {
       if (entires[0].isIntersecting) {
-        console.log('刷新···')
-        vipStore.fetchGroupImgList({ options: props.options })
+        emit('loadingEmit')
       }
     },
     {
@@ -34,6 +32,8 @@ watch(loadingRef, () => {
     ob.observe(loadingRef.value)
   }
 })
+
+const emit = defineEmits(['loadingEmit'])
 </script>
 
 <style lang="less" scoped>

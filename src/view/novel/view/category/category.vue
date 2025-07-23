@@ -5,30 +5,31 @@
       <div class="text">一览</div>
     </div>
     <div class="showList">
-      <template v-for="item in vipStore.vipImgData">
+      <template v-for="item in novelStore.novelList">
         <ImageItem :itemData="item" />
       </template>
     </div>
-    <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />
+    <Loading :dataList="novelStore.novelList" @loadingEmit="loadingSearch" />
   </div>
 </template>
 
 <script setup>
 import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
-import useVip from '@/sotre/module/vip'
+import useNovel from '@/sotre/module/novel.js'
 import Loading from '@/components/loading/loading.vue'
 const route = useRoute()
-const vipStore = useVip()
+const novelStore = useNovel()
 // 页面刷新自动给tagName赋值
-vipStore.tagName = route.query.tag
+novelStore.novelTag = route.query.tag
+let pageCount = 1
 // 发起图片组请求
-if (!vipStore.vipImgData.length) {
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+if (!novelStore.novelList.length) {
+  novelStore.fetchCateNovel(novelStore.novelTag, ++pageCount)
 }
-// loading加载发起请求
-const loadingFetch = () => {
-  vipStore.fetchGroupImgList({ options: { keyword: vipStore.tagName } })
+// loading发起请求
+const loadingSearch = () => {
+  novelStore.fetchCateNovel(novelStore.novelTag, ++pageCount)
 }
 </script>
 

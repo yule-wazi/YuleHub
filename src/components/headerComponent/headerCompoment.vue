@@ -5,7 +5,7 @@
         <Expand />
       </el-icon>
     </div>
-    <div class="title">YULE插画</div>
+    <div class="title">{{ title }}</div>
     <div class="search">
       <el-icon
         :size="30"
@@ -29,7 +29,7 @@
   </div>
   <div class="menuDrawer">
     <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
-      <template #menuHeader> YULE插画 </template>
+      <template #menuHeader> {{ title }} </template>
       <template #switch>
         <div class="r18">
           <div class="text">NSFW</div>
@@ -67,6 +67,13 @@ import myCache from '@/utils/cacheStorage'
 import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 
+const props = defineProps({
+  title: {
+    type: String,
+    default: '',
+  },
+})
+
 const input1 = ref('')
 // 点击搜索
 const searchAreaRef = ref(null)
@@ -82,20 +89,12 @@ watch(isCollapsed, () => {
 // 搜索
 const vipStore = useVip()
 const router = useRouter()
+const emit = defineEmits(['searchClickEmit'])
 const searchClick = (tag) => {
   isCollapsed.value = true
-  console.log(tag)
-  vipStore.tagName = tag
-  // 清空之前列表
-  vipStore.vipImgData = []
-  // 清空搜索内容
+  // // 清空搜索内容
   input1.value = ''
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
-
-  router.push({
-    path: '/comics/category',
-    query: { tag },
-  })
+  emit('searchClickEmit', tag)
 }
 
 // 打开菜单
@@ -142,7 +141,7 @@ const goHome = () => {
   color: #333;
   background-color: var(--comics-headerBg-color);
   border-bottom: 1px solid #999;
-  z-index: 10;
+  z-index: 999;
   padding: 0 10px;
   .menu {
     display: flex;
@@ -183,7 +182,7 @@ const goHome = () => {
   right: 0;
   width: 100%;
   top: 0px;
-  z-index: 0;
+  z-index: 10;
   transition: 0.3s;
   :deep(.el-input__wrapper) {
     border-radius: 0px !important;

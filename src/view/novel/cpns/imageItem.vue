@@ -34,6 +34,7 @@ import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { Star, View } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import useNovel from '@/sotre/module/novel.js'
 
 const props = defineProps({
   itemData: {
@@ -58,8 +59,10 @@ preLoadImg(originImg).then(() => {
 })
 // 进入详情页
 const router = useRouter()
+const novelStore = useNovel()
 const getDetail = () => {
-  router.push({ path: '/noval/detail', query: { id: props.itemData.id } })
+  novelStore.currentNovelDetail = props.itemData
+  router.push('/novel/detail')
 }
 </script>
 

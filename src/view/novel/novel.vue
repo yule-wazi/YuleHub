@@ -1,20 +1,32 @@
 <template>
-  <div class="noval">
-    <headerCompoment />
-    <RouterView v-slot="{ Component }">
-      <KeepAlive include="home,category">
-        <component :is="Component" />
-      </KeepAlive>
-    </RouterView>
+  <div class="novel">
+    <headerCompoment title="YULE小说" @searchClickEmit="searchClick" />
+    <RouterView />
   </div>
 </template>
 
 <script setup>
 import headerCompoment from '@/components/headerComponent/headerCompoment.vue'
+import useNovel from '@/sotre/module/novel.js'
+import { useRouter } from 'vue-router'
+const novelStore = useNovel()
+const router = useRouter()
+// 点击搜索
+const searchClick = (tag) => {
+  novelStore.novelTag = tag
+  // 清空之前列表
+  novelStore.novelList = []
+  // vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
+  novelStore.fetchCateNovel(novelStore.novelTag, 1)
+  router.push({
+    path: '/novel/category',
+    query: { tag },
+  })
+}
 </script>
 
 <style lang="less" scoped>
-.noval {
+.novel {
   height: 100vh;
   width: 100%;
   overflow: auto;
