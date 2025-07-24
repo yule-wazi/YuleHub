@@ -27,7 +27,14 @@
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
         <template #menuHeader> AI聊天室 </template>
         <template #menuDefault>
-          <div class="home" @click="comicsClick">插画</div>
+          <div class="comics" @click="goComics">
+            <el-icon size="20px"><PictureFilled /></el-icon>
+            <div class="text">插画</div>
+          </div>
+          <div class="novel" @click="goNovel">
+            <el-icon size="20px"><Management /></el-icon>
+            <div class="text">小说</div>
+          </div>
         </template>
         <template #other>
           <div class="addUserCard" @click="openEditCard(true)">添加角色卡</div>
@@ -139,7 +146,7 @@ import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
-import { Close, Check, Sunny, Moon, Key } from '@element-plus/icons-vue'
+import { Close, Sunny, Moon, PictureFilled, Management, Check, Key } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
 
 const roleForm = reactive({
@@ -214,10 +221,21 @@ const logoutClick = () => {
 const comicsClick = () => {
   router.push('/comics')
 }
-// 进入小数
+// 进入小说
 const novelClick = () => {
   router.push('/novel')
 }
+// 转到漫画
+const goComics = () => {
+  drawer.value = false
+  router.push('/comics')
+}
+// 转到小说
+const goNovel = () => {
+  drawer.value = false
+  router.push('/novel')
+}
+
 // 打开菜单
 const drawer = ref(false)
 // 记忆功能
@@ -323,6 +341,18 @@ onMounted(() => {
     background-color: #5c5ad87d;
   }
   .menuDrawer {
+    .home,
+    .comics,
+    .novel {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #999;
+      margin-bottom: 5px;
+      padding: 10px 0;
+      .text {
+        margin-left: 5px;
+      }
+    }
     .memory,
     .dark {
       font-size: 16px;
