@@ -16,7 +16,8 @@ const searchClick = (tag) => {
   novelStore.novelTag = tag
   // 清空之前列表
   novelStore.novelList = []
-  novelStore.fetchCateNovel(novelStore.novelTag, 1)
+  novelStore.currentPage = 1
+  novelStore.fetchCateNovel(novelStore.novelTag)
   router.push({
     path: '/novel/category',
     query: { tag },

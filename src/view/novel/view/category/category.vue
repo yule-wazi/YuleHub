@@ -29,7 +29,8 @@ if (!novelStore.novelList.length) {
 }
 // loading发起请求
 const loadingSearch = () => {
-  novelStore.fetchCateNovel(novelStore.novelTag, ++pageCount)
+  novelStore.currentPage++
+  novelStore.fetchCateNovel(novelStore.novelTag)
 }
 </script>
 

@@ -8,6 +8,7 @@ const useNovel = defineStore('novelStore', {
       currentNovelDetail: {},
       novelText: '',
       novelTag: '',
+      currentPage: 1,
     }
   },
   actions: {
@@ -20,9 +21,8 @@ const useNovel = defineStore('novelStore', {
       const res = await getNovelText(id)
       this.novelText = res.data.novel_text
     },
-    async fetchCateNovel(word, page) {
-      console.log('page=', page, 'word=', word)
-      const res = await getCategoryNovel(word, page)
+    async fetchCateNovel(word) {
+      const res = await getCategoryNovel(word, this.currentPage)
       this.novelList.push(...res.data.novels)
     },
   },

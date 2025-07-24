@@ -10,7 +10,7 @@ export function getNovelText(id) {
 }
 export function getCategoryNovel(word, page = 1) {
   MyRequest.setBaseUrl(
-    `https://hibiapi.getloli.com/api/pixiv/search_novel?word=${word}&page=${page}`,
+    `https://hibiapi.getloli.com/api/pixiv/search_novel?word=${word}&mode=keyword&page=${page}`,
   )
   return MyRequest.get()
 }
