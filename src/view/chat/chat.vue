@@ -112,6 +112,7 @@
         <template v-else>
           <el-form-item prop="firstMessage">
             <span>请输入至少一个API Token</span>
+            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank">获取Token(需翻墙)</a>
             <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
               <template #tag="{ value }">
                 <div class="flex items-center">
@@ -368,6 +369,10 @@ onMounted(() => {
 }
 :deep(.el-dialog) {
   background-color: var(--chat-card-bg-color);
+  .website {
+    margin-left: 10px;
+    font-size: 14px;
+  }
   .el-dialog__title {
     color: var(--chat-card-text-color);
     font-size: 20px;

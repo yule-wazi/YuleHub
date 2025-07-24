@@ -132,6 +132,9 @@ const getDetail = () => {
         font-size: 10px;
         color: var(--comics-headerIcon-color);
         color: #ff007a;
+        .tag {
+          text-wrap: nowrap;
+        }
       }
       .tip {
         display: flex;
