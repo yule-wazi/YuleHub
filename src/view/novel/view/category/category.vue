@@ -63,18 +63,9 @@ const loadingSearch = () => {
   }
   .showList {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
-    @media (min-width: 800px) {
-      display: block;
-      column-count: 3;
-      column-gap: 20px;
-    }
-    @media (min-width: 1000px) {
-      display: block;
-      column-count: 4;
-      column-gap: 10px;
-    }
+    justify-content: center;
   }
 }
 </style>

@@ -16,7 +16,6 @@ const searchClick = (tag) => {
   novelStore.novelTag = tag
   // 清空之前列表
   novelStore.novelList = []
-  // vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
   novelStore.fetchCateNovel(novelStore.novelTag, 1)
   router.push({
     path: '/novel/category',

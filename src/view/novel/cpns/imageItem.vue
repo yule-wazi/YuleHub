@@ -69,17 +69,17 @@ const getDetail = () => {
 <style lang="less" scoped>
 .imageItem {
   @media (min-width: 800px) {
-    padding: 10px;
+    padding: 0px 10px;
   }
   @media (min-width: 1000px) {
-    padding: 5px;
+    padding: 0px 10px;
   }
   .item {
     @media (min-width: 800px) {
-      width: 28vw;
+      width: 300px;
     }
     @media (min-width: 1000px) {
-      width: 23vw;
+      width: 400px;
     }
     width: 92vw;
     height: 250px;
