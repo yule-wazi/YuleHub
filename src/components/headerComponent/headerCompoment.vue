@@ -53,7 +53,18 @@
         </div>
       </template>
       <template #menuDefault>
-        <div class="home" @click="goHome">首页</div>
+        <div class="home" @click="goHome">
+          <el-icon size="20px"><HomeFilled /></el-icon>
+          <div class="text">首页</div>
+        </div>
+        <div class="comics" @click="goComics">
+          <el-icon size="20px"><PictureFilled /></el-icon>
+          <div class="text">插画</div>
+        </div>
+        <div class="novel" @click="goNovel">
+          <el-icon size="20px"><Management /></el-icon>
+          <div class="text">小说</div>
+        </div>
       </template>
     </MenuDrawer>
   </div>
@@ -64,7 +75,18 @@ import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import useVip from '@/sotre/module/vip'
 import myCache from '@/utils/cacheStorage'
-import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
+import {
+  Search,
+  Hide,
+  View,
+  Expand,
+  Close,
+  Sunny,
+  Moon,
+  HomeFilled,
+  PictureFilled,
+  Management,
+} from '@element-plus/icons-vue'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 
 const props = defineProps({
@@ -124,6 +146,16 @@ onMounted(() => {
 // 回到首页
 const goHome = () => {
   router.push('/')
+}
+// 转到漫画
+const goComics = () => {
+  drawer.value = false
+  router.push('/comics')
+}
+// 转到小说
+const goNovel = () => {
+  drawer.value = false
+  router.push('/novel')
 }
 </script>
 
@@ -204,6 +236,18 @@ const goHome = () => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+  }
+  .home,
+  .comics,
+  .novel {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #999;
+    margin-bottom: 5px;
+    padding: 10px 0;
+    .text {
+      margin-left: 5px;
+    }
   }
 }
 </style>

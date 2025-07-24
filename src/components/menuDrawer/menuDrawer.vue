@@ -78,7 +78,6 @@ const logoutClick = () => {
       font-weight: 400;
       margin-bottom: 10px;
       padding-bottom: 10px;
-      border-bottom: 1px solid #999;
     }
     .other {
       margin: 15px 0;
