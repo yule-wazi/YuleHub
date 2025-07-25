@@ -22,7 +22,7 @@
     </div>
     <div class="menuDrawer">
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
-        <template #menuHeader> AI聊天室 </template>
+        <template #menuHeader> AI Chat </template>
         <template #menuDefault>
           <div class="comics" @click="goComics">
             <el-icon size="20px"><PictureFilled /></el-icon>
