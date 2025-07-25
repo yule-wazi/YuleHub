@@ -10,10 +10,7 @@
           @click="userClick(userName, index, image)"
         />
       </template>
-      <div v-if="userInfo.role === 1" class="comics" @click="comicsClick">插画</div>
-      <div v-if="userInfo.role === 1" class="novel" @click="novelClick">小说</div>
       <div class="menu" @click="drawer = true">菜单</div>
-      <div class="logout" @click="logoutClick">登出</div>
     </div>
     <div
       class="right"
@@ -112,7 +109,9 @@
         <template v-else>
           <el-form-item prop="firstMessage">
             <span>请输入至少一个API Token</span>
-            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank">获取Token(需翻墙)</a>
+            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
+              >获取Token(需翻墙)</a
+            >
             <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
               <template #tag="{ value }">
                 <div class="flex items-center">
@@ -213,19 +212,6 @@ const addRoleCardConfirm = () => {
   }
 }
 const router = useRouter()
-// 用户登出
-const logoutClick = () => {
-  myCache.remove('userInfo')
-  router.replace('/login')
-}
-// 进入漫画
-const comicsClick = () => {
-  router.push('/comics')
-}
-// 进入小说
-const novelClick = () => {
-  router.push('/novel')
-}
 // 转到漫画
 const goComics = () => {
   drawer.value = false
@@ -286,10 +272,7 @@ onMounted(() => {
     min-width: 70px;
     height: 100%;
     background-color: #282828;
-    .menu,
-    .novel,
-    .logout,
-    .comics {
+    .menu {
       position: fixed;
       bottom: 0;
       display: flex;
@@ -304,16 +287,8 @@ onMounted(() => {
         position: static;
       }
     }
-    .comics {
-      left: 50px;
-      background-color: #0096fa;
-    }
-    .novel {
-      left: 100px;
-      background-color: rgb(255, 178, 34);
-    }
     .menu {
-      left: 150px;
+      left: 0px;
       background-color: var(--primary-color);
     }
     @media (max-width: 1000px) {
