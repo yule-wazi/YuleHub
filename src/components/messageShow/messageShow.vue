@@ -58,6 +58,8 @@ import { ref, watchEffect } from 'vue'
 import { formatSpecialOutput } from '@/utils/formatOutput'
 import { createAudio, playAudio } from '@/utils/createAudio'
 import { EditPen } from '@element-plus/icons-vue'
+import useAgent from '@/sotre/module/agent'
+const agentStore = useAgent()
 
 const props = defineProps({
   messageInfo: {
@@ -70,13 +72,7 @@ const centerDialogVisible = ref(false)
 // 对话高亮处理
 const showMessage = ref('')
 watchEffect(() => {
-  showMessage.value = formatSpecialOutput(props.messageInfo.message)
-  // console.log(
-  //   'showMessage.value=',
-  //   showMessage.value,
-  //   'props.messageInfo.message=',
-  //   props.messageInfo.message,
-  // )
+  showMessage.value = formatSpecialOutput(props.messageInfo.message, agentStore.textLight)
 })
 // 打开编辑面板
 const editUserMessage = ref(true)

@@ -13,11 +13,14 @@ export function formatOutputMessageToAgent(userName, message) {
   return newMessage
 }
 // 格式化输出——高亮对话内容
-export function formatSpecialOutput(message) {
-  return message
+export function formatSpecialOutput(message, istextLight = true) {
+  let newMessage = message
+  if (istextLight) {
+    newMessage = newMessage.replace(/"([^"]*)"/g, '<span class=chat>"$1"</span>') //高亮处理
+  }
+  return newMessage
     .replace(/\*/g, '')
     .replace(/\n/g, `<br>`)
-    .replace(/"([^"]*)"/g, '<span class=chat>"$1"</span>') //高亮处理
     .replace(/```([\s\S]*?)```/g, `<pre>$1</pre>`) //规则处理
 }
 // 格式化输入audio——截取对话内容

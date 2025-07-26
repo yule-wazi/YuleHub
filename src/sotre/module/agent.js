@@ -15,6 +15,7 @@ const useAgent = defineStore('agent', {
       isMute: true,
       audioDuration: 0,
       activeIndex: 0,
+      textLight: false,
       users: [],
     }
   },

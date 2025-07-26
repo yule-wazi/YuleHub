@@ -38,11 +38,19 @@
           <div class="apiToken" @click="openEditCard(false)">API Token</div>
         </template>
         <template #switch>
+          <div class="textLight">
+            <div class="text">对话高亮</div>
+            <el-switch
+              v-model="textLight"
+              change="textLight = !textLight"
+              :active-action-icon="Check"
+              :inactive-action-icon="Close"
+            />
+          </div>
           <div class="memory">
             <div class="text">记忆存储</div>
             <el-switch
               v-model="isMemory"
-              size="large"
               change="isMemory = !isMemory"
               :active-action-icon="Check"
               :inactive-action-icon="Close"
@@ -52,7 +60,6 @@
             <div class="text">夜间模式</div>
             <el-switch
               v-model="isDark"
-              size="large"
               change="isDark = !isDark"
               :active-action-icon="Moon"
               :inactive-action-icon="Sunny"
@@ -225,6 +232,8 @@ const goNovel = () => {
 
 // 打开菜单
 const drawer = ref(false)
+// 对话高亮
+const { textLight } = storeToRefs(agentStore)
 // 记忆功能
 const isMemory = ref(myCache.get('isMemory') ?? false)
 watch(
@@ -329,13 +338,14 @@ onMounted(() => {
         margin-left: 5px;
       }
     }
+    .textLight,
     .memory,
     .dark {
       font-size: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      /* margin-bottom: 5px; */
     }
     .apiToken {
       margin: 15px 0;
