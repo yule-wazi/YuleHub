@@ -4,6 +4,7 @@ import { postDZMMAgent } from '@/service/module/agents'
 import useAgent from '@/sotre/module/agent'
 import { playAudio } from './createAudio'
 import myCache from '@/utils/cacheStorage'
+import { matchLoreBooks } from './matchLoreBooks'
 const delay = 0
 export function updateMessage({
   targetUser,
@@ -21,7 +22,15 @@ export function updateMessage({
     }
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
-
+  // 世界书插入
+  const loreBooksMessageList = matchLoreBooks(messageList, targetUser.loreBooks)
+  console.log('世界书匹配到：',loreBooksMessageList)
+  if (loreBooksMessageList.length) {
+    messageList.splice(-1, 0, ...loreBooksMessageList.map((message) => {
+      return {role: 'system', content: message.content}
+    }))
+  }
+  // 给ai将要回答预留位置
   targetUser.message.push({
     isMe,
     message: '',
