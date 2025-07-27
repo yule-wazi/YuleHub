@@ -114,13 +114,26 @@
           </el-form-item>
           <el-form-item prop="loreBooks">
             <span>世界书</span>
-            <el-select v-model="loreBooksModel" placeholder="选择世界书">
+            <el-select
+              v-model="loreBooksModel"
+              placeholder="选择世界书"
+              @change="roleForm.loreBooks = JSON.parse(loreBooksModel)"
+            >
               <el-option
-                v-for="item in roleForm.addLoreBooksData"
+                v-for="(item, index) in roleForm.addLoreBooksData"
                 :key="item.label"
                 :label="item.label"
                 :value="JSON.stringify(item.value)"
-              />
+              >
+                <span style="float: left">{{ item.label }}</span>
+                <el-button
+                  type="primary"
+                  style="float: right"
+                  size="small"
+                  @click="openAddLoreBook(false, { item, index })"
+                  >修改</el-button
+                >
+              </el-option>
               <template #footer>
                 <el-button
                   v-if="!addLoreBook"
@@ -129,7 +142,7 @@
                   type="primary"
                   plain
                   style="width: 100%"
-                  @click="onAddOption"
+                  @click="openAddLoreBook(true)"
                 >
                   添加世界书
                 </el-button>
@@ -165,12 +178,12 @@
     </el-dialog>
     <el-dialog
       v-model="addLoreBook"
-      title="创建世界书"
+      :title="isAddLoreBookTitle"
       width="100vw"
       style="max-width: 700px"
       center
       top="0"
-      @closed="addLoreBook = false"
+      @closed="clear"
     >
       <div class="addLoreBooks">
         <el-form :model="roleForm">
@@ -223,7 +236,9 @@
         </div>
         <div class="addLoreBooksButton">
           <el-button @click="clear">取消</el-button>
-          <el-button type="primary" @click="addLoreBooksConfirm"> 确定创建 </el-button>
+          <el-button type="primary" @click="addLoreBooksConfirm">
+            {{ isAddLoreBook ? '确认添加' : '确认修改' }}
+          </el-button>
         </div>
       </div>
     </el-dialog>
@@ -288,7 +303,8 @@ const roleForm = reactive({
   loreBooks: [],
   addLoreBooksValue: [{ keys: [], content: '' }],
   addLoreBooksLabel: '',
-  addLoreBooksData: loreBooksOptions,
+  editCurrentIndex: 0,
+  addLoreBooksData: myCache.get('loreBooks') ?? loreBooksOptions,
 })
 
 const agentStore = useAgent()
@@ -330,21 +346,29 @@ const inputToken = ref(myCache.get('TokenList') ?? [])
 // 选择世界书
 const addLoreBook = ref(false)
 const loreBooksModel = ref('无')
-watch(loreBooksModel, () => {
-  roleForm.loreBooks = JSON.parse(loreBooksModel.value)
-})
 // 添加世界书
-const onAddOption = () => {
+const isAddLoreBookTitle = ref('')
+const isAddLoreBook = ref(true)
+const openAddLoreBook = (isAdd = true, options = {}) => {
   addLoreBook.value = true
+  isAddLoreBook.value = isAdd
+  if (isAdd) {
+    isAddLoreBookTitle.value = '创建世界书'
+  } else {
+    isAddLoreBookTitle.value = '修改世界书'
+    roleForm.addLoreBooksLabel = options.item.label
+    roleForm.addLoreBooksValue = options.item.value
+    roleForm.editCurrentIndex = options.index
+  }
 }
-// 添加世界书关键词
+// 添加一条世界书关键词
 const addLoreBooksItem = () => {
   roleForm.addLoreBooksValue.push({
     keys: [],
     content: '',
   })
 }
-// 删除世界书关键词
+// 删除一条世界书关键词
 const removeLoreBooksItem = (index) => {
   roleForm.addLoreBooksValue.splice(index, 1)
 }
@@ -356,26 +380,36 @@ const clear = () => {
 }
 // 确认创建世界书
 const addLoreBooksConfirm = () => {
-  console.log('label=', roleForm.addLoreBooksLabel)
-  roleForm.addLoreBooksData.push({
-    label: roleForm.addLoreBooksLabel,
-    value: roleForm.addLoreBooksValue,
-  })
+  if (isAddLoreBook.value) {
+    roleForm.addLoreBooksData.push({
+      label: roleForm.addLoreBooksLabel,
+      value: roleForm.addLoreBooksValue,
+    })
+  } else {
+    console.log('修改世界书')
+    roleForm.addLoreBooksData.splice(roleForm.editCurrentIndex, 1, {
+      label: roleForm.addLoreBooksLabel,
+      value: roleForm.addLoreBooksValue,
+    })
+  }
+  myCache.set('loreBooks', roleForm.addLoreBooksData)
   addLoreBook.value = false
 }
+
 // 打开菜单
 const drawer = ref(false)
 // 确定添加APIToken
-// 确认添加
+// 确认添加角色
 const addRoleCardConfirm = () => {
   centerDialogVisible.value = false
   drawer.value = false
   if (addUserCard.value) {
-    const { userName, image, description, firstMessage } = roleForm
+    const { userName, image, description, firstMessage, loreBooks } = roleForm
     users.push({
       userName,
       image,
       isVip: true,
+      loreBooks,
       message: [
         { description: systemPrompt({ firstMessage, description }) },
         { audioSrc: '', image, isMe: false, message: firstMessage },

@@ -3,6 +3,7 @@ const allUsers = [
     userName: '校园规则之书',
     image: '/userImg/userImg-2.jpg',
     isVip: true,
+    loreBooks: [],
     message: [
       {
         description:
@@ -20,9 +21,8 @@ const allUsers = [
   {
     userName: '灵珑',
     image: '/userImg/userImg-4.png',
-    url: '/api/v1/apps/9a20d79d0f364772baf8fd698dbba3c3/completion',
-    session_id: '',
     isVip: false,
+    loreBooks: [],
     message: [
       {
         description:
@@ -34,6 +34,7 @@ const allUsers = [
     userName: '沈初见',
     image: '/userImg/userImg-5.png',
     isVip: false,
+    loreBooks: [],
     message: [
       {
         description:
@@ -45,6 +46,7 @@ const allUsers = [
     userName: '江浩',
     image: '/userImg/userImg-6.png',
     isVip: false,
+    loreBooks: [],
     message: [
       {
         description:
@@ -56,6 +58,7 @@ const allUsers = [
     userName: '枫江月',
     image: '/userImg/userImg-8.png',
     isVip: true,
+    loreBooks: [],
     message: [
       {
         description:
