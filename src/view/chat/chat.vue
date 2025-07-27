@@ -112,6 +112,30 @@
               placeholder="请输入角色发起的第一条消息"
             />
           </el-form-item>
+          <el-form-item prop="loreBooks">
+            <span>世界书</span>
+            <el-select v-model="loreBooksModel" placeholder="选择世界书">
+              <el-option
+                v-for="item in roleForm.addLoreBooksData"
+                :key="item.label"
+                :label="item.label"
+                :value="JSON.stringify(item.value)"
+              />
+              <template #footer>
+                <el-button
+                  v-if="!addLoreBook"
+                  text
+                  bg
+                  type="primary"
+                  plain
+                  style="width: 100%"
+                  @click="onAddOption"
+                >
+                  添加世界书
+                </el-button>
+              </template>
+            </el-select>
+          </el-form-item>
         </template>
         <template v-else>
           <el-form-item prop="firstMessage">
@@ -139,6 +163,70 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog
+      v-model="addLoreBook"
+      title="创建世界书"
+      width="100vw"
+      style="max-width: 700px"
+      center
+      top="0"
+      @closed="addLoreBook = false"
+    >
+      <div class="addLoreBooks">
+        <el-form :model="roleForm">
+          <el-form-item props="addLoreBooksName">
+            <span>世界书名称：</span>
+            <el-input v-model="roleForm.addLoreBooksLabel" style="width: 90%" />
+          </el-form-item>
+          <el-form-item v-for="(item, index) in roleForm.addLoreBooksValue">
+            <el-row :gutter="10" class="flex-1" style="width: 100%">
+              <el-col :span="8">
+                <el-input-tag
+                  v-model="item.keys"
+                  tag-type="primary"
+                  tag-effect="dark"
+                  placeholder="主要关键词"
+                  size="large"
+                >
+                  <template #tag="{ value }">
+                    <div class="flex items-center">
+                      <el-icon class="mr-1">
+                        <Aim />
+                      </el-icon>
+                      <span>{{ value }}</span>
+                    </div>
+                  </template>
+                </el-input-tag>
+              </el-col>
+              <el-col :span="14">
+                <el-input
+                  v-model="item.content"
+                  style="width: 100%"
+                  :autosize="{ minRows: 2, maxRows: 4 }"
+                  type="textarea"
+                  placeholder="内容"
+                />
+              </el-col>
+              <el-col :span="1">
+                <el-button
+                  :style="{ visibility: index > 0 ? 'visible' : 'hidden' }"
+                  :icon="Delete"
+                  size="small"
+                  @click="removeLoreBooksItem(index)"
+                ></el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </el-form>
+        <div class="flex justify-center align-middle mt-4" style="display: flex">
+          <el-button style="margin: auto" :icon="Plus" circle @click="addLoreBooksItem"></el-button>
+        </div>
+        <div class="addLoreBooksButton">
+          <el-button @click="clear">取消</el-button>
+          <el-button type="primary" @click="addLoreBooksConfirm"> 确定创建 </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -153,14 +241,54 @@ import allUsers from '@/sotre/agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
-import { Close, Sunny, Moon, PictureFilled, Management, Check, Key } from '@element-plus/icons-vue'
+import {
+  Close,
+  Sunny,
+  Moon,
+  PictureFilled,
+  Management,
+  Check,
+  Key,
+  Delete,
+  Plus,
+  Aim,
+} from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
-
+// 初始化世界书
+const loreBooksOptions = [
+  {
+    label: '无',
+    value: [],
+  },
+  {
+    label: '校园书',
+    value: [
+      {
+        keys: ['年级', '班级', '学生人数', '教师'],
+        content:
+          '校园中按照入学时间，分3个年级，分别为：大一年级，大二年级，大三年级。 每个年级有5班级，分别为：一班，二班，三班，四班，五班。 每个班级的学生人数在40-50之间浮动。 教师数量按照年级进行配置，每个年级有7位教师，{{user}}所在的大三年级按照教学学科分别为：语文教师，数学教师，英语教师，历史教师，生物教师，化学教师，物理教师。',
+      },
+      {
+        keys: ['教师性别'],
+        content: '所有教师均为女性。',
+      },
+      {
+        keys: ['上课', '下课'],
+        content:
+          '上课是由教师讲解知识并提问学生的环节，学生会在教室中参与教师的教学活动，每次上课中的持续时间为45分钟。 下课是教师和学生在校园内的自由活动时间，下课后每次的持续时间为15分钟。 校园内上课中和下课后不断轮流循环。 每次上课时都按照随机原则由一位教师进行教学活动。',
+      },
+    ],
+  },
+]
 const roleForm = reactive({
   userName: '',
   image: '',
   description: '',
   firstMessage: '',
+  loreBooks: [],
+  addLoreBooksValue: [{ keys: [], content: '' }],
+  addLoreBooksLabel: '',
+  addLoreBooksData: loreBooksOptions,
 })
 
 const agentStore = useAgent()
@@ -198,6 +326,45 @@ const openEditCard = (isaddUser) => {
   }
 }
 const inputToken = ref(myCache.get('TokenList') ?? [])
+
+// 选择世界书
+const addLoreBook = ref(false)
+const loreBooksModel = ref('无')
+watch(loreBooksModel, () => {
+  roleForm.loreBooks = JSON.parse(loreBooksModel.value)
+})
+// 添加世界书
+const onAddOption = () => {
+  addLoreBook.value = true
+}
+// 添加世界书关键词
+const addLoreBooksItem = () => {
+  roleForm.addLoreBooksValue.push({
+    keys: [],
+    content: '',
+  })
+}
+// 删除世界书关键词
+const removeLoreBooksItem = (index) => {
+  roleForm.addLoreBooksValue.splice(index, 1)
+}
+// 清空创建世界书关键词
+const clear = () => {
+  roleForm.addLoreBooksValue = [{ keys: [], content: '' }]
+  roleForm.addLoreBooksLabel = ''
+  addLoreBook.value = false
+}
+// 确认创建世界书
+const addLoreBooksConfirm = () => {
+  console.log('label=', roleForm.addLoreBooksLabel)
+  roleForm.addLoreBooksData.push({
+    label: roleForm.addLoreBooksLabel,
+    value: roleForm.addLoreBooksValue,
+  })
+  addLoreBook.value = false
+}
+// 打开菜单
+const drawer = ref(false)
 // 确定添加APIToken
 // 确认添加
 const addRoleCardConfirm = () => {
@@ -229,11 +396,9 @@ const goNovel = () => {
   drawer.value = false
   router.push('/novel')
 }
-
-// 打开菜单
-const drawer = ref(false)
 // 对话高亮
 const { textLight } = storeToRefs(agentStore)
+
 // 记忆功能
 const isMemory = ref(myCache.get('isMemory') ?? false)
 watch(
@@ -358,6 +523,17 @@ onMounted(() => {
     margin-left: 10px;
     font-size: 14px;
   }
+  .addLoreBooks {
+    .addLoreBooksButton {
+      display: flex;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    .el-input-tag__inner {
+      flex-wrap: nowrap;
+      overflow: auto;
+    }
+  }
   .el-dialog__title {
     color: var(--chat-card-text-color);
     font-size: 20px;
@@ -382,6 +558,17 @@ onMounted(() => {
       background-color: transparent;
       margin: 2px;
     }
+  }
+  .el-select {
+    .el-select__wrapper {
+      background-color: var(--chat-card-inputBg-color);
+      .el-select__selected-item {
+        color: var(--chat-card-text-color);
+      }
+    }
+  }
+  .el-input-tag {
+    background-color: var(--chat-card-inputBg-color);
   }
 }
 </style>
