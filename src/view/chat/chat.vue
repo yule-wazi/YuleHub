@@ -38,13 +38,23 @@
           <div class="apiToken" @click="openEditCard(false)">API Token</div>
         </template>
         <template #switch>
+          <div class="showTip">
+            <div class="text">显示提示</div>
+            <el-switch
+              v-model="showTip"
+              change="showTip = !showTip"
+              :active-action-icon="Bell"
+              :inactive-action-icon="MuteNotification"
+            />
+          </div>
+
           <div class="textLight">
             <div class="text">对话高亮</div>
             <el-switch
               v-model="textLight"
               change="textLight = !textLight"
-              :active-action-icon="Check"
-              :inactive-action-icon="Close"
+              :active-action-icon="ChatLineRound"
+              :inactive-action-icon="ChatRound"
             />
           </div>
           <div class="memory">
@@ -125,14 +135,25 @@
                 :label="item.label"
                 :value="JSON.stringify(item.value)"
               >
-                <span style="float: left">{{ item.label }}</span>
+                <span style="float: left; max-width: 50%; overflow: hidden">{{ item.label }}</span>
                 <el-button
-                  type="primary"
+                  type="danger"
+                  style="float: right; margin-left: 10px"
+                  :icon="Delete"
+                  circle
+                  size="small"
+                  @click="deleteLoreBook(index)"
+                >
+                </el-button>
+                <el-button
+                  type="info"
                   style="float: right"
+                  :icon="Edit"
+                  circle
                   size="small"
                   @click="openAddLoreBook(false, { item, index })"
-                  >修改</el-button
                 >
+                </el-button>
               </el-option>
               <template #footer>
                 <el-button
@@ -141,10 +162,14 @@
                   bg
                   type="primary"
                   plain
-                  style="width: 100%"
+                  style="width: 50%"
                   @click="openAddLoreBook(true)"
                 >
                   添加世界书
+                </el-button>
+                <el-button type="primary" plain style="width: 45%" @click="uploadLoreBooks">
+                  导入世界书
+                  <input ref="uploadInput" type="file" @change="handleFile" style="display: none" />
                 </el-button>
               </template>
             </el-select>
@@ -266,7 +291,12 @@ import {
   Key,
   Delete,
   Plus,
+  Edit,
   Aim,
+  Bell,
+  MuteNotification,
+  ChatRound,
+  ChatLineRound,
 } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
 // 初始化世界书
@@ -274,25 +304,6 @@ const loreBooksOptions = [
   {
     label: '无',
     value: [],
-  },
-  {
-    label: '校园书',
-    value: [
-      {
-        keys: ['年级', '班级', '学生人数', '教师'],
-        content:
-          '校园中按照入学时间，分3个年级，分别为：大一年级，大二年级，大三年级。 每个年级有5班级，分别为：一班，二班，三班，四班，五班。 每个班级的学生人数在40-50之间浮动。 教师数量按照年级进行配置，每个年级有7位教师，{{user}}所在的大三年级按照教学学科分别为：语文教师，数学教师，英语教师，历史教师，生物教师，化学教师，物理教师。',
-      },
-      {
-        keys: ['教师性别'],
-        content: '所有教师均为女性。',
-      },
-      {
-        keys: ['上课', '下课'],
-        content:
-          '上课是由教师讲解知识并提问学生的环节，学生会在教室中参与教师的教学活动，每次上课中的持续时间为45分钟。 下课是教师和学生在校园内的自由活动时间，下课后每次的持续时间为15分钟。 校园内上课中和下课后不断轮流循环。 每次上课时都按照随机原则由一位教师进行教学活动。',
-      },
-    ],
   },
 ]
 const roleForm = reactive({
@@ -361,6 +372,10 @@ const openAddLoreBook = (isAdd = true, options = {}) => {
     roleForm.editCurrentIndex = options.index
   }
 }
+// 删除世界书
+const deleteLoreBook = (index) => {
+  roleForm.addLoreBooksData.splice(index, 1)
+}
 // 添加一条世界书关键词
 const addLoreBooksItem = () => {
   roleForm.addLoreBooksValue.push({
@@ -392,10 +407,39 @@ const addLoreBooksConfirm = () => {
       value: roleForm.addLoreBooksValue,
     })
   }
-  myCache.set('loreBooks', roleForm.addLoreBooksData)
   addLoreBook.value = false
 }
-
+// 导入世界书
+const uploadInput = ref(null)
+const uploadLoreBooks = () => {
+  uploadInput.value?.click()
+}
+// 文件导入
+const handleFile = (e) => {
+  const file = e.target.files[0]
+  const reader = new FileReader(file)
+  reader.readAsText(file)
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result)
+      console.log(data)
+      let valueList = []
+      for (const i in data.entries) {
+        valueList.push({ keys: data.entries[i].keys, content: data.entries[i].content })
+      }
+      console.log(valueList)
+      roleForm.addLoreBooksData.push({ label: data.name, value: valueList })
+    } catch {
+      ElMessage.error('文件格式错误，请导入JSON或text文件')
+    }
+  }
+  e.target.value = ''
+}
+// 保存世界书
+watch(roleForm.addLoreBooksData, () => {
+  console.log('保存世界书')
+  myCache.set('loreBooks', roleForm.addLoreBooksData)
+})
 // 打开菜单
 const drawer = ref(false)
 // 确定添加APIToken
@@ -432,7 +476,8 @@ const goNovel = () => {
 }
 // 对话高亮
 const { textLight } = storeToRefs(agentStore)
-
+// 显示提示
+const { showTip } = storeToRefs(agentStore)
 // 记忆功能
 const isMemory = ref(myCache.get('isMemory') ?? false)
 watch(
@@ -446,7 +491,7 @@ watch(
 const isDark = ref(myCache.get('isDark') ?? false)
 let appElement = undefined
 onMounted(() => {
-  appElement = document.getElementById('app')
+  appElement = document.documentElement
   watch(
     isDark,
     () => {
@@ -537,6 +582,7 @@ onMounted(() => {
         margin-left: 5px;
       }
     }
+    .showTip,
     .textLight,
     .memory,
     .dark {

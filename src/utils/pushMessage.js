@@ -23,12 +23,16 @@ export function updateMessage({
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
   // 世界书插入
-  const loreBooksMessageList = matchLoreBooks(messageList, targetUser.loreBooks)
-  console.log('世界书匹配到：',loreBooksMessageList)
+  const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, targetUser.loreBooks)
   if (loreBooksMessageList.length) {
-    messageList.splice(-1, 0, ...loreBooksMessageList.map((message) => {
-      return {role: 'system', content: message.content}
-    }))
+    console.log('世界书匹配到：', loreBooksMessageList, '关键词：', messageKeys)
+    messageList.splice(
+      -1,
+      0,
+      ...loreBooksMessageList.map((message) => {
+        return { role: 'system', content: message.content }
+      }),
+    )
   }
   // 给ai将要回答预留位置
   targetUser.message.push({
@@ -41,6 +45,7 @@ export function updateMessage({
   let currentMessage = targetUser.message[currentIndex]
   // 将信息请求处理存入message
   chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser)
+  return messageKeys
 }
 // 发出请求&流式输出
 async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser) {

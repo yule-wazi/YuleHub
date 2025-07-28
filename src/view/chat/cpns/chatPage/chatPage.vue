@@ -123,7 +123,7 @@ const aiResponse = async (userName) => {
   const userImg = users.value.find((item) => item.userName === userName).image
   let audioSrcCache = ''
   // AI返回对话
-  updateMessage({
+  const messageKeys = updateMessage({
     targetUser: targetUser.value,
     isMe: false,
     image: userImg,
@@ -132,7 +132,17 @@ const aiResponse = async (userName) => {
     audioDuration: audioDuration,
     getAudio: !isMute.value,
   })
+  // 判断是否匹配到世界书
+  if (messageKeys.length && agentStore.showTip) {
+    ElNotification({
+      title: '世界书检测到关键字:',
+      message: () => {
+        return messageKeys.join('，')
+      },
+    })
+  }
 }
+
 // 截取到当前对话
 const sliceCurrentMessage = (messageInfo, index) => {
   const currentMessage = targetUser.value.message
@@ -144,7 +154,7 @@ const sliceCurrentMessage = (messageInfo, index) => {
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .chatPage {
   width: 100%;
   height: 100%;
@@ -170,8 +180,8 @@ const sliceCurrentMessage = (messageInfo, index) => {
     flex: 1;
     .backBottom {
       position: fixed;
+      display: none;
       bottom: 180px;
-      left: 1200px;
       width: 35px;
       height: 35px;
       padding: 5px;
@@ -180,6 +190,7 @@ const sliceCurrentMessage = (messageInfo, index) => {
       border-radius: 50%;
       transition: all 0.1s;
       @media (max-width: 1000px) {
+        display: block;
         left: 10px;
         bottom: 100px;
       }
@@ -303,5 +314,18 @@ const sliceCurrentMessage = (messageInfo, index) => {
       }
     }
   }
+}
+:global(.el-notification) {
+  background-color: var(--comics-cardBg-color);
+  border: var(--comics-headerIcon-color);
+  @media (max-width: 1000px) {
+    width: 60%;
+  }
+}
+:global(.el-notification__title) {
+  color: var(--comics-cardTitle-color);
+}
+:global(.el-notification__content) {
+  color: var(--primary-color);
 }
 </style>
