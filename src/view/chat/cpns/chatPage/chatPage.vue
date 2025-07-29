@@ -65,7 +65,6 @@ const isShowGoBackButton = (e) => {
   }
 }
 const throttleScroll = throttle(isShowGoBackButton, 200)
-
 // 回到底部
 const goBackBottom = (contentRef) => {
   const content = contentRef
@@ -78,6 +77,13 @@ const goBackBottom = (contentRef) => {
 const agentStore = useAgent()
 // 监听是否继续输出
 const { isPlay, isMute } = storeToRefs(agentStore)
+
+// 监听静音打开
+watch(isMute, (val, oldVal) => {
+  if (!val) {
+    emit('openAudioCardEmit')
+  }
+})
 
 // 监听输入按钮点击
 const inputRef = ref(null)
@@ -152,6 +158,7 @@ const sliceCurrentMessage = (messageInfo, index) => {
     aiResponse(targetUser.value.userName)
   }
 }
+const emit = defineEmits(['openAudioCardEmit'])
 </script>
 
 <style lang="less" scoped>

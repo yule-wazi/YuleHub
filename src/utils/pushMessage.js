@@ -1,4 +1,3 @@
-import { nextTick } from 'vue'
 import { formatAudioMessage } from './formatOutput'
 import { postDZMMAgent } from '@/service/module/agents'
 import useAgent from '@/sotre/module/agent'
@@ -120,8 +119,8 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
       currentMessage.audioSrc = audioSrc
       // 播放音频
       await playAudio(audioElem)
-    } catch {
-      console.log('为查询到语音字')
+    } catch (error) {
+      console.error('检测到错误', error)
     }
   }
 }

@@ -3,8 +3,7 @@ import { postAgent, textToAudio } from '@/service/module/agents'
 import { formatInputMessage } from '@/utils/formatOutput'
 import { createAudio } from '@/utils/createAudio'
 import allUsers from '../agentUsersConfig'
-const DZMMAGENT_TOKEN = '' /*电子魅魔API-Key*/ || import.meta.env.VITE_DZMMAGENT_TOKEN
-
+import myCache from '@/utils/cacheStorage'
 const useAgent = defineStore('agent', {
   state: () => {
     return {
@@ -72,8 +71,9 @@ const useAgent = defineStore('agent', {
         },
         language_boost: 'auto',
       }
+      const audioData = myCache.get('audioData')
       return new Promise((resolve, reject) => {
-        textToAudio(targetConfig)
+        textToAudio(targetConfig, audioData.groupId, audioData.token)
           .then((res) => {
             const audioElem = createAudio(res.data.data.audio)
             resolve([audioElem, res.data.data.audio])

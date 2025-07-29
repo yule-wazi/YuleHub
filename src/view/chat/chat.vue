@@ -18,7 +18,7 @@
         '--background-img': `url('${agentStore.backgroundImg}')`,
       }"
     >
-      <ChatPage :title="agentStore.currentUser" />
+      <ChatPage :title="agentStore.currentUser" @openAudioCardEmit="addAPICard(false)" />
     </div>
     <div class="menuDrawer">
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
@@ -34,8 +34,8 @@
           </div>
         </template>
         <template #other>
-          <div class="addUserCard" @click="openEditCard(true)">添加角色卡</div>
-          <div class="apiToken" @click="openEditCard(false)">API Token</div>
+          <div class="addUserCard" @click="openEditCard()">添加角色卡</div>
+          <div class="apiToken" @click="addAPICard(true)">API Token</div>
         </template>
         <template #switch>
           <div class="showTip">
@@ -78,148 +78,129 @@
         </template>
       </MenuDrawer>
     </div>
+    <!-- 添加角色 -->
     <el-dialog
       v-model="centerDialogVisible"
-      :title="addUserCard ? '添加角色卡' : '管理API Token'"
+      title="添加角色卡"
       width="90vw"
       style="max-width: 700px"
       center
       @closed="addUserCard = false"
     >
       <el-form ref="ruleFormRef" :model="roleForm">
-        <template v-if="addUserCard">
-          <el-form-item prop="userName">
-            <span>角色名</span>
-            <el-input
-              v-model="roleForm.userName"
-              style="width: 100%"
-              :autosize="{ minRows: 1, maxRows: 2 }"
-              type="textarea"
-              placeholder="请输入角色名称"
-            />
-          </el-form-item>
-          <el-form-item prop="image">
-            <span>头像</span>
-            <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
-          </el-form-item>
-          <el-form-item prop="description">
-            <span>角色卡介绍</span>
-            <el-input
-              v-model="roleForm.description"
-              style="width: 100%"
-              :autosize="{ minRows: 4, maxRows: 8 }"
-              type="textarea"
-              placeholder="请输入角色介绍"
-            />
-          </el-form-item>
-          <el-form-item prop="firstMessage">
-            <span>角色开场白</span>
-            <el-input
-              v-model="roleForm.firstMessage"
-              style="width: 100%"
-              :autosize="{ minRows: 4, maxRows: 8 }"
-              type="textarea"
-              placeholder="请输入角色发起的第一条消息"
-            />
-          </el-form-item>
-          <el-form-item prop="voiceId">
-            <span>音色选择</span>
-            <el-scrollbar>
-              <div class="scrollbar-flex-content">
-                <div
-                  ref="audioItemRef"
-                  v-for="(item, index) in audioList"
-                  :key="index"
-                  class="scrollbar-demo-item"
-                  :class="{ active: selectCurrentAudio === index }"
-                >
-                  <div class="audioItem">
-                    <audio ref="audioRef" :src="item.voiceSrc"></audio>
-                    <div class="voiceName">{{ item.name }}</div>
-                    <div class="handle">
-                      <el-button type="primary" plain @click="selectAudio(item, index)"
-                        >选择</el-button
-                      >
-                      <el-button @click="audioRef[index].play()" style="padding: 5px" plain>
-                        <el-icon size="20px"><VideoPlay /></el-icon>
-                      </el-button>
-                    </div>
+        <el-form-item prop="userName">
+          <span>角色名</span>
+          <el-input
+            v-model="roleForm.userName"
+            style="width: 100%"
+            :autosize="{ minRows: 1, maxRows: 2 }"
+            type="textarea"
+            placeholder="请输入角色名称"
+          />
+        </el-form-item>
+        <el-form-item prop="image">
+          <span>头像</span>
+          <el-input v-model="roleForm.image" style="width: 100%" placeholder="请输入URL" />
+        </el-form-item>
+        <el-form-item prop="description">
+          <span>角色卡介绍</span>
+          <el-input
+            v-model="roleForm.description"
+            style="width: 100%"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            type="textarea"
+            placeholder="请输入角色介绍"
+          />
+        </el-form-item>
+        <el-form-item prop="firstMessage">
+          <span>角色开场白</span>
+          <el-input
+            v-model="roleForm.firstMessage"
+            style="width: 100%"
+            :autosize="{ minRows: 4, maxRows: 8 }"
+            type="textarea"
+            placeholder="请输入角色发起的第一条消息"
+          />
+        </el-form-item>
+        <el-form-item prop="voiceId">
+          <span>音色选择</span>
+          <el-scrollbar>
+            <div class="scrollbar-flex-content">
+              <div
+                ref="audioItemRef"
+                v-for="(item, index) in audioList"
+                :key="index"
+                class="scrollbar-demo-item"
+                :class="{ active: selectCurrentAudio === index }"
+              >
+                <div class="audioItem">
+                  <audio ref="audioRef" :src="item.voiceSrc"></audio>
+                  <div class="voiceName">{{ item.name }}</div>
+                  <div class="handle">
+                    <el-button type="primary" plain @click="selectAudio(item, index)"
+                      >选择</el-button
+                    >
+                    <el-button @click="audioRef[index].play()" style="padding: 5px" plain>
+                      <el-icon size="20px"><VideoPlay /></el-icon>
+                    </el-button>
                   </div>
                 </div>
               </div>
-            </el-scrollbar>
-          </el-form-item>
-          <el-form-item prop="loreBooks">
-            <span>世界书</span>
-            <el-select
-              v-model="loreBooksModel"
-              placeholder="选择世界书"
-              @change="roleForm.loreBooks = JSON.parse(loreBooksModel)"
+            </div>
+          </el-scrollbar>
+        </el-form-item>
+        <el-form-item prop="loreBooks">
+          <span>世界书</span>
+          <el-select
+            v-model="loreBooksModel"
+            placeholder="选择世界书"
+            @change="roleForm.loreBooks = JSON.parse(loreBooksModel)"
+          >
+            <el-option
+              v-for="(item, index) in roleForm.addLoreBooksData"
+              :key="item.label"
+              :label="item.label"
+              :value="JSON.stringify(item.value)"
             >
-              <el-option
-                v-for="(item, index) in roleForm.addLoreBooksData"
-                :key="item.label"
-                :label="item.label"
-                :value="JSON.stringify(item.value)"
+              <span style="float: left; max-width: 50%; overflow: hidden">{{ item.label }}</span>
+              <el-button
+                type="danger"
+                style="float: right; margin-left: 10px"
+                :icon="Delete"
+                circle
+                size="small"
+                @click="deleteLoreBook(index)"
               >
-                <span style="float: left; max-width: 50%; overflow: hidden">{{ item.label }}</span>
-                <el-button
-                  type="danger"
-                  style="float: right; margin-left: 10px"
-                  :icon="Delete"
-                  circle
-                  size="small"
-                  @click="deleteLoreBook(index)"
-                >
-                </el-button>
-                <el-button
-                  type="info"
-                  style="float: right"
-                  :icon="Edit"
-                  circle
-                  size="small"
-                  @click="openAddLoreBook(false, { item, index })"
-                >
-                </el-button>
-              </el-option>
-              <template #footer>
-                <el-button
-                  v-if="!addLoreBook"
-                  text
-                  bg
-                  type="primary"
-                  plain
-                  style="width: 50%"
-                  @click="openAddLoreBook(true)"
-                >
-                  添加世界书
-                </el-button>
-                <el-button type="primary" plain style="width: 45%" @click="uploadLoreBooks">
-                  导入世界书
-                  <input ref="uploadInput" type="file" @change="handleFile" style="display: none" />
-                </el-button>
-              </template>
-            </el-select>
-          </el-form-item>
-        </template>
-        <template v-else>
-          <el-form-item prop="firstMessage">
-            <span>请输入至少一个API Token</span>
-            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
-              >获取Token(需翻墙)</a
-            >
-            <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
-              <template #tag="{ value }">
-                <div class="flex items-center">
-                  <el-icon class="mr-1">
-                    <Key />
-                  </el-icon>
-                  <span>{{ value }}</span>
-                </div>
-              </template>
-            </el-input-tag>
-          </el-form-item>
-        </template>
+              </el-button>
+              <el-button
+                type="info"
+                style="float: right"
+                :icon="Edit"
+                circle
+                size="small"
+                @click="openAddLoreBook(false, { item, index })"
+              >
+              </el-button>
+            </el-option>
+            <template #footer>
+              <el-button
+                v-if="!addLoreBook"
+                text
+                bg
+                type="primary"
+                plain
+                style="width: 50%"
+                @click="openAddLoreBook(true)"
+              >
+                添加世界书
+              </el-button>
+              <el-button type="primary" plain style="width: 45%" @click="uploadLoreBooks">
+                导入世界书
+                <input ref="uploadInput" type="file" @change="handleFile" style="display: none" />
+              </el-button>
+            </template>
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -228,6 +209,7 @@
         </div>
       </template>
     </el-dialog>
+    <!-- 添加/修改世界书 -->
     <el-dialog
       v-model="addLoreBook"
       :title="isAddLoreBookTitle"
@@ -293,6 +275,56 @@
           </el-button>
         </div>
       </div>
+    </el-dialog>
+    <!-- API Token -->
+    <el-dialog
+      v-model="addTokenVisible"
+      :title="isChatToken ? 'Chat Token' : 'Audio Token'"
+      width="90vw"
+      style="max-width: 700px"
+      center
+      @closed="addTokenVisible = false"
+    >
+      <template v-if="isChatToken">
+        <el-form-item prop="firstMessage">
+          <span>请输入至少一个API Token</span>
+          <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
+            >获取Token(需翻墙)</a
+          >
+          <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
+            <template #tag="{ value }">
+              <div class="flex items-center">
+                <el-icon class="mr-1">
+                  <Key />
+                </el-icon>
+                <span>{{ value }}</span>
+              </div>
+            </template>
+          </el-input-tag>
+        </el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item>
+          <span>请输入MiniMax的groupID</span>
+          <a
+            class="website"
+            href="https://platform.minimaxi.com/user-center/basic-information"
+            target="_blank"
+            >进入MiniMax官网</a
+          >
+          <el-input v-model="audioData.groupId" tag-type="primary" tag-effect="plain" draggable />
+        </el-form-item>
+        <el-form-item>
+          <span>请输入MiniMax的Token</span>
+          <el-input v-model="audioData.token" tag-type="primary" tag-effect="plain" draggable />
+        </el-form-item>
+      </template>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="addTokenVisible = false">取消</el-button>
+          <el-button type="primary" @click="addAPIToken"> 确定 </el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -375,14 +407,22 @@ const userClick = (userName, index, image) => {
 }
 const centerDialogVisible = ref(false)
 const addUserCard = ref(false)
-// 打开编辑模板
-const openEditCard = (isaddUser) => {
+// 打开添加角色面板
+const openEditCard = () => {
   centerDialogVisible.value = true
-  if (isaddUser) {
-    addUserCard.value = true
+  addUserCard.value = true
+}
+// 打开添加API面板
+const addAPICard = (isAddChat = false) => {
+  addTokenVisible.value = true
+  if (isAddChat) {
+    isChatToken.value = true
+  } else {
+    isChatToken.value = false
   }
 }
 const inputToken = ref(myCache.get('TokenList') ?? [])
+const audioData = reactive(myCache.get('audioData') ?? { groupId: '', token: '' })
 
 // 选择世界书
 const addLoreBook = ref(false)
@@ -473,26 +513,34 @@ watch(roleForm.addLoreBooksData, () => {
 // 打开菜单
 const drawer = ref(false)
 // 确定添加APIToken
+const addTokenVisible = ref(false)
+const isChatToken = ref(true)
+const addAPIToken = () => {
+  addTokenVisible.value = false
+  drawer.value = false
+  if (isChatToken.value) {
+    myCache.set('TokenList', inputToken.value)
+  } else {
+    myCache.set('audioData', { groupId: audioData.groupId, token: audioData.token })
+  }
+}
+
 // 确认添加角色
 const addRoleCardConfirm = () => {
   centerDialogVisible.value = false
   drawer.value = false
-  if (addUserCard.value) {
-    const { userName, image, description, firstMessage, loreBooks, voiceId } = roleForm
-    users.push({
-      userName,
-      voiceId,
-      image,
-      isVip: true,
-      loreBooks,
-      message: [
-        { description: systemPrompt({ firstMessage, description }) },
-        { audioSrc: '', image, isMe: false, message: firstMessage },
-      ],
-    })
-  } else {
-    myCache.set('TokenList', inputToken.value)
-  }
+  const { userName, image, description, firstMessage, loreBooks, voiceId } = roleForm
+  users.push({
+    userName,
+    voiceId,
+    image,
+    isVip: true,
+    loreBooks,
+    message: [
+      { description: systemPrompt({ firstMessage, description }) },
+      { audioSrc: '', image, isMe: false, message: firstMessage },
+    ],
+  })
 }
 // 选择音色
 const audioItemRef = ref(null)
