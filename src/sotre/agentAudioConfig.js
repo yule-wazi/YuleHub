@@ -1,138 +1,42 @@
-const audioConfig = [
+export const audioList = [
   {
-    userName: '灵珑',
-    data: {
-      model: 'speech-02-hd',
-      text: '',
-      timber_weights: [
-        {
-          voice_id: 'Chinese (Mandarin)_Laid_BackGirl',
-          weight: 1,
-        },
-      ],
-      voice_setting: {
-        voice_id: '',
-        speed: 1.25,
-        pitch: 0,
-        vol: 1.25,
-        emotion: 'disgusted',
-        latex_read: false,
-      },
-      audio_setting: {
-        sample_rate: 32000,
-        bitrate: 128000,
-        format: 'mp3',
-      },
-      language_boost: 'auto',
-    },
+    name: '成熟女士',
+    voiceSrc: '/audioVoiceList/成熟女士.mp3',
+    voiceId: 'Chinese (Mandarin)_Mature_Woman',
   },
   {
-    userName: '沈初见',
-    data: {
-      model: 'speech-02-turbo',
-      text: '',
-      timber_weights: [
-        {
-          voice_id: 'Chinese (Mandarin)_Warm_HeartedGirl',
-          weight: 1,
-        },
-      ],
-      voice_setting: {
-        voice_id: '',
-        speed: 1.25,
-        pitch: 0,
-        vol: 1.25,
-        emotion: 'happy',
-        latex_read: false,
-      },
-      audio_setting: {
-        sample_rate: 32000,
-        bitrate: 128000,
-        format: 'mp3',
-      },
-      language_boost: 'auto',
-    },
+    name: '纯真少年',
+    voiceSrc: '/audioVoiceList/纯真少年.mp3',
+    voiceId: 'Chinese (Mandarin)_Pure-hearted_Boy',
   },
   {
-    userName: '江浩',
-    data: {
-      model: 'speech-01-turbo',
-      text: '',
-      timber_weights: [
-        {
-          voice_id: 'male-qn-badao',
-          weight: 1,
-        },
-      ],
-      voice_setting: {
-        voice_id: '',
-        speed: 1.25,
-        pitch: 0,
-        vol: 1.25,
-        emotion: 'angry',
-        latex_read: false,
-      },
-      audio_setting: {
-        sample_rate: 32000,
-        bitrate: 128000,
-        format: 'mp3',
-      },
-      language_boost: 'auto',
-    },
+    name: '害羞少女',
+    voiceSrc: '/audioVoiceList/害羞少女.mp3',
+    voiceId: 'Chinese (Mandarin)_BashfulGirl',
   },
   {
-    userName: '苏瑶',
-    data: {
-      model: 'speech-02-hd',
-      text: '',
-      timber_weights: [
-        {
-          voice_id: 'Chinese (Mandarin)_Mature_Woman',
-          weight: 1,
-        },
-      ],
-      voice_setting: {
-        voice_id: '',
-        speed: 1.25,
-        pitch: 0,
-        vol: 1,
-        emotion: 'disgusted',
-        latex_read: false,
-      },
-      audio_setting: {
-        sample_rate: 32000,
-        bitrate: 128000,
-        format: 'mp3',
-      },
-      language_boost: 'auto',
-    },
+    name: '睿智少女',
+    voiceSrc: '/audioVoiceList/睿智少女.mp3',
+    voiceId: 'Chinese (Mandarin)_IntellectualGirl',
   },
   {
-    userName: '沈初云',
-    data: {
-      model: 'speech-02-hd',
-      text: '',
-      timber_weights: [
-        {
-          voice_id: 'Chinese (Mandarin)_Warm_HeartedGirl',
-          weight: 1,
-        },
-      ],
-      voice_setting: {
-        voice_id: '',
-        speed: 1,
-        pitch: 0,
-        vol: 1,
-        emotion: 'happy',
-        latex_read: false,
-      },
-      audio_setting: {
-        sample_rate: 32000,
-        bitrate: 128000,
-        format: 'mp3',
-      },
-      language_boost: 'auto',
-    },
+    name: '洒脱青年',
+    voiceSrc: '/audioVoiceList/洒脱青年.mp3',
+    voiceId: 'Chinese (Mandarin)_Unrestrained_Young_Man',
+  },
+  {
+    name: '绅士青年',
+    voiceSrc: '/audioVoiceList/绅士青年.mp3',
+    voiceId: 'Boyan_new_platform',
+  },
+  {
+    name: '探索少女',
+    voiceSrc: '/audioVoiceList/探索少女.mp3',
+    voiceId: 'Chinese (Mandarin)_ExplorativeGirl',
+  },
+  {
+    name: '慵懒少女',
+    voiceSrc: '/audioVoiceList/慵懒少女.mp3',
+    voiceId: 'Chinese (Mandarin)_Laid_BackGirl',
   },
 ]
-export default audioConfig

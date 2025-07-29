@@ -112,12 +112,16 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
   }
   // 判断是否生成语音
   if (getAudio) {
-    const [audioElem, audioSrc] = await agentStore.audioToAgent(
-      formatAudioMessage(currentMessage.message),
-      targetUser.userName,
-    )
-    currentMessage.audioSrc = audioSrc
-    // 播放音频
-    await playAudio(audioElem)
+    try {
+      const [audioElem, audioSrc] = await agentStore.audioToAgent(
+        formatAudioMessage(currentMessage.message),
+        targetUser.userName,
+      )
+      currentMessage.audioSrc = audioSrc
+      // 播放音频
+      await playAudio(audioElem)
+    } catch {
+      console.log('为查询到语音字')
+    }
   }
 }

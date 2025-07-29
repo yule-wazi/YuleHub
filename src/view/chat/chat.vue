@@ -39,7 +39,7 @@
         </template>
         <template #switch>
           <div class="showTip">
-            <div class="text">显示提示</div>
+            <div class="text">书结束提示</div>
             <el-switch
               v-model="showTip"
               change="showTip = !showTip"
@@ -121,6 +121,33 @@
               type="textarea"
               placeholder="请输入角色发起的第一条消息"
             />
+          </el-form-item>
+          <el-form-item prop="voiceId">
+            <span>音色选择</span>
+            <el-scrollbar>
+              <div class="scrollbar-flex-content">
+                <div
+                  ref="audioItemRef"
+                  v-for="(item, index) in audioList"
+                  :key="index"
+                  class="scrollbar-demo-item"
+                  :class="{ active: selectCurrentAudio === index }"
+                >
+                  <div class="audioItem">
+                    <audio ref="audioRef" :src="item.voiceSrc"></audio>
+                    <div class="voiceName">{{ item.name }}</div>
+                    <div class="handle">
+                      <el-button type="primary" plain @click="selectAudio(item, index)"
+                        >选择</el-button
+                      >
+                      <el-button @click="audioRef[index].play()" style="padding: 5px" plain>
+                        <el-icon size="20px"><VideoPlay /></el-icon>
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </el-scrollbar>
           </el-form-item>
           <el-form-item prop="loreBooks">
             <span>世界书</span>
@@ -297,8 +324,10 @@ import {
   MuteNotification,
   ChatRound,
   ChatLineRound,
+  VideoPlay,
 } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
+import { audioList } from '@/sotre/agentAudioConfig'
 // 初始化世界书
 const loreBooksOptions = [
   {
@@ -308,6 +337,7 @@ const loreBooksOptions = [
 ]
 const roleForm = reactive({
   userName: '',
+  voiceId: '',
   image: '',
   description: '',
   firstMessage: '',
@@ -414,7 +444,7 @@ const uploadInput = ref(null)
 const uploadLoreBooks = () => {
   uploadInput.value?.click()
 }
-// 文件导入
+// 世界书文件导入
 const handleFile = (e) => {
   const file = e.target.files[0]
   const reader = new FileReader(file)
@@ -448,9 +478,10 @@ const addRoleCardConfirm = () => {
   centerDialogVisible.value = false
   drawer.value = false
   if (addUserCard.value) {
-    const { userName, image, description, firstMessage, loreBooks } = roleForm
+    const { userName, image, description, firstMessage, loreBooks, voiceId } = roleForm
     users.push({
       userName,
+      voiceId,
       image,
       isVip: true,
       loreBooks,
@@ -462,6 +493,14 @@ const addRoleCardConfirm = () => {
   } else {
     myCache.set('TokenList', inputToken.value)
   }
+}
+// 选择音色
+const audioItemRef = ref(null)
+const audioRef = ref(null)
+const selectCurrentAudio = ref(-1)
+const selectAudio = (item, index) => {
+  roleForm.voiceId = item.voiceId
+  selectCurrentAudio.value = index
 }
 const router = useRouter()
 // 转到漫画
@@ -649,6 +688,42 @@ onMounted(() => {
   }
   .el-input-tag {
     background-color: var(--chat-card-inputBg-color);
+  }
+  .scrollbar-flex-content {
+    display: flex;
+    width: fit-content;
+  }
+  .scrollbar-demo-item {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 90px;
+    margin: 10px;
+    padding: 5px;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid #666;
+    background: var(--comics-cardBg-color);
+    color: var(--chat-card-text-color);
+    .voiceName {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .handle {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      display: flex;
+    }
+  }
+  .active {
+    background-color: var(--comics-headerIcon-color);
   }
 }
 </style>

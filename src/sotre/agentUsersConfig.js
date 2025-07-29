@@ -1,6 +1,7 @@
 const allUsers = [
   {
     userName: '校园规则之书',
+    voiceId: 'Chinese (Mandarin)_Soft_Girl',
     image: '/userImg/userImg-2.jpg',
     isVip: true,
     loreBooks: [],
@@ -21,6 +22,7 @@ const allUsers = [
   {
     userName: '灵珑',
     image: '/userImg/userImg-4.png',
+    voiceId: 'Chinese (Mandarin)_Laid_BackGirl',
     isVip: false,
     loreBooks: [],
     message: [
@@ -32,6 +34,7 @@ const allUsers = [
   },
   {
     userName: '沈初见',
+    voiceId: 'Chinese (Mandarin)_Cute_Spirit',
     image: '/userImg/userImg-5.png',
     isVip: false,
     loreBooks: [],
@@ -44,6 +47,7 @@ const allUsers = [
   },
   {
     userName: '江浩',
+    voiceId: 'Chinese (Mandarin)_Unrestrained_Young_Man',
     image: '/userImg/userImg-6.png',
     isVip: false,
     loreBooks: [],
@@ -56,6 +60,7 @@ const allUsers = [
   },
   {
     userName: '枫江月',
+    voiceId: 'Chinese (Mandarin)_Wise_Women',
     image: '/userImg/userImg-8.png',
     isVip: true,
     loreBooks: [],

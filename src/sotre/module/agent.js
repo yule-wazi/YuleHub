@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { postAgent, textToAudio } from '@/service/module/agents'
 import { formatInputMessage } from '@/utils/formatOutput'
 import { createAudio } from '@/utils/createAudio'
-import audioConfig from '../agentAudioConfig'
 import allUsers from '../agentUsersConfig'
 const DZMMAGENT_TOKEN = '' /*电子魅魔API-Key*/ || import.meta.env.VITE_DZMMAGENT_TOKEN
 
@@ -46,11 +45,33 @@ const useAgent = defineStore('agent', {
       })
     },
     audioToAgent(message, userName) {
-      console.log('message=', message)
       if (!message) return
       // 查找目标智能体配置
-      const targetConfig = audioConfig.find((item) => item.userName === userName).data
-      targetConfig.text = message
+      const voiceId = this.users.find((item) => item.userName === userName).voiceId
+      let targetConfig = {
+        model: 'speech-02-hd',
+        text: `${message}`,
+        timber_weights: [
+          {
+            voice_id: `${voiceId}`,
+            weight: 1,
+          },
+        ],
+        voice_setting: {
+          voice_id: '',
+          speed: 1.25,
+          pitch: 0,
+          vol: 1.25,
+          emotion: 'disgusted',
+          latex_read: false,
+        },
+        audio_setting: {
+          sample_rate: 32000,
+          bitrate: 128000,
+          format: 'mp3',
+        },
+        language_boost: 'auto',
+      }
       return new Promise((resolve, reject) => {
         textToAudio(targetConfig)
           .then((res) => {
