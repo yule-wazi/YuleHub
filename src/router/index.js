@@ -71,6 +71,32 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/pica',
+      name: 'pica',
+      meta: { keepAlive: true },
+      component: () => import('@/view/pica/pica.vue'),
+      children: [
+        {
+          path: '/pica',
+          redirect: '/pica/home',
+        },
+        {
+          path: 'home',
+          component: () => import('@/view/pica/view/home/home.vue'),
+          meta: { keepAlive: true },
+        },
+        {
+          path: 'category',
+          component: () => import('@/view/pica/view/category/category.vue'),
+          meta: { keepAlive: true },
+        },
+        {
+          path: 'detail',
+          component: () => import('@/view/pica/view/detail/detail.vue'),
+        },
+      ],
+    },
   ],
 })
 router.beforeEach((to) => {

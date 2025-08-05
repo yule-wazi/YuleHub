@@ -30,3 +30,9 @@ export function switchImgResolutionUrl(url, quality = 'low') {
   newUrl = newUrl.replace(proxyUrl1, 'i.pximg.org').replace(proxyUrl2, 'i.pximg.org')
   return newUrl
 }
+// 拼接图片URL(pica)
+export function spliceImgUrl(path) {
+  const baseUrl = 'https://img.picacomic.com'
+  const newPath = path.replace('tobeimg', '')
+  return baseUrl + newPath
+}

@@ -61,6 +61,10 @@
           <el-icon size="20px"><PictureFilled /></el-icon>
           <div class="text">插画</div>
         </div>
+        <div class="comics" @click="goPica">
+          <el-icon size="20px"><Collection /></el-icon>
+          <div class="text">漫画</div>
+        </div>
         <div class="novel" @click="goNovel">
           <el-icon size="20px"><Management /></el-icon>
           <div class="text">小说</div>
@@ -86,6 +90,7 @@ import {
   HomeFilled,
   PictureFilled,
   Management,
+  Collection,
 } from '@element-plus/icons-vue'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 
@@ -147,10 +152,15 @@ onMounted(() => {
 const goHome = () => {
   router.push('/')
 }
-// 转到漫画
+// 转到插画
 const goComics = () => {
   drawer.value = false
   router.push('/comics')
+}
+// 转到漫画
+const goPica = () => {
+  drawer.value = false
+  router.push('/pica')
 }
 // 转到小说
 const goNovel = () => {

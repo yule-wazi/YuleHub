@@ -2,7 +2,12 @@
   <div class="imageItem">
     <div class="item" :style="{ height: imgDefaultHeight }">
       <div class="image" @click="getDetail">
-        <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
+        <img
+          :src="spliceImgUrl(itemData.thumb.path)"
+          alt=""
+          @error="handleImgError"
+          @load="handleImgLoad"
+        />
       </div>
       <div class="content">
         <div class="desc">
@@ -22,9 +27,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
-import useVip from '@/sotre/module/vip'
-import { preLoadImg } from '@/utils/preLoadImg'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
+import { spliceImgUrl } from '@/utils/ProxyUrl'
+import usePica from '@/sotre/module/pica'
 
 const props = defineProps({
   itemData: {
@@ -32,7 +36,7 @@ const props = defineProps({
     default: {},
   },
 })
-const vipStore = useVip()
+const picaStore = usePica()
 // 移除加载错误图片
 const handleImgError = (e) => {
   const imageItem = e.target.closest('.imageItem')
@@ -40,13 +44,6 @@ const handleImgError = (e) => {
     imageItem.remove()
   }
 }
-// 缩略图占位
-const LQIPImg = switchImgResolutionUrl(props.itemData.url)
-const originImg = switchImgResolutionUrl(props.itemData.url, 'origin')
-let showImg = ref(LQIPImg)
-preLoadImg(originImg).then(() => {
-  showImg.value = originImg
-})
 
 // 初始化默认图片高度
 let imgDefaultHeight = ref('70vh')
@@ -56,18 +53,25 @@ const handleImgLoad = () => {
 }
 const router = useRouter()
 // 进入详情页
-const getDetail = () => {
-  router.push('/comics/detail')
-  vipStore.detailData = props.itemData
+const getDetail = async () => {
+  await Promise.all([
+    picaStore.fetchPicaPage({ isRefresh: true, id: props.itemData._id }),
+    picaStore.fetchPicaDetail(props.itemData._id),
+  ])
+  router.push({
+    path: '/pica/detail',
+    query: { id: props.itemData._id },
+  })
 }
-// 搜索tag
+// tag搜索
 const getTag = (tag) => {
   // 删除之前列表
-  vipStore.tagName = tag
-  vipStore.vipImgData = []
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  picaStore.tagName = tag
+  picaStore.categoryList = []
+  picaStore.currentPage = 1
+  picaStore.searchPicaList({ isRefresh: true, keyword: tag })
   router.replace({
-    path: '/comics/category',
+    path: '/pica/category',
     query: { tag },
   })
 }

@@ -1,5 +1,5 @@
 <template>
-  <div ref="loadingRef" v-if="dataList.length" class="loading">加载中···</div>
+  <div ref="loadingRef" v-if="dataList.length" class="loading">{{ text }}</div>
 </template>
 
 <script setup>
@@ -11,6 +11,10 @@ const props = defineProps({
     type: Array,
     default: [],
   },
+  text: {
+    type: String,
+    default: '加载中···'
+  }
 })
 // 触底刷新
 let ob = null
@@ -39,6 +43,7 @@ const emit = defineEmits(['loadingEmit'])
 <style lang="less" scoped>
 .loading {
   height: 100px;
+  text-align: center;
   line-height: 100px;
   font-size: 20px;
   font-weight: 600;

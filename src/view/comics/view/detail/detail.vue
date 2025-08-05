@@ -19,7 +19,7 @@
         <div class="tagTitle">文本标签</div>
         <div class="tagList">
           <template v-for="tag in detailData.tags">
-            <Tag :tag="tag" />
+            <Tag :tag="tag" @getTagEmit="getTag" />
           </template>
         </div>
       </div>
@@ -44,6 +44,7 @@ import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import myCache from '@/utils/cacheStorage'
+import { useRouter } from 'vue-router'
 
 const vipStore = useVip()
 // 清空其他作品列表
@@ -65,6 +66,18 @@ preLoadImg(origin).then(() => {
 })
 // 其他作品
 vipStore.fetchOtherImgList(detailData.uid)
+const router = useRouter()
+// tag搜索
+const getTag = (tag) => {
+  // 删除之前列表
+  vipStore.tagName = tag
+  vipStore.vipImgData = []
+  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  router.replace({
+    path: '/comics/category',
+    query: { tag },
+  })
+}
 </script>
 
 <style lang="less" scoped>
