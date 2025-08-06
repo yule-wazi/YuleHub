@@ -23,8 +23,8 @@ import { useRouter } from 'vue-router'
 import myCache from '@/utils/cacheStorage'
 import userList from './userList.config'
 const router = useRouter()
-const username = ref('')
-const password = ref('')
+const username = ref('vip')
+const password = ref('vip')
 // 提交表单
 const formClick = () => {
   console.log(username.value, password.value)

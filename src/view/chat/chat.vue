@@ -28,7 +28,7 @@
             <el-icon size="20px"><PictureFilled /></el-icon>
             <div class="text">插画</div>
           </div>
-          <div class="comics" @click="goPica">
+          <div v-if="userInfo.role === 999" class="comics" @click="goPica">
             <el-icon size="20px"><Collection /></el-icon>
             <div class="text">漫画</div>
           </div>

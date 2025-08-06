@@ -9,5 +9,10 @@ const userList = [
     password: 'x',
     role: 0,
   },
+  {
+    username: '114514',
+    password: '114514',
+    role: 999,
+  },
 ]
 export default userList
