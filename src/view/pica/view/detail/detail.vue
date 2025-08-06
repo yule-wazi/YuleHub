@@ -1,6 +1,6 @@
 <template>
-  <div class="detail">
-    <div class="headerCard">
+  <div ref="detail" class="detail">
+    <div ref="headerCard" class="headerCard">
       <div class="content">
         <div class="left">
           <div class="image">
@@ -8,7 +8,7 @@
           </div>
         </div>
         <div class="right">
-          <div class="title">{{ detailData.title }}</div>
+          <div class="title">{{ detailData.title }}{{ `(${pageList.totalCount}P)` }}</div>
           <div class="author">作者：{{ detailData.author }}</div>
           <div class="category">分类：{{ detailData.categories[0] }}</div>
           <div class="tip">
@@ -31,9 +31,11 @@
       <div class="desc">{{ detailData.description }}</div>
       <div class="createTime">{{ formatTime(detailData.created_at) }}</div>
     </div>
-    <div class="pageShow">
+    <div ref="pageShow" class="pageShow">
       <template v-for="item in pageList.list">
         <div class="image">
+          <div class="lastPage" @click="lastPageClick"></div>
+          <div class="nextPage" @click="nextPageClick"></div>
           <img :src="spliceImgUrl(item.media.path)" alt="" />
         </div>
       </template>
@@ -55,7 +57,7 @@ import Tag from '@/components/tag/tag.vue'
 import { formatTime } from '@/utils/formatTime'
 import { useRoute, useRouter } from 'vue-router'
 import Loading from '@/components/loading/loading.vue'
-import { ref } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 
 const picaStore = usePica()
 
@@ -80,7 +82,6 @@ if (picaStore.pageList.length !== 0) {
 } else {
   pageList = myCache.get('pageList')
 }
-
 const router = useRouter()
 // tag搜索
 const getTag = (tag) => {
@@ -104,6 +105,23 @@ const isLoading = () => {
   } else {
     isAllTotal.value = true
   }
+}
+const detailRef = useTemplateRef('detail')
+const pageShowRef = useTemplateRef('pageShow')
+const headerCardRef = useTemplateRef('headerCard')
+// 下一张
+const nextPageClick = (e) => {
+  const scrollTop = pageShowRef.value.getBoundingClientRect().top - headerCardRef.value.offsetHeight
+  const targetToBottom = e.target.getBoundingClientRect().bottom
+  const scrollHeight = Math.abs(scrollTop) + Math.abs(targetToBottom)
+  detailRef.value.scrollTo({ top: scrollHeight })
+}
+// 上一张
+const lastPageClick = (e) => {
+  const scrollTop = pageShowRef.value.getBoundingClientRect().top - headerCardRef.value.offsetHeight
+  const targetToBottom = e.target.getBoundingClientRect().bottom
+  const scrollHeight = Math.abs(scrollTop) - Math.abs(targetToBottom)
+  detailRef.value.scrollTo({ top: scrollHeight })
 }
 </script>
 
@@ -188,6 +206,18 @@ const isLoading = () => {
   .pageShow {
     width: 100%;
     .image {
+      position: relative;
+      .lastPage {
+        position: absolute;
+        height: 100%;
+        width: 50%;
+      }
+      .nextPage {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        width: 50%;
+      }
       img {
         width: 100%;
         display: block;
