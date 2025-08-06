@@ -1,20 +1,33 @@
 <template>
   <div class="pica">
-    <HeaderCompoment title="Yule漫画" @searchClickEmit="searchClick" />
+    <HeaderCompoment title="Yule漫画" @searchClickEmit="searchClick">
+      <template #switchOther>
+        <div class="text">最多喜欢</div>
+        <el-switch v-model="mostLike" size="large" change="mostLike = !mostLike" />
+      </template>
+    </HeaderCompoment>
     <RouterView />
   </div>
 </template>
 
 <script setup>
+import { onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import HeaderCompoment from '@/components/headerComponent/headerCompoment.vue'
 import usePica from '@/sotre/module/pica'
-import { onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import myCache from '@/utils/cacheStorage'
 const picaStore = usePica()
 // 移除图片
 onUnmounted(() => {
   console.log('销毁图片列表')
   picaStore.categoryList = []
+})
+// 切换最多喜欢
+const mostLike = ref(myCache.get('mostLike') ?? false)
+picaStore.mostLike = mostLike.value
+watch(mostLike, () => {
+  picaStore.mostLike = mostLike.value
+  myCache.set('mostLike', mostLike.value)
 })
 // 点击搜索
 const router = useRouter()

@@ -1,8 +1,11 @@
 import MyRequest from '../request/index'
-
+import myCache from '@/utils/cacheStorage'
 // 类别详情
 export function getCategoryDetail(category, page) {
-  MyRequest.setBaseUrl(`https://hi.yyaan.com/api/bika/category_list?category=${category}&page=${page}`)
+  const mostLike = myCache.get('mostLike')
+  MyRequest.setBaseUrl(
+    `https://hi.yyaan.com/api/bika/category_list?category=${category}&page=${page}&sort=${mostLike ? 'ld' : 'dd'}`,
+  )
   return MyRequest.get()
 }
 // 漫画详情

@@ -29,6 +29,7 @@ const usePica = defineStore('pica', {
   state: () => {
     return {
       scrollTop: 0,
+      mostLike: false,
       tagList,
       currentCategoryName: tagList[0],
       categoryList: [],

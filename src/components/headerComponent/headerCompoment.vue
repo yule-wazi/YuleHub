@@ -51,6 +51,9 @@
             :inactive-action-icon="Sunny"
           />
         </div>
+        <div class="ohter">
+          <slot name="switchOther"></slot>
+        </div>
       </template>
       <template #menuDefault>
         <div class="home" @click="goHome">
@@ -149,6 +152,7 @@ onMounted(() => {
   )
 })
 
+
 // 回到首页
 const goHome = () => {
   router.push('/')
@@ -241,7 +245,8 @@ const goNovel = () => {
 }
 .menuDrawer {
   .r18,
-  .dark {
+  .dark,
+  .ohter {
     font-size: 16px;
     display: flex;
     justify-content: space-between;
