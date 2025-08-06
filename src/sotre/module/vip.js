@@ -7,6 +7,7 @@ import myCache from '@/utils/cacheStorage'
 const useVip = defineStore('vip', {
   state: () => {
     return {
+      scrollTop: 0,
       isVip: false,
       isFetch: false,
       fetchError: false,

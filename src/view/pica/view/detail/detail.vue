@@ -98,7 +98,6 @@ const route = useRoute()
 // 上滑加载
 const isAllTotal = ref(false)
 const isLoading = () => {
-  console.log(route.query.id)
   if (pageList.list.length < picaStore.totalCount) {
     pageList.page++
     picaStore.fetchPicaPage({ isRefresh: false, id: route.query.id, page: pageList.page })
@@ -111,6 +110,8 @@ const isLoading = () => {
 <style scoped>
 .detail {
   max-width: 800px;
+  height: 100%;
+  overflow: auto;
   margin: auto;
   color: #fff;
   background-color: var(--comics-cardBg-color);
@@ -190,6 +191,23 @@ const isLoading = () => {
         width: 100%;
         display: block;
       }
+    }
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 800px) {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ff007a;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--comics-headerBg-color);
+      border-radius: 4px;
     }
   }
 }

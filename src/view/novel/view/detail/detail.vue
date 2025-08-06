@@ -50,6 +50,8 @@ novelStore.fetchNovelText(detailData.id)
 <style lang="less" scoped>
 .detail {
   max-width: 1000px;
+  height: 100%;
+  overflow: auto;
   margin: auto;
   background-color: var(--comics-headerBg-color);
 
@@ -122,6 +124,23 @@ novelStore.fetchNovelText(detailData.id)
     color: var(--comics-headerIcon-color);
     font-size: 18px;
     text-indent: 2em;
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 800px) {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ff007a;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--comics-headerBg-color);
+      border-radius: 4px;
+    }
   }
 }
 </style>

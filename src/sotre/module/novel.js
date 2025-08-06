@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 const useNovel = defineStore('novelStore', {
   state: () => {
     return {
+      scrollTop: 0,
       novelList: [],
       currentNovelDetail: {},
       novelText: '',

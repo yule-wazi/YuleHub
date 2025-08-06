@@ -1,5 +1,5 @@
 <template>
-  <div class="category">
+  <div ref="category" class="category">
     <div class="title">
       <div class="tag">#{{ route.query.tag }}</div>
       <div class="text">一览</div>
@@ -18,6 +18,7 @@ import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
+import { scrollRestore } from '@/utils/scrollRestore'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
@@ -30,16 +31,18 @@ if (!vipStore.vipImgData.length) {
 const loadingFetch = () => {
   vipStore.fetchGroupImgList({ options: { keyword: vipStore.tagName } })
 }
+scrollRestore('category', vipStore)
 </script>
 
 <style lang="less" scoped>
 .category {
   display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
   flex-direction: column;
   align-items: center;
   background-color: var(--comics-bg-color);
-  height: 100%;
-  width: 100%;
   .title {
     display: flex;
     justify-content: center;
@@ -73,6 +76,23 @@ const loadingFetch = () => {
       display: block;
       column-count: 4;
       column-gap: 10px;
+    }
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 800px) {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ff007a;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--comics-headerBg-color);
+      border-radius: 4px;
     }
   }
 }

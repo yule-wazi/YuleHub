@@ -28,6 +28,7 @@ const tagList = [
 const usePica = defineStore('pica', {
   state: () => {
     return {
+      scrollTop: 0,
       tagList,
       currentCategoryName: tagList[0],
       categoryList: [],
@@ -47,16 +48,13 @@ const usePica = defineStore('pica', {
       const res = await getCategoryDetail(category, page)
       let list = res.data.data.comics.docs
       const isNSFW = myCache.get('isNSFW')
-      if (category === 'Cosplay') {
+      if (category === 'Cosplay' && isNSFW) {
         list = list.filter((item) => {
-          if (isNSFW && !item.tags.includes('無H內容')) {
-            return item
-          } else if (!isNSFW && item.tags.includes('無H內容')) {
+          if (!item.tags.includes('無H內容')) {
             return item
           }
         })
       }
-      console.log(list)
       if (isRefresh) {
         this.categoryList = list
       } else {

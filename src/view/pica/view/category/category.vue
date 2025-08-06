@@ -1,5 +1,5 @@
 <template>
-  <div class="category">
+  <div ref="category" class="category">
     <div class="title">
       <div class="tag">#{{ route.query.tag }}</div>
       <div class="text">一览</div>
@@ -18,6 +18,7 @@ import { useRoute } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import Loading from '@/components/loading/loading.vue'
 import usePica from '@/sotre/module/pica'
+import { scrollRestore } from '@/utils/scrollRestore'
 const route = useRoute()
 const picaStore = usePica()
 // 页面刷新自动给tagName赋值
@@ -32,6 +33,8 @@ const loadingFetch = () => {
   picaStore.currentPage++
   picaStore.searchPicaList({ keyword: picaStore.tagName })
 }
+// 回到当前位置
+scrollRestore('category', picaStore)
 </script>
 
 <style scoped>
@@ -39,9 +42,10 @@ const loadingFetch = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--comics-bg-color);
   height: 100%;
   width: 100%;
+  overflow: auto;
+  background-color: var(--comics-bg-color);
   .title {
     display: flex;
     justify-content: center;
@@ -75,6 +79,23 @@ const loadingFetch = () => {
       display: block;
       column-count: 4;
       column-gap: 10px;
+    }
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 800px) {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #ff007a;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--comics-headerBg-color);
+      border-radius: 4px;
     }
   }
 }
