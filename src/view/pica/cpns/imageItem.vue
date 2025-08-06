@@ -128,6 +128,7 @@ const getTag = (tag) => {
       }
       .tagList {
         display: flex;
+        flex-wrap: wrap;
         .tag {
           font-size: 12px;
           margin: 5px 10px 0 0;

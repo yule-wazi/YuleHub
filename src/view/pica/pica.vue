@@ -35,10 +35,9 @@ const searchClick = (tag) => {
 .pica {
   height: 100vh;
   width: 100%;
-  overflow: auto;
+  overflow: hidden;
   padding-top: 60px;
   box-sizing: border-box;
   background-color: var(--comics-bg-color);
-  
 }
 </style>

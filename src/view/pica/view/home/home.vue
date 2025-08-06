@@ -1,4 +1,5 @@
 <template>
+  <ScrollBar :tagList="tagList" />
   <div ref="home" class="home">
     <div class="list">
       <template v-for="item in picaStore.categoryList">
@@ -12,9 +13,9 @@
 <script setup>
 import ImageItem from '../../cpns/imageItem.vue'
 import Loading from '@/components/loading/loading.vue'
-import usePica from '@/sotre/module/pica'
+import usePica, { tagList } from '@/sotre/module/pica'
 import { scrollRestore } from '@/utils/scrollRestore'
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import ScrollBar from '../../cpns/scrollBar.vue'
 const picaStore = usePica()
 // 发起pica首页请求
 if (!picaStore.categoryList.length) {

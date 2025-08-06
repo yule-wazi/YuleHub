@@ -2,7 +2,7 @@ import { getCategoryDetail, getPicaDetail, getPicaPage, searchPica } from '@/ser
 import { defineStore } from 'pinia'
 import myCache from '@/utils/cacheStorage'
 
-const tagList = [
+export const tagList = [
   'Cosplay',
   'CG雜圖',
   '全彩',

@@ -170,6 +170,7 @@ const isLoading = () => {
     }
     .tagList {
       display: flex;
+      flex-wrap: wrap;
       padding: 10px;
     }
     .desc {
