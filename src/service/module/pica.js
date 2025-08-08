@@ -20,8 +20,9 @@ export function getPicaPage(id, page) {
 }
 // 搜索
 export function searchPica(keyword, page) {
+  const mostLike = myCache.get('mostLike')
   MyRequest.setBaseUrl(
-    `https://hi.yyaan.com/api/bika/advanced_search?keyword=${keyword}&page=${page}`,
+    `https://hi.yyaan.com/api/bika/advanced_search?keyword=${keyword}&page=${page}&sort=${mostLike ? 'ld' : 'dd'}`,
   )
   return MyRequest.get()
 }
