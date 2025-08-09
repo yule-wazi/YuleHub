@@ -1,4 +1,5 @@
 import { getCategoryNovel, getNewNovel, getNovelText } from '@/service/module/novel.js'
+import { filterNovelData } from '@/utils/filterData'
 import { defineStore } from 'pinia'
 
 const useNovel = defineStore('novelStore', {
@@ -15,7 +16,7 @@ const useNovel = defineStore('novelStore', {
   actions: {
     async getHomeNovel() {
       const res = await getNewNovel()
-      this.novelList = res.data.novels
+      this.novelList = filterNovelData(res.data.novels)
     },
     async fetchNovelText(id) {
       this.novelText = ''
@@ -24,7 +25,7 @@ const useNovel = defineStore('novelStore', {
     },
     async fetchCateNovel(word) {
       const res = await getCategoryNovel(word, this.currentPage)
-      this.novelList.push(...res.data.novels)
+      this.novelList.push(...filterNovelData(res.data.novels))
     },
   },
 })
