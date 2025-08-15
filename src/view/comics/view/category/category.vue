@@ -4,9 +4,9 @@
       <div class="tag">#{{ route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
-    <div class="showList">
+    <div class="list">
       <template v-for="item in vipStore.vipImgData">
-        <ImageItem :itemData="item" />
+        <ImageItem :itemData="item" @errorEmit="removeErrorData(item)" />
       </template>
     </div>
     <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />
@@ -32,17 +32,29 @@ const loadingFetch = () => {
   vipStore.fetchGroupImgList({ options: { keyword: vipStore.tagName } })
 }
 scrollRestore('category', vipStore)
+// 清除一场数据
+const removeErrorData = (errorItem) => {
+  console.log('异常数据', errorItem)
+  vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)
+}
 </script>
 
 <style lang="less" scoped>
 .category {
-  display: flex;
-  height: 100%;
+  // display: flex;
+  // height: 100%;
+  // width: 100%;
+  // overflow: auto;
+  // flex-direction: column;
+  // align-items: center;
+  background-color: var(--comics-bg-color);
+
   width: 100%;
-  overflow: auto;
+  height: 100%;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--comics-bg-color);
+  overflow: auto;
   .title {
     display: flex;
     justify-content: center;
@@ -63,19 +75,15 @@ scrollRestore('category', vipStore)
       color: var(--comics-cardTitle-color);
     }
   }
-  .showList {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .list {
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
     @media (min-width: 800px) {
-      display: block;
-      column-count: 3;
-      column-gap: 20px;
+      width: 80%;
     }
     @media (min-width: 1000px) {
-      display: block;
-      column-count: 4;
-      column-gap: 10px;
+      width: 100%;
     }
   }
   &::-webkit-scrollbar {

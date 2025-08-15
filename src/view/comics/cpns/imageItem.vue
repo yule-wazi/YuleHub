@@ -19,12 +19,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
+import { flowFlex } from '@/utils/waterflow'
 
 const props = defineProps({
   itemData: {
@@ -36,6 +37,7 @@ const vipStore = useVip()
 // 移除加载错误图片
 const handleImgError = (e) => {
   const imageItem = e.target.closest('.imageItem')
+  emit('errorEmit')
   if (imageItem) {
     imageItem.remove()
   }
@@ -53,7 +55,13 @@ let imgDefaultHeight = ref('70vh')
 // 图片加载完毕
 const handleImgLoad = () => {
   imgDefaultHeight.value = undefined
+  flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
 }
+
+// 监听窗口
+window.addEventListener('resize', function () {
+  flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
+})
 const router = useRouter()
 // 进入详情页
 const getDetail = () => {
@@ -71,26 +79,17 @@ const getTag = (tag) => {
     query: { tag },
   })
 }
+const emit = defineEmits(['errorEmit'])
 </script>
 
 <style lang="less" scoped>
 .imageItem {
-  @media (min-width: 800px) {
-    padding: 10px;
-  }
-  @media (min-width: 1000px) {
-    padding: 5px;
-  }
+  // position: absolute;
+  transition: 0.3s;
   .item {
-    @media (min-width: 800px) {
-      width: 28vw;
-    }
-    @media (min-width: 1000px) {
-      width: 23vw;
-    }
-
-    width: 92vw;
-    margin: 10px 0;
+    width: 100%;
+    height: 100%;
+    // margin: 10px 0;
     background-color: var(--comics-cardBg-color);
     border-radius: 5px;
     overflow: hidden;

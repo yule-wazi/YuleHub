@@ -1,8 +1,8 @@
 <template>
   <div ref="home" class="home">
-    <div class="list">
+    <div ref="list" class="list">
       <template v-for="item in vipStore.vipImgData">
-        <ImageItem :itemData="item" />
+        <ImageItem :itemData="item" @errorEmit="removeErrorData(item)" />
       </template>
     </div>
     <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />
@@ -14,6 +14,7 @@ import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
+import { useTemplateRef } from 'vue'
 const vipStore = useVip()
 // 发起图片组请求
 if (!vipStore.vipImgData.length) {
@@ -24,28 +25,31 @@ const loadingFetch = () => {
 }
 // 回到当前位置
 scrollRestore('home', vipStore)
+// 清除一场数据
+const removeErrorData = (errorItem) => {
+  console.log('异常数据', errorItem)
+  vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)
+}
 </script>
 
 <style lang="less" scoped>
 .home {
-  display: flex;
+  width: 100%;
   height: 100%;
-  overflow: auto;
+  display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: auto;
+
   .list {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
     @media (min-width: 800px) {
-      display: block;
-      column-count: 3;
-      column-gap: 20px;
+      width: 80%;
     }
     @media (min-width: 1000px) {
-      display: block;
-      column-count: 4;
-      column-gap: 10px;
+      width: 100%;
     }
   }
   &::-webkit-scrollbar {
