@@ -29,6 +29,7 @@ import { useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import { spliceImgUrl } from '@/utils/ProxyUrl'
 import usePica from '@/sotre/module/pica'
+import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
 
 const props = defineProps({
   itemData: {
@@ -50,6 +51,7 @@ let imgDefaultHeight = ref('70vh')
 // 图片加载完毕
 const handleImgLoad = () => {
   imgDefaultHeight.value = undefined
+  flowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
 }
 const router = useRouter()
 // 进入详情页
@@ -75,26 +77,17 @@ const getTag = (tag) => {
     query: { tag },
   })
 }
+// 监听窗口
+window.addEventListener('resize', function () {
+  throttledFlowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
+})
 </script>
 
 <style lang="less" scoped>
 .imageItem {
-  @media (min-width: 800px) {
-    padding: 10px;
-  }
-  @media (min-width: 1000px) {
-    padding: 5px;
-  }
+  transition: 0.3s;
   .item {
-    @media (min-width: 800px) {
-      width: 28vw;
-    }
-    @media (min-width: 1000px) {
-      width: 23vw;
-    }
-
-    width: 92vw;
-    margin: 10px 0;
+    width: 100%;
     background-color: var(--comics-cardBg-color);
     border-radius: 5px;
     overflow: hidden;

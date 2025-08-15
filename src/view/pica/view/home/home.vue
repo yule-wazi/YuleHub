@@ -1,5 +1,5 @@
 <template>
-  <ScrollBar :tagList="tagList" />
+  <ScrollBar :tagList="tagList" @scrollTopEmit="scrollTop" />
   <div ref="home" class="home">
     <div class="list">
       <template v-for="item in picaStore.categoryList">
@@ -16,6 +16,7 @@ import Loading from '@/components/loading/loading.vue'
 import usePica, { tagList } from '@/sotre/module/pica'
 import { scrollRestore } from '@/utils/scrollRestore'
 import ScrollBar from '../../cpns/scrollBar.vue'
+import { ref, useTemplateRef } from 'vue'
 const picaStore = usePica()
 // 发起pica首页请求
 if (!picaStore.categoryList.length) {
@@ -26,30 +27,32 @@ const loadingFetch = () => {
   picaStore.currentPage++
   picaStore.fetchCategoryDetail()
 }
+const home = ref(null)
+// 回到顶部
+const scrollTop = () => {
+  home.value.scrollTo({ top: 0 })
+}
 // 回到当前位置
 scrollRestore('home', picaStore)
 </script>
 
 <style lang="less" scoped>
 .home {
+  width: 100%;
   height: 100%;
-  overflow: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: auto;
   .list {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
     @media (min-width: 800px) {
-      display: block;
-      column-count: 3;
-      column-gap: 20px;
+      width: 80%;
     }
     @media (min-width: 1000px) {
-      display: block;
-      column-count: 4;
-      column-gap: 10px;
+      width: 100%;
     }
   }
   &::-webkit-scrollbar {

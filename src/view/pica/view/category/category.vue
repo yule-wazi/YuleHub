@@ -4,7 +4,7 @@
       <div class="tag">#{{ route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
-    <div class="showList">
+    <div class="list">
       <template v-for="item in picaStore.categoryList">
         <ImageItem :itemData="item" />
       </template>
@@ -39,13 +39,13 @@ scrollRestore('category', picaStore)
 
 <style scoped>
 .category {
+  background-color: var(--comics-bg-color);
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
-  width: 100%;
   overflow: auto;
-  background-color: var(--comics-bg-color);
   .title {
     display: flex;
     justify-content: center;
@@ -66,19 +66,15 @@ scrollRestore('category', picaStore)
       color: var(--comics-cardTitle-color);
     }
   }
-  .showList {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .list {
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
     @media (min-width: 800px) {
-      display: block;
-      column-count: 3;
-      column-gap: 20px;
+      width: 80%;
     }
     @media (min-width: 1000px) {
-      display: block;
-      column-count: 4;
-      column-gap: 10px;
+      width: 100%;
     }
   }
   &::-webkit-scrollbar {

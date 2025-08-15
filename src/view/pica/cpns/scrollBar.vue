@@ -63,10 +63,11 @@ const picaStore = usePica()
 const categoryClick = (categoryName) => {
   picaStore.categoryList = []
   picaStore.currentCategoryName = categoryName
-
   picaStore.currentPage = 1
   picaStore.fetchCategoryDetail({ isRefresh: true, category: categoryName })
+  emit('scrollTopEmit')
 }
+const emit = defineEmits(['scrollTopEmit'])
 </script>
 
 <style lang="less" scoped>

@@ -6,12 +6,16 @@
         <el-switch v-model="mostLike" size="large" change="mostLike = !mostLike" />
       </template>
     </HeaderCompoment>
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive :include="['home', 'category']">
+        <component :is="Component" />
+      </KeepAlive>
+    </RouterView>
   </div>
 </template>
 
 <script setup>
-import { onUnmounted, ref, watch } from 'vue'
+import { KeepAlive, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import HeaderCompoment from '@/components/headerComponent/headerCompoment.vue'
 import usePica from '@/sotre/module/pica'

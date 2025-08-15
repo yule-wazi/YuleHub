@@ -41,14 +41,7 @@ const removeErrorData = (errorItem) => {
 
 <style lang="less" scoped>
 .category {
-  // display: flex;
-  // height: 100%;
-  // width: 100%;
-  // overflow: auto;
-  // flex-direction: column;
-  // align-items: center;
   background-color: var(--comics-bg-color);
-
   width: 100%;
   height: 100%;
   display: flex;

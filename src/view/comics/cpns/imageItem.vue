@@ -39,7 +39,6 @@ const handleImgError = (e) => {
   const imageItem = e.target.closest('.imageItem')
   if (imageItem) {
     imageItem.remove()
-    flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
   }
   emit('errorEmit')
 }
@@ -89,7 +88,6 @@ const emit = defineEmits(['errorEmit'])
   .item {
     width: 100%;
     height: 100%;
-    // margin: 10px 0;
     background-color: var(--comics-cardBg-color);
     border-radius: 5px;
     overflow: hidden;
