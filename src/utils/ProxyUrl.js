@@ -32,7 +32,7 @@ export function switchImgResolutionUrl(url, quality = 'low') {
 }
 // 拼接图片URL(pica)
 export function spliceImgUrl(path) {
-  const baseUrl = 'https://img.picacomic.com'
+  const baseUrl = 'https://img.safedataplj.com/'
   const newPath = path.replace('tobeimg', '')
   return baseUrl + newPath
 }
