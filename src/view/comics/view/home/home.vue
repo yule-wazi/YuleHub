@@ -30,9 +30,6 @@ const removeErrorData = (errorItem) => {
   console.log('异常数据', errorItem)
   vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)
 }
-onMounted(() => {
-  console.log('Homemounted')
-})
 </script>
 
 <style lang="less" scoped>
