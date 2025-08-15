@@ -25,9 +25,14 @@ onUnmounted(() => {
 const router = useRouter()
 const searchClick = (tag) => {
   vipStore.tagName = tag
+  console.log('点击搜索', tag)
   // 清空之前列表
   vipStore.vipImgData = []
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: tag } })
+  vipStore.currentPage = 1
+  vipStore.fetchSearchImgList({
+    isRefresh: true,
+    options: { word: tag, page: vipStore.currentPage },
+  })
   router.push({
     path: '/comics/category',
     query: { tag },

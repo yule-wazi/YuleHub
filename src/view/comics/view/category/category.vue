@@ -19,17 +19,23 @@ import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
+import { ref } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
 vipStore.tagName = route.query.tag
 // 发起图片组请求
 if (!vipStore.vipImgData.length) {
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  vipStore.currentPage = 1
+  vipStore.fetchSearchImgList({
+    isRefresh: true,
+    options: { word: vipStore.tagName, page: vipStore.currentPage },
+  })
 }
 // loading加载发起请求
 const loadingFetch = () => {
-  vipStore.fetchGroupImgList({ options: { keyword: vipStore.tagName } })
+  vipStore.currentPage++
+  vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
 }
 scrollRestore('category', vipStore)
 // 清除一场数据

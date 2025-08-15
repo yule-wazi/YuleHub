@@ -5,7 +5,10 @@
       <div class="pid">(PID：{{ detailData.pid }})</div>
     </div>
     <div class="headerImg">
-      <img :src="showImg" alt="" />
+      <img v-if="!imgList.length" :src="showImg" />
+      <template v-for="item in imgList">
+        <img :src="switchImgResolutionUrl(item, 'origin')" alt="加载中..." />
+      </template>
     </div>
     <div class="desc">
       <div class="author">
@@ -19,7 +22,7 @@
         <div class="tagTitle">文本标签</div>
         <div class="tagList">
           <template v-for="tag in detailData.tags">
-            <Tag :tag="tag" @getTagEmit="getTag" />
+            <Tag :tag="tag.name" @getTagEmit="getTag" />
           </template>
         </div>
       </div>
@@ -38,7 +41,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
@@ -57,13 +60,15 @@ if (Object.keys(vipStore.detailData).length !== 0) {
 } else {
   detailData = myCache.get('detailData')
 }
-console.log(detailData)
 // p站获取高清图片
-const showImg = ref(detailData.url)
-const origin = switchImgResolutionUrl(detailData.url, 'origin')
+const showImg = ref(detailData.coverImg.large)
+const origin = switchImgResolutionUrl(detailData.coverImg.large, 'origin')
 preLoadImg(origin).then(() => {
   showImg.value = origin
 })
+//遍历展示所有图片
+const imgList = detailData.pageList.map((item) => item.image_urls.large)
+console.log(imgList)
 // 其他作品
 vipStore.fetchOtherImgList(detailData.uid)
 const router = useRouter()
@@ -72,7 +77,11 @@ const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
   vipStore.vipImgData = []
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  vipStore.currentPage = 1
+  vipStore.fetchSearchImgList({
+    isRefresh: true,
+    options: { word: vipStore.tagName, page: vipStore.currentPage },
+  })
   router.replace({
     path: '/comics/category',
     query: { tag },

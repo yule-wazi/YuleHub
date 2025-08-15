@@ -3,18 +3,6 @@ import { shuffleArray } from '@/utils/handleArray'
 import myCache from '@/utils/cacheStorage'
 import MyRequest from '../request/index'
 const HOST = import.meta.env.VITE_HOST || 'localhost'
-
-// 福利图API-1（弃用）
-export function postVipList() {
-  MyRequest.setBaseUrl('https://api.mossia.top/duckMo')
-  return MyRequest.post({
-    data: {
-      num: 20,
-      r18Type: 1,
-      aiType: 0,
-    },
-  })
-}
 // 获取画师作品id列表
 function getPixivUID(uid) {
   MyRequest.setBaseUrl(
@@ -64,6 +52,30 @@ export function postLoliconList(options) {
   }
   MyRequest.setBaseUrl(
     `http://${HOST}:3000/proxy?url=${encodeURIComponent(`https://api.lolicon.app/setu/v2?num=20&r18=${isR18 ? 1 : 0}&size=small${queryString}`)}`,
+  )
+  return MyRequest.get()
+}
+
+// pixivRank
+export function postPixivRankList(options) {
+  let isR18 = myCache.get('isNSFW') ?? false
+  let queryString = ''
+  for (const k in options) {
+    queryString += `&${k}=${options[k]}`
+  }
+  MyRequest.setBaseUrl(
+    `https://hibiapi.getloli.com/api/pixiv/rank?mode=${isR18 ? 'day_r18' : 'day'}${queryString}`,
+  )
+  return MyRequest.get()
+}
+// pixivSearch
+export function postPixivSearchList(options) {
+  let queryString = ''
+  for (const k in options) {
+    queryString += `&${k}=${options[k]}`
+  }
+  MyRequest.setBaseUrl(
+    `https://hibiapi.getloli.com/api/pixiv/search?${queryString}`,
   )
   return MyRequest.get()
 }

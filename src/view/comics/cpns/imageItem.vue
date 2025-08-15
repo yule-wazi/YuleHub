@@ -3,6 +3,10 @@
     <div class="item" :style="{ height: imgDefaultHeight }">
       <div class="image" @click="getDetail">
         <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
+        <div v-if="itemData.pageList.length" class="pageIcon">
+          <el-icon><CopyDocument /></el-icon>
+          <span class="pageCount">{{ itemData.pageList.length }}</span>
+        </div>
       </div>
       <div class="content">
         <div class="desc">
@@ -10,7 +14,7 @@
         </div>
         <div class="tagList">
           <template v-for="tag in itemData.tags.slice(0, 3)">
-            <Tag :tag="tag" @getTagEmit="getTag" />
+            <Tag :tag="tag.name" @getTagEmit="getTag" />
           </template>
         </div>
       </div>
@@ -19,13 +23,14 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
+import { CopyDocument } from '@element-plus/icons-vue'
 
 const props = defineProps({
   itemData: {
@@ -43,8 +48,8 @@ const handleImgError = (e) => {
   emit('errorEmit')
 }
 // 缩略图占位
-const LQIPImg = switchImgResolutionUrl(props.itemData.url)
-const originImg = switchImgResolutionUrl(props.itemData.url, 'origin')
+const LQIPImg = switchImgResolutionUrl(props.itemData.coverImg.large)
+const originImg = switchImgResolutionUrl(props.itemData.coverImg.large, 'origin')
 let showImg = ref(LQIPImg)
 preLoadImg(originImg).then(() => {
   showImg.value = originImg
@@ -73,7 +78,11 @@ const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
   vipStore.vipImgData = []
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
+  vipStore.currentPage = 1
+  vipStore.fetchSearchImgList({
+    isRefresh: true,
+    options: { word: vipStore.tagName, page: vipStore.currentPage },
+  })
   router.replace({
     path: '/comics/category',
     query: { tag },
@@ -93,8 +102,23 @@ const emit = defineEmits(['errorEmit'])
     overflow: hidden;
     box-shadow: 0 1px 1px 0 rgba(131, 131, 131, 0.5);
     .image {
+      position: relative;
       width: 100%;
       height: 80%;
+      .pageIcon {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        display: flex;
+        align-items: center;
+        color: #fff;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 3px 5px;
+        border-radius: 3px;
+        .pageCount {
+          margin-left: 2px;
+        }
+      }
       img {
         width: 100%;
         height: 100%;
