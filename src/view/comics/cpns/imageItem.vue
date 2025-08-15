@@ -25,7 +25,7 @@ import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
-import { flowFlex } from '@/utils/waterflow'
+import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
 
 const props = defineProps({
   itemData: {
@@ -37,10 +37,11 @@ const vipStore = useVip()
 // 移除加载错误图片
 const handleImgError = (e) => {
   const imageItem = e.target.closest('.imageItem')
-  emit('errorEmit')
   if (imageItem) {
     imageItem.remove()
+    flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
   }
+  emit('errorEmit')
 }
 // 缩略图占位
 const LQIPImg = switchImgResolutionUrl(props.itemData.url)
@@ -60,7 +61,7 @@ const handleImgLoad = () => {
 
 // 监听窗口
 window.addEventListener('resize', function () {
-  flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
+  throttledFlowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
 })
 const router = useRouter()
 // 进入详情页
@@ -84,7 +85,6 @@ const emit = defineEmits(['errorEmit'])
 
 <style lang="less" scoped>
 .imageItem {
-  // position: absolute;
   transition: 0.3s;
   .item {
     width: 100%;

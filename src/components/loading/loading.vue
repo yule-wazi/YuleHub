@@ -23,7 +23,7 @@ const vipStore = useVip()
 const timeOut = ref(false)
 setTimeout(() => {
   timeOut.value = true
-},5000)
+},3000)
 watch(loadingRef, () => {
   ob = new IntersectionObserver(
     (entires) => {

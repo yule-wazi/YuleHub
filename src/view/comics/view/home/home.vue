@@ -14,7 +14,7 @@ import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
-import { useTemplateRef } from 'vue'
+import { onMounted, useTemplateRef } from 'vue'
 const vipStore = useVip()
 // 发起图片组请求
 if (!vipStore.vipImgData.length) {
@@ -30,6 +30,9 @@ const removeErrorData = (errorItem) => {
   console.log('异常数据', errorItem)
   vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)
 }
+onMounted(() => {
+  console.log('Homemounted')
+})
 </script>
 
 <style lang="less" scoped>

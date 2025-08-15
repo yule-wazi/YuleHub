@@ -1,12 +1,16 @@
 <template>
   <div class="comics">
     <headerCompoment title="YULE插画" @searchClickEmit="searchClick" />
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive :include="['home', 'category']">
+        <component :is="Component" />
+      </KeepAlive>
+    </RouterView>
   </div>
 </template>
 
 <script setup>
-import { onUnmounted } from 'vue'
+import { KeepAlive, onUnmounted } from 'vue'
 import headerCompoment from '@/components/headerComponent/headerCompoment.vue'
 import useVip from '@/sotre/module/vip'
 import { RouterView, useRouter } from 'vue-router'

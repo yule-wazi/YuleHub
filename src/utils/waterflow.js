@@ -1,3 +1,5 @@
+import { throttle } from "./throttle"
+
 function setPosition({ imgList, col, space, imgWidth, parentElem }) {
   let nextTop = new Array(col)
   nextTop.fill(0)
@@ -19,10 +21,13 @@ function setPosition({ imgList, col, space, imgWidth, parentElem }) {
 }
 export function flowFlex({ imgList, imgWidth }) {
   const boxElem = document.querySelector('.list')
-  const containerWidth = boxElem.clientWidth
-  const col = Math.floor(containerWidth / imgWidth)
-  const colNumber = col + 1
-  const leftSapce = containerWidth - imgWidth * col
-  const space = leftSapce / colNumber
-  setPosition({ imgList, col, space, imgWidth, parentElem: boxElem })
+  if (boxElem) {
+    const containerWidth = boxElem.clientWidth
+    const col = Math.floor(containerWidth / imgWidth)
+    const colNumber = col + 1
+    const leftSapce = containerWidth - imgWidth * col
+    const space = leftSapce / colNumber
+    setPosition({ imgList, col, space, imgWidth, parentElem: boxElem })
+  }
 }
+export const throttledFlowFlex = throttle(flowFlex, 500)

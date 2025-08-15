@@ -31,7 +31,7 @@
     <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
       <template #menuHeader> {{ title }} </template>
       <template #switch>
-        <div class="r18">
+        <div class="r18" v-if="userInfo.role === 999">
           <div class="text">NSFW</div>
           <el-switch
             v-model="isNSFW"
@@ -151,7 +151,6 @@ onMounted(() => {
     { immediate: true },
   )
 })
-
 
 // 回到首页
 const goHome = () => {
