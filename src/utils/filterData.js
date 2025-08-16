@@ -6,8 +6,7 @@ export function filterNovelData(novels) {
     return novels
   } else {
     return novels.filter((item) => {
-      const tags = item.tags
-      return !tags.find((tag) => tag.name === 'R-18' || tag.name === 'R-18G')
+      return !item.x_restrict
     })
   }
 }
