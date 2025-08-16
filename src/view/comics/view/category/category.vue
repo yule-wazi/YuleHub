@@ -19,7 +19,7 @@ import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
-import { ref } from 'vue'
+import { ref, useTemplateRef, watchEffect } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
@@ -38,7 +38,18 @@ const loadingFetch = () => {
   vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
 }
 scrollRestore('category', vipStore)
-// 清除一场数据
+// 重新请求回到顶部
+const category = ref(null)
+watchEffect(() => {
+  if (!vipStore.vipImgData.length) {
+    vipStore.scrollTop = 0
+    if (category.value) {
+      console.log('回到顶部')
+      category.value.scrollTo({ top: 0 })
+    }
+  }
+})
+// 清除异常数据
 const removeErrorData = (errorItem) => {
   console.log('异常数据', errorItem)
   vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)

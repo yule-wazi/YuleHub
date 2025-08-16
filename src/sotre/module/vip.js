@@ -15,7 +15,7 @@ const useVip = defineStore('vip', {
   state: () => {
     return {
       scrollTop: 0,
-      currentPage: 3,
+      currentPage: 1,
       isVip: false,
       isFetch: false,
       fetchError: false,
@@ -70,7 +70,6 @@ const useVip = defineStore('vip', {
       }
     },
     async fetchSearchImgList({ isRefresh = false, options } = {}) {
-      console.log('发起请求', options)
       const list = await postPixivSearchList(options)
       console.log(list.data.illusts)
       let formatList = list.data.illusts.map((item) => {

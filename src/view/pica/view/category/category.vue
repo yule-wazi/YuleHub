@@ -19,6 +19,7 @@ import ImageItem from '../../cpns/imageItem.vue'
 import Loading from '@/components/loading/loading.vue'
 import usePica from '@/sotre/module/pica'
 import { scrollRestore } from '@/utils/scrollRestore'
+import { ref, watchEffect } from 'vue'
 const route = useRoute()
 const picaStore = usePica()
 // 页面刷新自动给tagName赋值
@@ -35,6 +36,17 @@ const loadingFetch = () => {
 }
 // 回到当前位置
 scrollRestore('category', picaStore)
+// 重新请求回到顶部
+const category = ref(null)
+watchEffect(() => {
+  if (!picaStore.categoryList.length) {
+    picaStore.scrollTop = 0
+    if (category.value) {
+      console.log('回到顶部')
+      category.value.scrollTo({ top: 0 })
+    }
+  }
+})
 </script>
 
 <style scoped>

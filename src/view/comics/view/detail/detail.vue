@@ -68,7 +68,6 @@ preLoadImg(origin).then(() => {
 })
 //遍历展示所有图片
 const imgList = detailData.pageList.map((item) => item.image_urls.large)
-console.log(imgList)
 // 其他作品
 vipStore.fetchOtherImgList(detailData.uid)
 const router = useRouter()
