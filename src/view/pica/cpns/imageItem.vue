@@ -13,7 +13,7 @@
         <div class="desc">
           <div class="title" @click="getDetail">{{ itemData.title }}</div>
         </div>
-        <div class="tagList">
+        <div v-if="itemData.tags" class="tagList">
           <template v-for="tag in itemData.tags.slice(0, 3)">
             <Tag :tag="tag" @getTagEmit="getTag" />
           </template>
@@ -86,6 +86,7 @@ window.addEventListener('resize', function () {
 <style lang="less" scoped>
 .imageItem {
   transition: 0.3s;
+  display: none;
   .item {
     width: 100%;
     background-color: var(--comics-cardBg-color);

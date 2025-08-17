@@ -8,12 +8,13 @@ function setPosition({ imgList, col, space, imgWidth, parentElem }) {
     if (imgItem) {
       const miniTop = Math.min(...nextTop)
       imgItem.style.position = 'absolute'
+      imgItem.style.display = 'block'
       imgItem.style.width = imgWidth + 'px'
       imgItem.style.top = miniTop + 'px'
       const index = nextTop.indexOf(miniTop)
-      nextTop[index] += imgItem.offsetHeight + space
       const left = (index + 1) * space + index * imgWidth
       imgItem.style.left = left + 'px'
+      nextTop[index] += imgItem.offsetHeight + space
       const maxHeight = Math.max(...nextTop)
       parentElem.style.paddingBottom = maxHeight + 'px'
     }
