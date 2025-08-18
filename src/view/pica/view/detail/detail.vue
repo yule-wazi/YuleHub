@@ -30,6 +30,11 @@
       </div>
       <div class="desc">{{ detailData.description }}</div>
       <div class="createTime">{{ formatTime(detailData.created_at) }}</div>
+      <div class="series">
+        <template v-for="item in detailData.picaSeries">
+          <div class="order" @click="getSeriesPage(item)">{{ item.title }}</div>
+        </template>
+      </div>
     </div>
     <div ref="pageShow" class="pageShow">
       <template v-for="item in pageList.list">
@@ -57,7 +62,7 @@ import Tag from '@/components/tag/tag.vue'
 import { formatTime } from '@/utils/formatTime'
 import { useRoute, useRouter } from 'vue-router'
 import Loading from '@/components/loading/loading.vue'
-import { ref, useTemplateRef } from 'vue'
+import { reactive, ref, useTemplateRef } from 'vue'
 
 const picaStore = usePica()
 
@@ -65,15 +70,16 @@ const picaStore = usePica()
 let detailData = {}
 if (Object.keys(picaStore.picaDetail).length !== 0) {
   detailData = picaStore.picaDetail
+  detailData.picaSeries = picaStore.picaSeries
   myCache.set('picaDetail', detailData)
 } else {
   detailData = myCache.get('picaDetail')
 }
-let pageList = {
+let pageList = reactive({
   list: [],
   totalCount: 0,
   page: 1,
-}
+})
 if (picaStore.pageList.length !== 0) {
   pageList.list = picaStore.pageList
   pageList.totalCount = picaStore.totalCount
@@ -101,10 +107,30 @@ const isAllTotal = ref(false)
 const isLoading = () => {
   if (pageList.list.length < picaStore.totalCount) {
     pageList.page++
-    picaStore.fetchPicaPage({ isRefresh: false, id: route.query.id, page: pageList.page })
+    picaStore.fetchPicaPage({
+      isRefresh: false,
+      id: route.query.id,
+      page: pageList.page,
+      order: picaStore.picaOrder,
+    })
   } else {
     isAllTotal.value = true
   }
+}
+// 跳转相关文章
+const getSeriesPage = async (item) => {
+  picaStore.picaOrder = item.order
+  pageList.list = []
+  pageList.page = 1
+  await picaStore.fetchPicaPage({
+    isRefresh: true,
+    id: route.query.id,
+    page: pageList.page,
+    order: item.order,
+  })
+  pageList.totalCount = picaStore.totalCount
+  pageList.list = picaStore.pageList
+  console.log(pageList.list)
 }
 const detailRef = useTemplateRef('detail')
 const pageShowRef = useTemplateRef('pageShow')
@@ -201,6 +227,21 @@ const lastPageClick = (e) => {
       padding: 5px 10px;
       font-size: 12px;
       color: var(--comics-menuText-color);
+    }
+    .series {
+      padding: 5px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: start;
+      .order {
+        color: #ff007a;
+        font-weight: 600;
+        margin: 5px 10px 0 0;
+        font-size: 14px;
+        border-radius: 5px;
+        padding: 7px 13px;
+        border: 1px solid #ff007a;
+      }
     }
   }
   .pageShow {

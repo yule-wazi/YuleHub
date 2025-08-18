@@ -14,8 +14,8 @@ export function getPicaDetail(id) {
   return MyRequest.get()
 }
 // 页面列表
-export function getPicaPage(id, page) {
-  MyRequest.setBaseUrl(`https://hi.yyaan.com/api/bika/comic_page?id=${id}&page=${page}`)
+export function getPicaPage(id, page, order) {
+  MyRequest.setBaseUrl(`https://hi.yyaan.com/api/bika/comic_page?id=${id}&page=${page}&order=${order}`)
   return MyRequest.get()
 }
 // 搜索
@@ -24,5 +24,10 @@ export function searchPica(keyword, page) {
   MyRequest.setBaseUrl(
     `https://hi.yyaan.com/api/bika/advanced_search?keyword=${keyword}&page=${page}&sort=${mostLike ? 'ld' : 'dd'}`,
   )
+  return MyRequest.get()
+}
+// 相关章节
+export function getPicaSeries(id) {
+  MyRequest.setBaseUrl(`https://hi.yyaan.com/api/bika/comic_episodes?id=${id}`)
   return MyRequest.get()
 }

@@ -1,4 +1,10 @@
-import { getCategoryDetail, getPicaDetail, getPicaPage, searchPica } from '@/service/module/pica'
+import {
+  getCategoryDetail,
+  getPicaDetail,
+  getPicaPage,
+  getPicaSeries,
+  searchPica,
+} from '@/service/module/pica'
 import { defineStore } from 'pinia'
 import myCache from '@/utils/cacheStorage'
 
@@ -35,6 +41,8 @@ const usePica = defineStore('pica', {
       categoryList: [],
       picaDetail: {},
       pageList: [],
+      picaSeries: [],
+      picaOrder: 0,
       totalCount: 0,
       currentPage: 1,
       tagName: '',
@@ -71,9 +79,9 @@ const usePica = defineStore('pica', {
         this.categoryList.push(...list)
       }
     },
-    fetchPicaPage({ isRefresh = false, id, page = 1 }) {
+    fetchPicaPage({ isRefresh = false, id, page = 1, order = 1 }) {
       return new Promise(async (resolve) => {
-        const res = await getPicaPage(id, page)
+        const res = await getPicaPage(id, page, order)
         this.totalCount = res.data.data.pages.total
         if (isRefresh) {
           this.pageList = res.data.data.pages.docs
@@ -87,6 +95,13 @@ const usePica = defineStore('pica', {
       return new Promise(async (resolve) => {
         const res = await getPicaDetail(id)
         this.picaDetail = res.data.data.comic
+        resolve(res)
+      })
+    },
+    fetchPicaSeries(id) {
+      return new Promise(async (resolve) => {
+        const res = await getPicaSeries(id)
+        this.picaSeries = res.data.data.eps.docs
         resolve(res)
       })
     },

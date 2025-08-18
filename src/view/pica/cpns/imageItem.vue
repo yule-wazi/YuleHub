@@ -59,6 +59,7 @@ const getDetail = async () => {
   await Promise.all([
     picaStore.fetchPicaPage({ isRefresh: true, id: props.itemData._id }),
     picaStore.fetchPicaDetail(props.itemData._id),
+    picaStore.fetchPicaSeries(props.itemData._id),
   ])
   router.push({
     path: '/pica/detail',
