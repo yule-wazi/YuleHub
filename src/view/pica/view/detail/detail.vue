@@ -1,5 +1,5 @@
 <template>
-  <div ref="detail" class="detail">
+  <div ref="detail" class="detail" @scroll="throttleScroll">
     <div ref="headerCard" class="headerCard">
       <div class="content">
         <div class="left">
@@ -31,9 +31,19 @@
       <div class="desc">{{ detailData.description }}</div>
       <div class="createTime">{{ formatTime(detailData.created_at) }}</div>
       <div class="series">
-        <template v-for="item in detailData.picaSeries">
-          <div class="order" @click="getSeriesPage(item)">{{ item.title }}</div>
-        </template>
+        <el-scrollbar>
+          <div class="scrollbar-flex-content">
+            <div
+              ref="tagRefs"
+              v-for="(item, index) in detailData.picaSeries"
+              :key="index"
+              class="scrollbar-demo-item"
+              @click="getSeriesPage(item)"
+            >
+              {{ item.title }}
+            </div>
+          </div>
+        </el-scrollbar>
       </div>
     </div>
     <div ref="pageShow" class="pageShow">
@@ -50,6 +60,11 @@
       :text="isAllTotal ? '已近到底了' : '加载中...'"
       @loadingEmit="isLoading"
     />
+    <Transition>
+      <div v-if="showGoBackButton" class="backBottom" @click="goBackBottom(detailRef)">
+        <el-icon size="35" color="#fff"><CaretTop /></el-icon>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -57,12 +72,13 @@
 import usePica from '@/sotre/module/pica'
 import { spliceImgUrl } from '@/utils/ProxyUrl'
 import myCache from '@/utils/cacheStorage'
-import { Star, View } from '@element-plus/icons-vue'
+import { CaretTop, Star, View } from '@element-plus/icons-vue'
 import Tag from '@/components/tag/tag.vue'
 import { formatTime } from '@/utils/formatTime'
 import { useRoute, useRouter } from 'vue-router'
 import Loading from '@/components/loading/loading.vue'
 import { reactive, ref, useTemplateRef } from 'vue'
+import { throttle } from '@/utils/throttle'
 
 const picaStore = usePica()
 
@@ -149,6 +165,29 @@ const lastPageClick = (e) => {
   const scrollHeight = Math.abs(scrollTop) - Math.abs(targetToBottom)
   detailRef.value.scrollTo({ top: scrollHeight })
 }
+// 回到顶部
+const showGoBackButton = ref(false)
+const goBackBottom = (contentRef) => {
+  const content = contentRef
+  content.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
+// 展示回到底部按钮
+const lastScrollTop = ref(0)
+const isShowGoBackButton = (e) => {
+  const content = e.target
+  if (content.scrollTop === 0) {
+    showGoBackButton.value = false
+  } else if (lastScrollTop.value > content.scrollTop) {
+    showGoBackButton.value = true
+  } else {
+    showGoBackButton.value = false
+  }
+  lastScrollTop.value = content.scrollTop
+}
+const throttleScroll = throttle(isShowGoBackButton, 100)
 </script>
 
 <style scoped>
@@ -224,23 +263,37 @@ const lastPageClick = (e) => {
       text-align: justify;
     }
     .createTime {
+      position: sticky;
       padding: 5px 10px;
       font-size: 12px;
       color: var(--comics-menuText-color);
     }
     .series {
+      width: 100%;
       padding: 5px 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: start;
-      .order {
-        color: #ff007a;
-        font-weight: 600;
-        margin: 5px 10px 0 0;
-        font-size: 14px;
-        border-radius: 5px;
-        padding: 7px 13px;
-        border: 1px solid #ff007a;
+      box-sizing: border-box;
+      background-color: var(--comics-headerBg-color);
+      :deep(.el-scrollbar__bar) {
+        display: none;
+      }
+      .scrollbar-flex-content {
+        display: flex;
+        align-items: center;
+        width: fit-content;
+        box-sizing: border-box;
+        .scrollbar-demo-item {
+          display: flex;
+          justify-content: center;
+          text-align: center;
+          flex-shrink: 0;
+          color: #ff007a;
+          font-weight: 600;
+          margin: 5px 10px 0 0;
+          font-size: 14px;
+          border-radius: 5px;
+          padding: 7px 13px;
+          border: 1px solid #ff007a;
+        }
       }
     }
   }
@@ -281,6 +334,28 @@ const lastPageClick = (e) => {
       background: var(--comics-headerBg-color);
       border-radius: 4px;
     }
+  }
+  .backBottom {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 35px;
+    height: 35px;
+    padding: 5px;
+    background-color: #666666c6;
+    border: 2px #aaa solid;
+    border-radius: 50%;
+    transition: all 0.1s;
+  }
+  .v-enter-from,
+  .v-leave-to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  .v-leave-from,
+  .v-enter-to {
+    transform: translateY(20px);
+    opacity: 1;
   }
 }
 </style>
