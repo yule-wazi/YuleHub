@@ -338,7 +338,7 @@ const throttleScroll = throttle(isShowGoBackButton, 100)
   .backBottom {
     position: fixed;
     bottom: 30px;
-    left: 30px;
+    right: 30px;
     width: 35px;
     height: 35px;
     padding: 5px;

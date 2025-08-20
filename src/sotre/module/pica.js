@@ -42,7 +42,7 @@ const usePica = defineStore('pica', {
       picaDetail: {},
       pageList: [],
       picaSeries: [],
-      picaOrder: 0,
+      picaOrder: 1,
       totalCount: 0,
       currentPage: 1,
       tagName: '',
