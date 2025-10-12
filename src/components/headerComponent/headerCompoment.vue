@@ -72,6 +72,10 @@
           <el-icon size="20px"><Management /></el-icon>
           <div class="text">小说</div>
         </div>
+        <div class="video" @click="goVideo">
+          <el-icon size="20px"><VideoCameraFilled /></el-icon>
+          <div class="text">动漫</div>
+        </div>
       </template>
     </MenuDrawer>
   </div>
@@ -94,6 +98,7 @@ import {
   PictureFilled,
   Management,
   Collection,
+  VideoCameraFilled,
 } from '@element-plus/icons-vue'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 
@@ -170,6 +175,11 @@ const goPica = () => {
 const goNovel = () => {
   drawer.value = false
   router.push('/novel')
+}
+// 转到动画
+const goVideo = () => {
+  drawer.value = false
+  router.push('/video')
 }
 </script>
 
@@ -255,7 +265,8 @@ const goNovel = () => {
   .home,
   .comics,
   .pica,
-  .novel {
+  .novel,
+  .video {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #999;

@@ -97,6 +97,33 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/video',
+      name: 'video',
+      meta: { keepAlive: true },
+      component: () => import('@/view/video/video.vue'),
+      children: [
+        {
+          path: '/video',
+          redirect: '/video/home',
+        },
+        {
+          path: 'home',
+          component: () => import('@/view/video/view/home/home.vue'),
+          meta: { keepAlive: true },
+        },
+        {
+          path: 'category',
+          component: () => import('@/view/video/view/category/category.vue'),
+          meta: { keepAlive: true },
+        },
+        {
+          path: 'detail',
+          component: () => import('@/view/video/view/detail/detail.vue'),
+        },
+      ],
+      meta: { keepAlive: false },
+    },
   ],
 })
 router.beforeEach((to) => {

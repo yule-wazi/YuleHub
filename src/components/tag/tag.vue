@@ -1,5 +1,8 @@
 <template>
-  <div class="tag" @click="getTag(tag)">#{{ tag }}</div>
+  <div class="tag" @click="getTag(tag)">
+    <span v-if="hashtag">#</span>
+    {{ tag }}
+  </div>
 </template>
 
 <script setup>
@@ -11,24 +14,17 @@ defineProps({
     type: String,
     default: '',
   },
+  hashtag: {
+    type: Boolean,
+    default: true,
+  },
 })
 const vipStore = useVip()
 const router = useRouter()
 const getTag = (tag) => {
-  // // 删除之前列表
-  // vipStore.tagName = tag
-  // vipStore.vipImgData = []
-  // if (!vipStore.vipImgData.length) {
-  //   vipStore.fetchGroupImgList({ isRefresh: true, options: { keyword: vipStore.tagName } })
-  // }
-  // router.replace({
-  //   path: '/comics/category',
-  //   query: { tag },
-  // })
-  
   emit('getTagEmit', tag)
 }
-const emit = defineEmits(["getTagEmit"])
+const emit = defineEmits(['getTagEmit'])
 </script>
 
 <style lang="less" scoped>
