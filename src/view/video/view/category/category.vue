@@ -10,6 +10,7 @@
       </template>
     </div>
   </div>
+  <Loading :dataList="videoStore.videoList" @loadingEmit="loadingFetch" />
 </template>
 
 <script setup>
@@ -29,6 +30,13 @@ if (!videoStore.videoList.length) {
   videoStore.currentPage = 1
   console.log('重新请求数据')
   videoStore.searchVideoList({ isRefresh: true, keyword: videoStore.tagName })
+}
+const loadingFetch = () => {
+  videoStore.currentPage++
+  videoStore.searchVideoList({
+    keyword: videoStore.tagName,
+    page: videoStore.currentPage,
+  })
 }
 scrollRestore('category', videoStore)
 // 重新请求回到顶部

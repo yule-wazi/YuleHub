@@ -1,14 +1,27 @@
 import videoService from '../service/video.service.js'
 import getOffset from '../utils/getOffset.js'
+import shuffling from '../utils/shuffling.js'
 class VideoController {
-  async list(req, res, next) {
+  constructor() {
+    this.storedPages = []
+  }
+  list = async (req, res, next) => {
     // 获取参数
     const { page } = req.query
-    const offset = getOffset(page)
+    // 随机洗牌数据库数据下标
+    if (!this.storedPages.length) {
+      const { count } = await videoService.count()
+      this.storedPages = shuffling(count)
+    }
     if (!page) {
       next(-4001)
       return
+    } else if (page > this.storedPages.length) {
+      next(-4002)
+      return
     }
+
+    const offset = getOffset(this.storedPages[page])
     const result = await videoService.list(offset)
     res.send({
       code: 0,

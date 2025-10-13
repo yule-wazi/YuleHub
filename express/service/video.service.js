@@ -38,6 +38,15 @@ class VideoService {
       console.log(err)
     }
   }
+  async count() {
+    try {
+      const statement = 'SELECT COUNT(*) count FROM `videolist`;'
+      const [result] = await connection.execute(statement)
+      return result[0]
+    } catch(err) {
+      console.log(err)
+    }
+  }
 }
 
 export default new VideoService()

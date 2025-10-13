@@ -1,7 +1,7 @@
 <template>
   <div class="detail">
     <div class="videoArea">
-      <video :src="proxyVideoSrc" controls></video>
+      <video :src="proxyVideoSrc" controls autoplay></video>
     </div>
     <div class="content">
       <div class="author">

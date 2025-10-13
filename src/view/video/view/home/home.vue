@@ -5,15 +5,30 @@
         <ImageItem :itemData="item" />
       </template>
     </div>
+    <Loading :dataList="videoStore.videoList" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
 <script setup>
 import useVideo from '@/sotre/module/video'
 import ImageItem from '../../cpns/imageItem.vue'
+import { scrollRestore } from '@/utils/scrollRestore'
+import Loading from '@/components/loading/loading.vue'
 
 const videoStore = useVideo()
 videoStore.fetchVideoList()
+const loadingFetch = () => {
+  videoStore.currentPage++
+  videoStore.fetchVideoList({ page: videoStore.currentPage })
+}
+
+// 发起图片组请求
+if (!videoStore.videoList.length) {
+  videoStore.currentPage = 1
+  console.log('重新请求数据')
+  videoStore.fetchVideoList({ isRefresh: true, keyword: videoStore.tagName })
+}
+scrollRestore('home', videoStore)
 </script>
 
 <style lang="less" scoped>

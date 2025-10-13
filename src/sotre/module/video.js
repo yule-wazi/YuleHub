@@ -12,9 +12,14 @@ const useVideo = defineStore('videoStore', {
     }
   },
   actions: {
-    async fetchVideoList(page) {
+    async fetchVideoList({ isRefresh = false, page = this.currentPage } = {}) {
       const res = await getVideoList(page)
-      this.videoList = res.data.result
+      const list = res.data.result
+      if (isRefresh) {
+        this.videoList = list
+      } else {
+        this.videoList.push(...list)
+      }
     },
     async searchVideoList({ isRefresh = false, keyword = '', page = this.currentPage } = {}) {
       const res = await searchVideo(keyword, page)
