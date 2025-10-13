@@ -1,17 +1,20 @@
+import { PORT } from '../../../express/config/globalVar'
 import MyRequest from '../request/index'
+const HOST = import.meta.env.VITE_HOST || 'localhost'
+
 
 export function getVideoList(page = 1) {
-  MyRequest.setBaseUrl(`http://localhost:3000/video/list?page=${page}`)
+  MyRequest.setBaseUrl(`http://${HOST}:${PORT}/video/list?page=${page}`)
   return MyRequest.get()
 }
 
 export function getVideoAuthor(name) {
-  MyRequest.setBaseUrl(`http://localhost:3000/video/author?name=${name}`)
+  MyRequest.setBaseUrl(`http://${HOST}:${PORT}/video/author?name=${name}`)
   return MyRequest.get()
 }
 
 export function searchVideo(keyword, page) {
-  MyRequest.setBaseUrl(`http://localhost:3000/video/search?keyword=${keyword}&page=${page}`)
+  MyRequest.setBaseUrl(`http://${HOST}:${PORT}/video/search?keyword=${keyword}&page=${page}`)
   return MyRequest.get()
 }
 

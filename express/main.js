@@ -3,9 +3,11 @@ import cors from 'cors'
 import videoRouter from './router/video.router.js'
 import proxyRouter from './router/proxy.router.js'
 import handleError from './utils/handleError.js'
+import { PORT } from './config/globalVar.js'
+
 
 const app = express()
-const PORT = 3000
+
 
 // 使用CORS中间件解决跨域问题
 app.use(cors())

@@ -36,6 +36,10 @@
             <el-icon size="20px"><Management /></el-icon>
             <div class="text">小说</div>
           </div>
+          <div class="video" @click="goVideo">
+            <el-icon size="20px"><VideoCameraFilled /></el-icon>
+            <div class="text">动漫</div>
+          </div>
         </template>
         <template #other>
           <div class="addUserCard" @click="openEditCard()">添加角色卡</div>
@@ -362,6 +366,7 @@ import {
   ChatLineRound,
   VideoPlay,
   Collection,
+  VideoCameraFilled,
 } from '@element-plus/icons-vue'
 import { systemPrompt } from '@/utils/systemPrompt'
 import { audioList } from '@/sotre/agentAudioConfig'
@@ -571,6 +576,11 @@ const goNovel = () => {
   drawer.value = false
   router.push('/novel')
 }
+// 转到动漫
+const goVideo = () => {
+  drawer.value = false
+  router.push('/video')
+}
 // 对话高亮
 const { textLight } = storeToRefs(agentStore)
 // 显示提示
@@ -669,7 +679,8 @@ onMounted(() => {
   .menuDrawer {
     .home,
     .comics,
-    .novel {
+    .novel,
+    .video {
       display: flex;
       align-items: center;
       border-bottom: 1px solid #999;

@@ -1,11 +1,10 @@
-import LIMITSIZE from '../config/globalVar.js'
+import { LIMITSIZE } from '../config/globalVar.js'
 import connection from '../database/database.js'
 
 class VideoService {
   async list(offset) {
     try {
-      const statement = 
-      `SELECT v.*, JSON_ARRAYAGG(l.name) labels FROM videolist v
+      const statement = `SELECT v.*, JSON_ARRAYAGG(l.name) labels FROM videolist v
         LEFT JOIN video_label vl ON v.id = vl.video_id
         LEFT JOIN label l ON vl.label_id = l.id
       GROUP BY v.id
@@ -27,8 +26,7 @@ class VideoService {
   }
   async search(keyword, offset) {
     try {
-      const statement = 
-      `SELECT v.*,JSON_ARRAYAGG(l.name) AS labels FROM videolist v
+      const statement = `SELECT v.*,JSON_ARRAYAGG(l.name) AS labels FROM videolist v
         LEFT JOIN video_label vl ON v.id = vl.video_id
         LEFT JOIN label l ON vl.label_id = l.id
       GROUP BY v.id
@@ -36,7 +34,7 @@ class VideoService {
       LIMIT ${LIMITSIZE} OFFSET ?;`
       const [result] = await connection.execute(statement, [String(offset)])
       return result
-    } catch(err) {
+    } catch (err) {
       console.log(err)
     }
   }
