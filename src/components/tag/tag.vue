@@ -31,7 +31,6 @@ const emit = defineEmits(['getTagEmit'])
 .tag {
   color: #ff007a;
   font-weight: 600;
-  margin: 5px 10px 0 0;
   white-space: nowrap;
 }
 </style>

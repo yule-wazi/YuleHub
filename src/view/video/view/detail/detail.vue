@@ -26,7 +26,7 @@
       </div>
       <div class="tagList">
         <template v-for="item in videoDetailData.labels">
-          <div class="tag">
+          <div class="videoTag">
             <Tag :tag="item" :hashtag="false" />
           </div>
         </template>
@@ -143,8 +143,8 @@ getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
     .tagList {
       display: flex;
       flex-wrap: wrap;
-      .tag {
-        padding: 0 3px;
+      .videoTag {
+        padding: 5px 8px;
         margin: 5px 5px 5px 0;
         font-size: 13px;
         border-radius: 5px;

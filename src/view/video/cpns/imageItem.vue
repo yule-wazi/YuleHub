@@ -40,13 +40,18 @@ const getDetail = () => {
   videoStore.videoDetail = props.itemData
 }
 
-// 图片加载完毕
+// 封装获取图片宽度的函数
+const getImgWidth = () => (window.innerWidth < 800 ? 180 : 300)
+
+let imgWidth = getImgWidth()
+
 const handleImgLoad = () => {
-  flowFlex({ imgList: videoStore.videoList, imgWidth: 320 })
+  flowFlex({ imgList: videoStore.videoList, imgWidth })
 }
-// 监听窗口
-window.addEventListener('resize', function () {
-  throttledFlowFlex({ imgList: videoStore.videoList, imgWidth: 320 })
+
+window.addEventListener('resize', () => {
+  imgWidth = getImgWidth()
+  throttledFlowFlex({ imgList: videoStore.videoList, imgWidth })
 })
 </script>
 
@@ -101,6 +106,7 @@ window.addEventListener('resize', function () {
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
       }
     }
