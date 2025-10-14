@@ -4,10 +4,9 @@ import videoRouter from './router/video.router.js'
 import proxyRouter from './router/proxy.router.js'
 import handleError from './utils/handleError.js'
 import { PORT } from './config/globalVar.js'
-
+import changeLocaltionIPAdress from './utils/changeLocationIPAdress.js'
 
 const app = express()
-
 
 // 使用CORS中间件解决跨域问题
 app.use(cors())
@@ -18,4 +17,6 @@ app.use(handleError)
 // 启动服务器
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`服务器正在运行，访问地址：http://localhost:${PORT}`)
+  // 修改node服务器HOST
+  changeLocaltionIPAdress()
 })
