@@ -12,6 +12,10 @@
           />
         </div>
         <div class="authorName">{{ videoDetailData.author }}</div>
+        <div class="feed" @click=getVideoFeed >
+          <el-icon><Cellphone /></el-icon>
+          <div class="iconText">竖屏</div>
+        </div>
       </div>
       <div class="videoInfo">
         <div class="title">{{ videoDetailData.title }}</div>
@@ -39,9 +43,10 @@
 import { getProxyVideoInfo } from '@/service/module/video'
 import useVideo from '@/sotre/module/video'
 import myCache from '@/utils/cacheStorage'
-import { VideoPlay } from '@element-plus/icons-vue'
+import { Cellphone, VideoPlay } from '@element-plus/icons-vue'
 import Tag from '@/components/tag/tag.vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const videoStore = useVideo()
 // 数据持久化保存
@@ -57,6 +62,12 @@ const proxyVideoSrc = ref('')
 getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
   proxyVideoSrc.value = res.data.data[0].video_url
 })
+// 进入竖屏模式
+const router = useRouter()
+const getVideoFeed = () => {
+  console.log('videoFeed')
+  router.push('./feed')
+}
 </script>
 
 <style lang="less" scoped>
@@ -93,6 +104,7 @@ getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
   .content {
     padding: 0 10px;
     .author {
+      position: relative;
       display: flex;
       align-items: center;
       margin-top: 10px;
@@ -112,6 +124,21 @@ getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
         font-size: 20px;
         margin-left: 10px;
         font-weight: 500;
+      }
+      .feed {
+        position: absolute;
+        right: 10px;
+        font-size: 30px;
+        color: var(--primary-pink-color);
+        .iconText {
+          position: absolute;
+          top: -13px;
+          right: -13px;
+          font-size: 8px;
+          padding: 2px 4px;
+          border: 1px solid var(--primary-pink-color);
+          border-radius: 10px;
+        }
       }
     }
     .videoInfo {

@@ -121,6 +121,10 @@ const router = createRouter({
           path: 'detail',
           component: () => import('@/view/video/view/detail/detail.vue'),
         },
+        {
+          path: 'feed',
+          component: () => import('@/view/video/view/videoFeed/videoFeed.vue'),
+        },
       ],
       meta: { keepAlive: false },
     },

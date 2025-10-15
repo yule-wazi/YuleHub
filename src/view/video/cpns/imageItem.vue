@@ -50,8 +50,7 @@ const handleImgLoad = () => {
 }
 
 window.addEventListener('resize', () => {
-  imgWidth = getImgWidth()
-  throttledFlowFlex({ imgList: videoStore.videoList, imgWidth })
+  throttledFlowFlex({ imgList: videoStore.videoList, imgWidth: getImgWidth() })
 })
 </script>
 
