@@ -16,5 +16,6 @@ const { videoList } = videoStore
 .videoFeed {
   width: 100%;
   height: 100%;
+  background-color: var(--comics-headerBg-color);
 }
 </style>
