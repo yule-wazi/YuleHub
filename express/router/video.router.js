@@ -8,5 +8,7 @@ videoRouter.get('/list', VideoController.list)
 videoRouter.get('/author', VideoController.author)
 // 搜索视频
 videoRouter.get('/search', VideoController.search)
+// 获取竖屏视频列表
+videoRouter.get('/feed', VideoController.feed)
 
 export default videoRouter

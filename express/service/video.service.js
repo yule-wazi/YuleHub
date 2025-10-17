@@ -43,7 +43,23 @@ class VideoService {
       const statement = 'SELECT COUNT(*) count FROM `videolist`;'
       const [result] = await connection.execute(statement)
       return result[0]
-    } catch(err) {
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  async feed(limit) {
+    try {
+      const statement = `
+        SELECT v.*, JSON_ARRAYAGG(l.name) AS labels
+          FROM videolist v
+          LEFT JOIN video_label vl ON v.id = vl.video_id
+          LEFT JOIN label l ON vl.label_id = l.id
+        GROUP BY v.id
+        ORDER BY RAND()
+        LIMIT ?;`
+      const [result] = await connection.execute(statement, [limit])
+      return result
+    } catch (err) {
       console.log(err)
     }
   }

@@ -17,6 +17,10 @@
         <div class="title">
           <div class="text">{{ videoItem.title }}</div>
           <span class="viewCount">{{ videoItem.viewCount }}</span>
+          <div class="detail" @click="getDetail">
+            <el-icon><Iphone /></el-icon>
+            <div class="iconText">详情页</div>
+          </div>
         </div>
         <div class="progressBar">
           <VideoProgressBar
@@ -47,8 +51,10 @@
 <script setup>
 import { getProxyVideoInfo } from '@/service/module/video'
 import { ref, useTemplateRef } from 'vue'
-import { VideoPlay } from '@element-plus/icons-vue'
+import { Iphone, VideoPlay } from '@element-plus/icons-vue'
 import VideoProgressBar from './videoProgressBar.vue'
+import { useRouter } from 'vue-router'
+import useVideo from '@/sotre/module/video'
 
 const props = defineProps({
   videoItem: {
@@ -99,12 +105,18 @@ const onDragStart = () => {
     videoRef.value.pause()
   }
 }
-
 // 拖拽结束
 const onDragEnd = () => {
   if (videoRef.value) {
     videoRef.value.play()
   }
+}
+const router = useRouter()
+const videoStore = useVideo()
+const getDetail = () => {
+  videoStore.videoDetail = props.videoItem
+  router.replace('./detail')
+  
 }
 </script>
 
@@ -169,6 +181,22 @@ const onDragEnd = () => {
         }
         .viewCount {
           font-size: 14px;
+        }
+        .detail {
+          position: absolute;
+          right: 18px;
+          bottom: 20px;
+          font-size: 30px;
+          color: var(--primary-pink-color);
+          .iconText {
+            position: absolute;
+            top: -15px;
+            right: -13px;
+            font-size: 8px;
+            padding: 2px 4px;
+            border: 1px solid var(--primary-pink-color);
+            border-radius: 10px;
+          }
         }
       }
       .progressBar {

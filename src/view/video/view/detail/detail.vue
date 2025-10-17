@@ -65,7 +65,8 @@ getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
 // 进入竖屏模式
 const router = useRouter()
 const getVideoFeed = () => {
-  router.push('./feed')
+  videoStore.videoFeedList = [videoDetailData]
+  router.replace('./feed')
 }
 </script>
 
@@ -132,9 +133,9 @@ const getVideoFeed = () => {
         .iconText {
           position: absolute;
           top: -13px;
-          right: -13px;
+          right: -5px;
           font-size: 8px;
-          padding: 2px 4px;
+          padding: 2px 5px;
           border: 1px solid var(--primary-pink-color);
           border-radius: 10px;
         }

@@ -1,10 +1,11 @@
-import { getVideoList, searchVideo } from '@/service/module/video'
+import { getVideoFeedList, getVideoList, searchVideo } from '@/service/module/video'
 import { defineStore } from 'pinia'
 
 const useVideo = defineStore('videoStore', {
   state: () => {
     return {
       videoList: [],
+      videoFeedList: [],
       videoDetail: {},
       tagName: '',
       currentPage: 1,
@@ -30,6 +31,11 @@ const useVideo = defineStore('videoStore', {
       } else {
         this.videoList.push(...list)
       }
+    },
+    async fetchVideoFeedList(limit = 20) {
+      const res = await getVideoFeedList(limit)
+      const list = res.data.result
+      this.videoFeedList.push(...list)
     },
   },
 })

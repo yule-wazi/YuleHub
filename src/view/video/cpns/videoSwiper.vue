@@ -33,7 +33,6 @@ const props = defineProps({
   },
 })
 
-
 let swiperRef = null
 const setSwiperRef = (swiper) => {
   swiperRef = swiper

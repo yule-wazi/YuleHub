@@ -1,6 +1,6 @@
 <template>
   <div class="videoFeed">
-    <VideoSwiper :videoList />
+    <VideoSwiper :videoList="videoFeedList" />
   </div>
 </template>
 
@@ -9,7 +9,8 @@ import useVideo from '@/sotre/module/video'
 import VideoSwiper from '../../cpns/videoSwiper.vue'
 
 const videoStore = useVideo()
-const { videoList } = videoStore
+videoStore.fetchVideoFeedList()
+const { videoFeedList } = videoStore
 </script>
 
 <style lang="less" scoped>

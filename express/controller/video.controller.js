@@ -20,7 +20,6 @@ class VideoController {
       next(-4002)
       return
     }
-
     const offset = getOffset(this.storedPages[page])
     const result = await videoService.list(offset)
     res.send({
@@ -40,6 +39,15 @@ class VideoController {
     const { keyword, page } = req.query
     const offset = getOffset(page)
     const result = await videoService.search(keyword, offset)
+    res.send({
+      code: 0,
+      result,
+    })
+  }
+  async feed(req, res, next) {
+    // 获取参数
+    const { limit } = req.query
+    const result = await videoService.feed(limit)
     res.send({
       code: 0,
       result,
