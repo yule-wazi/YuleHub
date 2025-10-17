@@ -11,13 +11,13 @@
     @transitionEnd="transitionEnd"
   >
     <swiper-slide v-for="(item, index) in videoList" :key="index" :virtualIndex="index">
-      <VideoItem ref="videoPlayers" :videoItem="item" />
+      <VideoItem :videoItem="item" />
     </swiper-slide>
   </swiper>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -33,7 +33,6 @@ const props = defineProps({
   },
 })
 
-const videoPlayers = ref([])
 
 let swiperRef = null
 const setSwiperRef = (swiper) => {
@@ -52,6 +51,12 @@ const transitionEnd = () => {
     }
   }
 }
+onMounted(() => {
+  nextTick(() => {
+    const videoList = document.querySelectorAll('.video-player')
+    videoList[0].autoplay = true
+  })
+})
 </script>
 
 <style lang="less" scoped>
