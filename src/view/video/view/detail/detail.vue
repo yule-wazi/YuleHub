@@ -31,7 +31,7 @@
       <div class="tagList">
         <template v-for="item in videoDetailData.labels">
           <div class="videoTag">
-            <Tag :tag="item" :hashtag="false" />
+            <Tag :tag="item" :hashtag="false" @getTagEmit="getTag" />
           </div>
         </template>
       </div>
@@ -67,6 +67,22 @@ const router = useRouter()
 const getVideoFeed = () => {
   videoStore.videoFeedList = [videoDetailData]
   router.replace('./feed')
+}
+// tag搜索
+const getTag = (tag) => {
+  // 删除之前列表
+  videoStore.tagName = tag
+  videoStore.vipImgData = []
+  videoStore.currentPage = 1
+  videoStore.searchVideoList({
+    isRefresh: true,
+    keyword: videoStore.tagName,
+    page: videoStore.currentPage,
+  })
+  router.replace({
+    path: '/video/category',
+    query: { tag },
+  })
 }
 </script>
 
