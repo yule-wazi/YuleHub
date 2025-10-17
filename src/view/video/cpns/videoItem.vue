@@ -128,6 +128,7 @@ const onDragEnd = () => {
     }
     .info {
       position: absolute;
+      box-sizing: border-box;
       width: 100%;
       bottom: 10px;
       padding: 0 15px;
@@ -172,6 +173,7 @@ const onDragEnd = () => {
       }
       .progressBar {
         width: 100%;
+        height: 100%;
       }
     }
   }

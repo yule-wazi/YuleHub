@@ -12,7 +12,7 @@
           />
         </div>
         <div class="authorName">{{ videoDetailData.author }}</div>
-        <div class="feed" @click=getVideoFeed >
+        <div class="feed" @click="getVideoFeed">
           <el-icon><Cellphone /></el-icon>
           <div class="iconText">竖屏</div>
         </div>
@@ -65,7 +65,6 @@ getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
 // 进入竖屏模式
 const router = useRouter()
 const getVideoFeed = () => {
-  console.log('videoFeed')
   router.push('./feed')
 }
 </script>

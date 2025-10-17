@@ -42,6 +42,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 // 定义组件属性
 const props = defineProps({
   // 当前播放时间（秒）
+
   currentTime: {
     type: Number,
     default: 0,
@@ -69,7 +70,7 @@ const props = defineProps({
   // 播放进度颜色
   color: {
     type: String,
-    default: '#ff4757',
+    default: '#ff007a',
   },
   // 缓冲进度颜色
   bufferedColor: {
@@ -299,6 +300,6 @@ onMounted(() => {
 }
 
 .current-time {
-  background: rgba(255, 71, 87, 0.9);
+  background: var(--primary-pink-color);
 }
 </style>
