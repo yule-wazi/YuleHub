@@ -6,10 +6,7 @@
     <div class="content">
       <div class="author">
         <div class="image">
-          <img
-            src="https://i.pximg.org/img-master/img/2025/10/10/07/02/56/136084846_p0_master1200.jpg"
-            alt=""
-          />
+          <img :src="videoDetailData.authorImg" />
         </div>
         <div class="authorName">{{ videoDetailData.author }}</div>
         <div class="feed" @click="getVideoFeed">

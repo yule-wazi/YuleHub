@@ -2,11 +2,7 @@
   <div class="imageItem" @click="getDetail">
     <div class="item">
       <div class="image">
-        <img
-          src="https://i.pximg.org/img-master/img/2025/10/10/12/00/08/136089959_p0_master1200.jpg"
-          alt=""
-          @load="handleImgLoad"
-        />
+        <img :src="itemData.videoImg" @load="handleImgLoad" />
         <div class="viewCount">
           <el-icon class="icon" size="16"><VideoPlay /></el-icon>
           <span class="countText">{{ itemData.viewCount }}</span>

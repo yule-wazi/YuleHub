@@ -7,10 +7,7 @@
       <div class="info" @click.stop>
         <div class="author">
           <div class="image">
-            <img
-              src="https://i.pximg.org/img-master/img/2025/10/15/00/00/18/136283304_p0_master1200.jpg"
-              alt=""
-            />
+            <img :src="videoItem.authorImg" />
           </div>
           <div class="authorName">{{ videoItem.author }}</div>
         </div>
@@ -35,7 +32,7 @@
     </div>
     <video
       ref="videoRef"
-      poster="https://i.pximg.org/img-master/img/2025/10/14/16/08/08/136265208_p0_master1200.jpg"
+      :poster="videoItem.videoImg"
       preload="auto"
       loop
       class="video-player"
@@ -116,7 +113,6 @@ const videoStore = useVideo()
 const getDetail = () => {
   videoStore.videoDetail = props.videoItem
   router.replace('./detail')
-  
 }
 </script>
 
