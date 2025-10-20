@@ -7,13 +7,18 @@
       <div class="info" @click.stop>
         <div class="author">
           <div class="image">
-            <img :src="videoItem.authorImg" />
+            <img
+              :src="
+                videoItem.authorImg ??
+                'https://i.pximg.org/img-master/img/2025/09/07/22/06/19/134834046_p0_master1200.jpg'
+              "
+            />
           </div>
           <div class="authorName">{{ videoItem.author }}</div>
         </div>
         <div class="title">
           <div class="text">{{ videoItem.title }}</div>
-          <span class="viewCount">{{ videoItem.viewCount }}</span>
+          <span v-if="videoItem.viewCount > 0" class="viewCount">{{ videoItem.viewCount }}</span>
           <div class="detail" @click="getDetail">
             <el-icon><Iphone /></el-icon>
             <div class="iconText">详情页</div>
@@ -36,7 +41,6 @@
       preload="auto"
       loop
       class="video-player"
-      :src="proxyVideoSrc"
       @play="isPlay = true"
       @pause="isPlay = false"
       @timeupdate="updateCurrentTime"
@@ -47,11 +51,12 @@
 
 <script setup>
 import { getProxyVideoInfo } from '@/service/module/video'
-import { ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import { Iphone, VideoPlay } from '@element-plus/icons-vue'
 import VideoProgressBar from './videoProgressBar.vue'
 import { useRouter } from 'vue-router'
 import useVideo from '@/sotre/module/video'
+import parseM3U8 from '@/utils/parseM3U8'
 
 const props = defineProps({
   videoItem: {
@@ -59,17 +64,17 @@ const props = defineProps({
     default: {},
   },
 })
-// 代理请求视频src
-const proxyVideoSrc = ref('')
-getProxyVideoInfo(props.videoItem.videoSrc).then((res) => {
-  proxyVideoSrc.value = res.data.data[0].video_url
-})
 
 const videoRef = useTemplateRef('videoRef')
 const currentTime = ref(0)
 const duration = ref(0)
 const isPlay = ref(true)
 const volume = ref(0.7)
+
+// 解析M3U8视频
+onMounted(() => {
+  parseM3U8(videoRef.value, props.videoItem.videoSrc)
+})
 
 // 播放暂停
 const playVideo = () => {

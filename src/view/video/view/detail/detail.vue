@@ -1,12 +1,17 @@
 <template>
   <div class="detail">
     <div class="videoArea">
-      <video :src="proxyVideoSrc" controls autoplay></video>
+      <video ref="videoRef" controls autoplay></video>
     </div>
     <div class="content">
       <div class="author">
         <div class="image">
-          <img :src="videoDetailData.authorImg" />
+          <img
+            :src="
+              videoDetailData.authorImg ??
+              'https://i.pximg.org/img-master/img/2025/09/07/22/06/19/134834046_p0_master1200.jpg'
+            "
+          />
         </div>
         <div class="authorName">{{ videoDetailData.author }}</div>
         <div class="feed" @click="getVideoFeed">
@@ -17,7 +22,7 @@
       <div class="videoInfo">
         <div class="title">{{ videoDetailData.title }}</div>
         <div class="info">
-          <div class="viewCount">
+          <div v-if="videoDetailData.viewCount > 0" class="viewCount">
             <el-icon class="icon" size="16"><VideoPlay /></el-icon>
             <span class="countText">{{ videoDetailData.viewCount }}</span>
           </div>
@@ -37,13 +42,13 @@
 </template>
 
 <script setup>
-import { getProxyVideoInfo } from '@/service/module/video'
 import useVideo from '@/sotre/module/video'
 import myCache from '@/utils/cacheStorage'
 import { Cellphone, VideoPlay } from '@element-plus/icons-vue'
 import Tag from '@/components/tag/tag.vue'
-import { ref } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
+import parseM3U8 from '@/utils/parseM3U8'
 
 const videoStore = useVideo()
 // 数据持久化保存
@@ -54,11 +59,12 @@ if (Object.keys(videoStore.videoDetail).length !== 0) {
 } else {
   videoDetailData = myCache.get('videoDetailData')
 }
-// 代理请求视频src
-const proxyVideoSrc = ref('')
-getProxyVideoInfo(videoDetailData.videoSrc).then((res) => {
-  proxyVideoSrc.value = res.data.data[0].video_url
+// 解析m3u8视频
+const videoRef = useTemplateRef('videoRef')
+onMounted(() => {
+  parseM3U8(videoRef.value, videoDetailData.videoSrc)
 })
+
 // 进入竖屏模式
 const router = useRouter()
 const getVideoFeed = () => {

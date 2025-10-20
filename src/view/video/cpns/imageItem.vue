@@ -3,7 +3,7 @@
     <div class="item">
       <div class="image">
         <img :src="itemData.videoImg" @load="handleImgLoad" />
-        <div class="viewCount">
+        <div v-if="itemData.viewCount > 0" class="viewCount">
           <el-icon class="icon" size="16"><VideoPlay /></el-icon>
           <span class="countText">{{ itemData.viewCount }}</span>
         </div>
