@@ -17,25 +17,35 @@ const useVideo = defineStore('videoStore', {
       const res = await getVideoList(page)
       const list = res.data.result
       if (isRefresh) {
-        this.videoList = list
+        this.videoList = this.filterList(list)
       } else {
-        this.videoList.push(...list)
+        this.videoList.push(...this.filterList(list))
       }
     },
     async searchVideoList({ isRefresh = false, keyword = '', page = this.currentPage } = {}) {
       const res = await searchVideo(keyword, page)
       const list = res.data.result
       if (isRefresh) {
-        this.videoList = list
+        this.videoList = this.filterList(list)
       } else {
-        this.videoList.push(...list)
+        this.videoList.push(...this.filterList(list))
       }
     },
     async fetchVideoFeedList(limit = 20) {
       const res = await getVideoFeedList(limit)
       const list = res.data.result
-      this.videoFeedList.push(...list)
+      this.videoFeedList.push(...this.filterList(list))
     },
+    filterList(list) {
+      // 填充空图片
+      list.forEach((item) => {
+        if(!item.videoImg) {
+          item.videoImg = 'https://i.pximg.org/img-master/img/2025/10/19/01/19/28/136438244_p0_master1200.jpg'
+        } 
+      })
+
+      return list
+    }
   },
 })
 export default useVideo

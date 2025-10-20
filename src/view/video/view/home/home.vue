@@ -20,6 +20,7 @@ videoStore.fetchVideoList()
 const loadingFetch = () => {
   videoStore.currentPage++
   videoStore.fetchVideoList({ page: videoStore.currentPage })
+  console.log(videoStore.videoList)
 }
 
 // 发起图片组请求
