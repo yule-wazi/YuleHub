@@ -6,10 +6,7 @@ import {
   postPixivRankList,
   postPixivSearchList,
 } from '@/service/module/vip'
-import { preLoadImg } from '@/utils/preLoadImg'
-import { emunProxyUrl, switchProxyUrl } from '@/utils/ProxyUrl'
-import { sortArray } from '@/utils/handleArray'
-import myCache from '@/utils/cacheStorage'
+import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { filterComicsData } from '@/utils/filterData'
 const useVip = defineStore('vip', {
   state: () => {

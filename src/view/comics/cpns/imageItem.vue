@@ -1,7 +1,7 @@
 <template>
   <div class="imageItem">
-    <div class="item" :style="{ height: imgDefaultHeight }">
-      <div class="image" @click="getDetail">
+    <div class="item">
+      <div class="image" :style="{ aspectRatio: imgAspectRatio }" @click="getDetail">
         <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
         <div v-if="itemData.pageList.length" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
@@ -29,7 +29,7 @@ import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
-import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
+import { throttledFlowFlex } from '@/utils/waterflow'
 import { CopyDocument } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -47,20 +47,28 @@ const handleImgError = (e) => {
   }
   emit('errorEmit')
 }
-// 缩略图占位
+// 缩略图占位与比例占位，尽量提前确定尺寸避免跳动
 const LQIPImg = switchImgResolutionUrl(props.itemData.coverImg.large)
 const originImg = switchImgResolutionUrl(props.itemData.coverImg.large, 'origin')
 let showImg = ref(LQIPImg)
-preLoadImg(originImg).then(() => {
-  showImg.value = originImg
-})
+const imgAspectRatio = ref('3 / 4')
 
-// 初始化默认图片高度
-let imgDefaultHeight = ref('70vh')
-// 图片加载完毕
+// 先用低清图拿到宽高比，立即占位
+preLoadImg(LQIPImg)
+  .then(({ width, height }) => {
+    if (width && height) imgAspectRatio.value = `${width} / ${height}`
+  })
+  .catch(() => {})
+  .finally(() => {
+    // 再加载高清图并替换显示
+    preLoadImg(originImg)
+      .then(({ src }) => (showImg.value = src))
+      .catch(() => {})
+  })
+
+// 图片加载完毕（使用节流以减少重排）
 const handleImgLoad = () => {
-  imgDefaultHeight.value = undefined
-  flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
+  throttledFlowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
 }
 
 // 监听窗口
@@ -105,7 +113,8 @@ const emit = defineEmits(['errorEmit'])
     .image {
       position: relative;
       width: 100%;
-      height: 80%;
+      /* 使用 aspect-ratio 占位，避免初次渲染高度跳变 */
+      height: auto;
       .pageIcon {
         position: absolute;
         right: 5px;

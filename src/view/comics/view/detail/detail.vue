@@ -63,9 +63,7 @@ if (Object.keys(vipStore.detailData).length !== 0) {
 // p站获取高清图片
 const showImg = ref(detailData.coverImg.large)
 const origin = switchImgResolutionUrl(detailData.coverImg.large, 'origin')
-preLoadImg(origin).then(() => {
-  showImg.value = origin
-})
+preLoadImg(origin).then(({ src }) => (showImg.value = src))
 //遍历展示所有图片
 const imgList = detailData.pageList.map((item) => item.image_urls.large)
 // 其他作品
