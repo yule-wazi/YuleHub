@@ -101,7 +101,6 @@ const emit = defineEmits(['errorEmit'])
 
 <style lang="less" scoped>
 .imageItem {
-  transition: 0.3s;
   display: none;
   .item {
     width: 100%;

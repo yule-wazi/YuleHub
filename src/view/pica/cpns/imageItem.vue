@@ -1,13 +1,8 @@
 <template>
   <div class="imageItem">
-    <div class="item" :style="{ height: imgDefaultHeight }">
-      <div class="image" @click="getDetail">
-        <img
-          :src="spliceImgUrl(itemData.thumb.path)"
-          alt=""
-          @error="handleImgError"
-          @load="handleImgLoad"
-        />
+    <div class="item">
+      <div class="image" @click="getDetail" :style="{ aspectRatio: imgAspectRatio }">
+        <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
       </div>
       <div class="content">
         <div class="desc">
@@ -30,6 +25,7 @@ import Tag from '@/components/tag/tag.vue'
 import { spliceImgUrl } from '@/utils/ProxyUrl'
 import usePica from '@/sotre/module/pica'
 import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
+import { preLoadImg } from '@/utils/preLoadImg'
 
 const props = defineProps({
   itemData: {
@@ -47,11 +43,19 @@ const handleImgError = (e) => {
 }
 
 // 初始化默认图片高度
-let imgDefaultHeight = ref('70vh')
+const imgAspectRatio = ref('3 / 4')
+// 先用低清图拿到宽高比，立即占位
+const showImg = ref(spliceImgUrl(props.itemData.thumb.path))
+preLoadImg(showImg.value)
+  .then(({ width, height, src }) => {
+    if (width && height) imgAspectRatio.value = `${width} / ${height}`
+    showImg.value = src
+  })
+  .catch(() => {})
+
 // 图片加载完毕
 const handleImgLoad = () => {
-  imgDefaultHeight.value = undefined
-  flowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
 }
 const router = useRouter()
 // 进入详情页
@@ -86,7 +90,6 @@ window.addEventListener('resize', function () {
 
 <style lang="less" scoped>
 .imageItem {
-  transition: 0.3s;
   display: none;
   .item {
     width: 100%;

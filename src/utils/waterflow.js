@@ -1,4 +1,4 @@
-import { throttle } from "./throttle"
+import { throttle } from './throttle'
 
 function setPosition({ imgList, col, space, imgWidth, parentElem }) {
   let nextTop = new Array(col)
