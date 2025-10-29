@@ -1,5 +1,5 @@
 <template>
-  <div ref="loadingRef" v-if="dataList.length && timeOut" class="loading">{{ text }}</div>
+  <div ref="loadingRef" v-if="timeOut" class="loading">{{ text }}</div>
 </template>
 
 <script setup>
@@ -13,8 +13,8 @@ const props = defineProps({
   },
   text: {
     type: String,
-    default: '加载中···'
-  }
+    default: '加载中···',
+  },
 })
 // 触底刷新
 let ob = null
@@ -23,7 +23,7 @@ const vipStore = useVip()
 const timeOut = ref(false)
 setTimeout(() => {
   timeOut.value = true
-},3000)
+}, 3000)
 watch(loadingRef, () => {
   ob = new IntersectionObserver(
     (entires) => {
