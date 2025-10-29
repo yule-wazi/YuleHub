@@ -21,8 +21,22 @@ export function updateMessage({
     }
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
-  // 世界书插入
-  const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, targetUser.loreBooks)
+  // 世界书插入（支持TopK/预算等参数，可按需调整）
+  const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, targetUser.loreBooks, {
+    topK: 4,
+    minScore: 0.4,
+    tokenBudget: 2000,
+    enableRegex: true,
+    // 历史扫描和会话控制
+    historyMode: 'window',
+    windowSize: 8,
+    roles: ['user', 'assistant'],
+    timeDecay: 0.85,
+    sessionId: targetUser.userName,
+    cooldownRounds: 2,
+    maxUsesPerSession: 3,
+    repetitionPenalty: 0.6,
+  })
   if (loreBooksMessageList.length) {
     console.log('世界书匹配到：', loreBooksMessageList, '关键词：', messageKeys)
     messageList.splice(

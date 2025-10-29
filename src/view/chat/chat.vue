@@ -47,7 +47,7 @@
         </template>
         <template #switch>
           <div class="showTip">
-            <div class="text">书结束提示</div>
+            <div class="text">世界书提示</div>
             <el-switch
               v-model="showTip"
               change="showTip = !showTip"
@@ -520,6 +520,7 @@ watch(roleForm.addLoreBooksData, () => {
   console.log('保存世界书')
   myCache.set('loreBooks', roleForm.addLoreBooksData)
 })
+
 // 打开菜单
 const drawer = ref(false)
 // 确定添加APIToken
