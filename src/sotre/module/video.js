@@ -1,4 +1,9 @@
-import { getVideoFeedList, getVideoList, searchVideo } from '@/service/module/video'
+import {
+  getVideoFeedList,
+  getVideoList,
+  searchVideo,
+  getProxyVideoInfo,
+} from '@/service/module/video'
 import { defineStore } from 'pinia'
 
 const useVideo = defineStore('videoStore', {
@@ -36,16 +41,28 @@ const useVideo = defineStore('videoStore', {
       const list = res.data.result
       this.videoFeedList.push(...this.filterList(list))
     },
+    async fetchProxyVideoInfo(source) {
+      if (typeof source === 'string' && /^BV/i.test(source)) {
+        try {
+          const res = await getProxyVideoInfo(source)
+          return res?.data?.data?.[0]?.video_url || source
+        } catch (e) {
+          return source
+        }
+      }
+      return source
+    },
     filterList(list) {
       // 填充空图片
       list.forEach((item) => {
-        if(!item.videoImg) {
-          item.videoImg = 'https://i.pximg.org/img-master/img/2025/10/19/01/19/28/136438244_p0_master1200.jpg'
-        } 
+        if (!item.videoImg) {
+          item.videoImg =
+            'https://i.pximg.org/img-master/img/2025/10/19/01/19/28/136438244_p0_master1200.jpg'
+        }
       })
 
       return list
-    }
+    },
   },
 })
 export default useVideo

@@ -36,7 +36,7 @@
             <el-icon size="20px"><Management /></el-icon>
             <div class="text">小说</div>
           </div>
-          <div v-if="userInfo.role === 999" class="video" @click="goVideo">
+          <div class="video" @click="goVideo">
             <el-icon size="20px"><VideoCameraFilled /></el-icon>
             <div class="text">动漫</div>
           </div>

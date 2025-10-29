@@ -72,7 +72,8 @@ const isPlay = ref(true)
 const volume = ref(0.7)
 
 // 解析M3U8视频
-onMounted(() => {
+onMounted(async () => {
+  props.videoItem.videoSrc = await videoStore.fetchProxyVideoInfo(props.videoItem.videoSrc)
   parseM3U8(videoRef.value, props.videoItem.videoSrc)
 })
 

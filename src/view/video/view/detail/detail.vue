@@ -59,12 +59,14 @@ if (Object.keys(videoStore.videoDetail).length !== 0) {
 } else {
   videoDetailData = myCache.get('videoDetailData')
 }
+// 获取视频地址
+
 // 解析m3u8视频
 const videoRef = useTemplateRef('videoRef')
-onMounted(() => {
+onMounted(async () => {
+  videoDetailData.videoSrc = await videoStore.fetchProxyVideoInfo(videoDetailData.videoSrc)
   parseM3U8(videoRef.value, videoDetailData.videoSrc)
 })
-
 // 进入竖屏模式
 const router = useRouter()
 const getVideoFeed = () => {
