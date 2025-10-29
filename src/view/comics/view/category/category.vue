@@ -1,7 +1,7 @@
 <template>
   <div ref="category" class="category">
     <div class="title">
-      <div class="tag">#{{ route.query.tag }}</div>
+      <div class="tag">#{{ route.query.author || route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
     <div class="list">
@@ -23,19 +23,36 @@ import { ref, useTemplateRef, watchEffect } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
-vipStore.tagName = route.query.tag
-// 发起图片组请求
+vipStore.tagName = route.query.author || route.query.tag
+// 发起图片组/作者请求
 if (!vipStore.vipImgData.length) {
   vipStore.currentPage = 1
-  vipStore.fetchSearchImgList({
-    isRefresh: true,
-    options: { word: vipStore.tagName, page: vipStore.currentPage },
-  })
+  if (route.query.author || route.query.uid) {
+    vipStore.fetchAuthorIllustsList({
+      isRefresh: true,
+      authorName: route.query.author,
+      uid: route.query.uid,
+      page: vipStore.currentPage,
+    })
+  } else {
+    vipStore.fetchSearchImgList({
+      isRefresh: true,
+      options: { word: vipStore.tagName, page: vipStore.currentPage },
+    })
+  }
 }
 // loading加载发起请求
 const loadingFetch = () => {
   vipStore.currentPage++
-  vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
+  if (route.query.author || route.query.uid) {
+    vipStore.fetchAuthorIllustsList({
+      authorName: route.query.author,
+      uid: route.query.uid,
+      page: vipStore.currentPage,
+    })
+  } else {
+    vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
+  }
 }
 scrollRestore('category', vipStore)
 // 重新请求回到顶部

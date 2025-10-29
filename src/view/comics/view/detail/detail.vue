@@ -11,10 +11,10 @@
       </template>
     </div>
     <div class="desc">
-      <div class="author">
+      <div class="author" @click="goAuthor(detailData)">
         <div class="authorName">
           <div class="text">作者:</div>
-          <div class="name">{{ detailData.user }}</div>
+          <div class="name link">{{ detailData.user }}</div>
         </div>
         <div class="uid">(UID：{{ detailData.uid }})</div>
       </div>
@@ -84,6 +84,17 @@ const getTag = (tag) => {
     query: { tag },
   })
 }
+
+// 跳转作者页
+const goAuthor = (detail) => {
+  vipStore.tagName = detail.user
+  vipStore.vipImgData = []
+  vipStore.currentPage = 1
+  router.replace({
+    path: '/comics/category',
+    query: { author: detail.user, uid: detail.uid },
+  })
+}
 </script>
 
 <style lang="less" scoped>
@@ -115,6 +126,7 @@ const getTag = (tag) => {
   }
   .desc {
     .author {
+      cursor: pointer;
       padding: 0 15px;
       color: var(--comics-cardTitle-color);
       font-weight: 700;

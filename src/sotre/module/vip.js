@@ -5,6 +5,9 @@ import {
   postNewVipList,
   postPixivRankList,
   postPixivSearchList,
+  postPixivSearchUser,
+  postPixivUserIllusts,
+  postPixivMemberIllust,
 } from '@/service/module/vip'
 import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { filterComicsData } from '@/utils/filterData'
@@ -70,6 +73,47 @@ const useVip = defineStore('vip', {
       const list = await postPixivSearchList(options)
       console.log(list.data.illusts)
       let formatList = list.data.illusts.map((item) => {
+        return {
+          pid: item.id,
+          uid: item.user.id,
+          title: item.title,
+          user: item.user.name,
+          tags: item.tags,
+          coverImg: item.image_urls,
+          pageList: item.meta_pages,
+          x_restrict: item.x_restrict,
+        }
+      })
+      formatList = filterComicsData(formatList)
+      if (isRefresh) {
+        this.vipImgData = formatList
+      } else {
+        this.vipImgData.push(...formatList)
+      }
+    },
+    // 根据作者获取作品（优先使用 uid，若无则通过作者名搜索获取 uid 再查作品）
+    async fetchAuthorIllustsList({
+      isRefresh = false,
+      authorName = '',
+      uid = '',
+      page = this.currentPage,
+    } = {}) {
+      let userId = uid
+      if (!userId && authorName) {
+        const userRes = await postPixivSearchUser({ word: authorName, page: 1, size: 1 })
+        const previews = userRes.data.user_previews || []
+        const exact = previews.find((p) => p?.user?.name === authorName)
+        const pick = exact || previews[0]
+        userId = pick?.user?.id
+      }
+      if (!userId) {
+        if (isRefresh) this.vipImgData = []
+        return
+      }
+      // 使用 member_illust 接口直接获取作品列表
+      const illustRes = await postPixivMemberIllust({ id: userId, page })
+      const illusts = illustRes.data.illusts || []
+      let formatList = illusts.map((item) => {
         return {
           pid: item.id,
           uid: item.user.id,
