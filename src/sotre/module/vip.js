@@ -92,26 +92,9 @@ const useVip = defineStore('vip', {
       }
     },
     // 根据作者获取作品（优先使用 uid，若无则通过作者名搜索获取 uid 再查作品）
-    async fetchAuthorIllustsList({
-      isRefresh = false,
-      authorName = '',
-      uid = '',
-      page = this.currentPage,
-    } = {}) {
-      let userId = uid
-      if (!userId && authorName) {
-        const userRes = await postPixivSearchUser({ word: authorName, page: 1, size: 1 })
-        const previews = userRes.data.user_previews || []
-        const exact = previews.find((p) => p?.user?.name === authorName)
-        const pick = exact || previews[0]
-        userId = pick?.user?.id
-      }
-      if (!userId) {
-        if (isRefresh) this.vipImgData = []
-        return
-      }
+    async fetchAuthorIllustsList({ isRefresh = false, options } = {}) {
       // 使用 member_illust 接口直接获取作品列表
-      const illustRes = await postPixivMemberIllust({ id: userId, page })
+      const illustRes = await postPixivMemberIllust(options)
       const illusts = illustRes.data.illusts || []
       let formatList = illusts.map((item) => {
         return {

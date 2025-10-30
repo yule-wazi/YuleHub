@@ -33,7 +33,7 @@ const searchClick = (tag) => {
     isRefresh: true,
     options: { word: tag, page: vipStore.currentPage },
   })
-  router.push({
+  router.replace({
     path: '/comics/category',
     query: { tag },
   })

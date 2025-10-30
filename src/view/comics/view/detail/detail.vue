@@ -85,11 +85,18 @@ const getTag = (tag) => {
   })
 }
 
-// 跳转作者页
-const goAuthor = (detail) => {
+// 跳转作者页（跳转前先请求作者作品第一页，进入分类页即可直接展示）
+const goAuthor = async (detail) => {
   vipStore.tagName = detail.user
   vipStore.vipImgData = []
   vipStore.currentPage = 1
+  await vipStore.fetchAuthorIllustsList({
+    isRefresh: true,
+    options: {
+      id: detail.uid,
+      page: vipStore.currentPage,
+    }
+  })
   router.replace({
     path: '/comics/category',
     query: { author: detail.user, uid: detail.uid },

@@ -27,12 +27,13 @@ vipStore.tagName = route.query.author || route.query.tag
 // 发起图片组/作者请求
 if (!vipStore.vipImgData.length) {
   vipStore.currentPage = 1
-  if (route.query.author || route.query.uid) {
+  if (route.query.uid) {
     vipStore.fetchAuthorIllustsList({
       isRefresh: true,
-      authorName: route.query.author,
-      uid: route.query.uid,
-      page: vipStore.currentPage,
+      options: {
+        id: route.query.uid,
+        page: vipStore.currentPage,
+      },
     })
   } else {
     vipStore.fetchSearchImgList({
@@ -46,9 +47,7 @@ const loadingFetch = () => {
   vipStore.currentPage++
   if (route.query.author || route.query.uid) {
     vipStore.fetchAuthorIllustsList({
-      authorName: route.query.author,
-      uid: route.query.uid,
-      page: vipStore.currentPage,
+      options: { id: route.query.uid, page: vipStore.currentPage },
     })
   } else {
     vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
