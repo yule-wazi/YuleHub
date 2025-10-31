@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"nodemon express/main.js\"",
+    "dev": "concurrently \"vite\" \"node express/main.js\"",
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write src/"

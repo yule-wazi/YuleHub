@@ -9,8 +9,8 @@
         <ImageItem :itemData="item" />
       </template>
     </div>
+    <Loading :dataList="videoStore.videoList" @loadingEmit="loadingFetch" />
   </div>
-  <Loading :dataList="videoStore.videoList" @loadingEmit="loadingFetch" />
 </template>
 
 <script setup>
