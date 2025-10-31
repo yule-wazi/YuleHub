@@ -95,7 +95,7 @@ const goAuthor = async (detail) => {
     options: {
       id: detail.uid,
       page: vipStore.currentPage,
-    }
+    },
   })
   router.replace({
     path: '/comics/category',

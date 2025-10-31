@@ -5,8 +5,6 @@ import {
   postNewVipList,
   postPixivRankList,
   postPixivSearchList,
-  postPixivSearchUser,
-  postPixivUserIllusts,
   postPixivMemberIllust,
 } from '@/service/module/vip'
 import { switchProxyUrl } from '@/utils/ProxyUrl'

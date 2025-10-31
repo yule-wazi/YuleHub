@@ -78,26 +78,6 @@ export function postPixivSearchList(options) {
   return MyRequest.get()
 }
 
-// pixivSearchUser - 搜索作者
-export function postPixivSearchUser(options) {
-  let queryString = ''
-  for (const k in options) {
-    queryString += `&${k}=${options[k]}`
-  }
-  MyRequest.setBaseUrl(`https://hibiapi.getloli.com/api/pixiv/search_user?${queryString}`)
-  return MyRequest.get()
-}
-
-// pixivUserIllusts - 获取作者作品列表
-export function postPixivUserIllusts(options) {
-  let queryString = ''
-  for (const k in options) {
-    queryString += `&${k}=${options[k]}`
-  }
-  MyRequest.setBaseUrl(`https://hibiapi.getloli.com/api/pixiv/user/illusts?${queryString}`)
-  return MyRequest.get()
-}
-
 // pixivMemberIllust - 根据UID获取作者作品列表（建议使用）
 export function postPixivMemberIllust(options) {
   let queryString = ''
