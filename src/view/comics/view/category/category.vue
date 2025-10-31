@@ -5,11 +5,15 @@
       <div class="text">一览</div>
     </div>
     <div class="list">
-      <template v-for="item in vipStore.vipImgData">
-        <ImageItem :itemData="item" @errorEmit="removeErrorData(item)" />
+      <template v-for="item in vipStore.vipSearchImgData">
+        <ImageItem
+          :itemData="item"
+          :dataList="vipStore.vipSearchImgData"
+          @errorEmit="removeErrorData(item)"
+        />
       </template>
     </div>
-    <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />
+    <Loading :dataList="vipStore.vipSearchImgData" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
@@ -23,34 +27,36 @@ import { ref, useTemplateRef, watchEffect } from 'vue'
 const route = useRoute()
 const vipStore = useVip()
 // 页面刷新自动给tagName赋值
-vipStore.tagName = route.query.author || route.query.tag
+vipStore.tagName = route.query.tag
 // 发起图片组/作者请求
-if (!vipStore.vipImgData.length) {
-  vipStore.currentPage = 1
+if (!vipStore.searchCurrentPage.length) {
+  vipStore.searchCurrentPage = 1
   if (route.query.uid) {
     vipStore.fetchAuthorIllustsList({
       isRefresh: true,
       options: {
         id: route.query.uid,
-        page: vipStore.currentPage,
+        page: vipStore.searchCurrentPage,
       },
     })
   } else {
     vipStore.fetchSearchImgList({
       isRefresh: true,
-      options: { word: vipStore.tagName, page: vipStore.currentPage },
+      options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
     })
   }
 }
 // loading加载发起请求
 const loadingFetch = () => {
-  vipStore.currentPage++
-  if (route.query.author || route.query.uid) {
+  vipStore.searchCurrentPage++
+  if (route.query.uid) {
     vipStore.fetchAuthorIllustsList({
-      options: { id: route.query.uid, page: vipStore.currentPage },
+      options: { id: route.query.uid, page: vipStore.searchCurrentPage },
     })
   } else {
-    vipStore.fetchSearchImgList({ options: { word: vipStore.tagName, page: vipStore.currentPage } })
+    vipStore.fetchSearchImgList({
+      options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
+    })
   }
 }
 scrollRestore('category', vipStore)

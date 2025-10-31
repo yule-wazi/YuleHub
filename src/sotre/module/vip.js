@@ -14,14 +14,15 @@ const useVip = defineStore('vip', {
     return {
       scrollTop: 0,
       currentPage: 1,
+      searchCurrentPage: 1,
       isVip: false,
       isFetch: false,
       fetchError: false,
       tagName: '',
       vipImgData: [],
+      vipSearchImgData: [],
       detailData: {},
       authorOtherImg: [],
-      vipImgList: [],
       isNSFW: false,
     }
   },
@@ -30,7 +31,6 @@ const useVip = defineStore('vip', {
     async fetchGroupImgList({ isRefresh = false, options } = {}) {
       console.log('发起请求', options)
       const list = await postPixivRankList(options)
-      console.log(list.data.illusts)
       const formatList = list.data.illusts.map((item) => {
         return {
           pid: item.id,
@@ -69,7 +69,6 @@ const useVip = defineStore('vip', {
     },
     async fetchSearchImgList({ isRefresh = false, options } = {}) {
       const list = await postPixivSearchList(options)
-      console.log(list.data.illusts)
       let formatList = list.data.illusts.map((item) => {
         return {
           pid: item.id,
@@ -84,9 +83,9 @@ const useVip = defineStore('vip', {
       })
       formatList = filterComicsData(formatList)
       if (isRefresh) {
-        this.vipImgData = formatList
+        this.vipSearchImgData = formatList
       } else {
-        this.vipImgData.push(...formatList)
+        this.vipSearchImgData.push(...formatList)
       }
     },
     // 根据作者获取作品（优先使用 uid，若无则通过作者名搜索获取 uid 再查作品）
@@ -108,9 +107,9 @@ const useVip = defineStore('vip', {
       })
       formatList = filterComicsData(formatList)
       if (isRefresh) {
-        this.vipImgData = formatList
+        this.vipSearchImgData = formatList
       } else {
-        this.vipImgData.push(...formatList)
+        this.vipSearchImgData.push(...formatList)
       }
     },
     // 请求作者其他图片

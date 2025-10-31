@@ -2,7 +2,11 @@
   <div ref="home" class="home">
     <div ref="list" class="list">
       <template v-for="item in vipStore.vipImgData">
-        <ImageItem :itemData="item" @errorEmit="removeErrorData(item)" />
+        <ImageItem
+          :itemData="item"
+          :dataList="vipStore.vipImgData"
+          @errorEmit="removeErrorData(item)"
+        />
       </template>
     </div>
     <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />

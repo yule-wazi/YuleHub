@@ -24,7 +24,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
@@ -36,6 +36,10 @@ const props = defineProps({
   itemData: {
     type: Object,
     default: {},
+  },
+  dataList: {
+    type: Array,
+    default: [],
   },
 })
 const vipStore = useVip()
@@ -68,14 +72,15 @@ preLoadImg(LQIPImg)
 
 // 图片加载完毕（使用节流以减少重排）
 const handleImgLoad = () => {
-  throttledFlowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
 }
 
 // 监听窗口
 window.addEventListener('resize', function () {
-  throttledFlowFlex({ imgList: vipStore.vipImgData, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
 })
 const router = useRouter()
+const route = useRoute()
 // 进入详情页
 const getDetail = () => {
   router.push('/comics/detail')
@@ -85,16 +90,21 @@ const getDetail = () => {
 const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
-  vipStore.vipImgData = []
-  vipStore.currentPage = 1
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
   vipStore.fetchSearchImgList({
     isRefresh: true,
-    options: { word: vipStore.tagName, page: vipStore.currentPage },
+    options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
   })
-  router.replace({
+  const targetRoute = {
     path: '/comics/category',
     query: { tag },
-  })
+  }
+  if (route.path === '/comics/category') {
+    router.replace(targetRoute)
+  } else {
+    router.push(targetRoute)
+  }
 }
 const emit = defineEmits(['errorEmit'])
 </script>

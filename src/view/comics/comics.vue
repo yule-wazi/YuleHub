@@ -13,7 +13,7 @@
 import { KeepAlive, onUnmounted } from 'vue'
 import headerCompoment from '@/components/headerComponent/headerCompoment.vue'
 import useVip from '@/sotre/module/vip'
-import { RouterView, useRouter } from 'vue-router'
+import { RouterView, useRouter, useRoute } from 'vue-router'
 
 const vipStore = useVip()
 // 移除图片
@@ -23,20 +23,26 @@ onUnmounted(() => {
 })
 // 点击搜索
 const router = useRouter()
+const route = useRoute()
 const searchClick = (tag) => {
   vipStore.tagName = tag
   console.log('点击搜索', tag)
   // 清空之前列表
-  vipStore.vipImgData = []
-  vipStore.currentPage = 1
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
   vipStore.fetchSearchImgList({
     isRefresh: true,
-    options: { word: tag, page: vipStore.currentPage },
+    options: { word: tag, page: vipStore.searchCurrentPage },
   })
-  router.replace({
+  const targetRoute = {
     path: '/comics/category',
     query: { tag },
-  })
+  }
+  if (route.path === '/comics/category') {
+    router.replace(targetRoute)
+  } else {
+    router.push(targetRoute)
+  }
 }
 </script>
 

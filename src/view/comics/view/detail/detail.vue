@@ -73,13 +73,13 @@ const router = useRouter()
 const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
-  vipStore.vipImgData = []
-  vipStore.currentPage = 1
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
   vipStore.fetchSearchImgList({
     isRefresh: true,
-    options: { word: vipStore.tagName, page: vipStore.currentPage },
+    options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
   })
-  router.replace({
+  router.push({
     path: '/comics/category',
     query: { tag },
   })
@@ -88,16 +88,16 @@ const getTag = (tag) => {
 // 跳转作者页（跳转前先请求作者作品第一页，进入分类页即可直接展示）
 const goAuthor = async (detail) => {
   vipStore.tagName = detail.user
-  vipStore.vipImgData = []
-  vipStore.currentPage = 1
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
   await vipStore.fetchAuthorIllustsList({
     isRefresh: true,
     options: {
       id: detail.uid,
-      page: vipStore.currentPage,
+      page: vipStore.searchCurrentPage,
     },
   })
-  router.replace({
+  router.push({
     path: '/comics/category',
     query: { author: detail.user, uid: detail.uid },
   })
