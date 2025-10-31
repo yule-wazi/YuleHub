@@ -1,6 +1,7 @@
 import { switchImgResolutionUrl, switchProxyUrl } from '@/utils/ProxyUrl'
 import { shuffleArray } from '@/utils/handleArray'
 import myCache from '@/utils/cacheStorage'
+import { getYesterdayDate } from '@/utils/formatTime'
 import MyRequest from '../request/index'
 const HOST = import.meta.env.VITE_HOST || 'localhost'
 // 获取画师作品id列表
@@ -59,7 +60,9 @@ export function postLoliconList(options) {
 // pixivRank
 export function postPixivRankList(options) {
   let isR18 = myCache.get('isNSFW') ?? false
-  let queryString = ''
+  // 添加当前时间减去1天的日期参数
+  const dateParam = getYesterdayDate()
+  let queryString = `&date=${dateParam}`
   for (const k in options) {
     queryString += `&${k}=${options[k]}`
   }
