@@ -105,19 +105,24 @@ if (picaStore.pageList.length !== 0) {
   pageList = myCache.get('pageList')
 }
 const router = useRouter()
+const route = useRoute()
 // tag搜索
 const getTag = (tag) => {
   // 删除之前列表
   picaStore.tagName = tag
-  picaStore.categoryList = []
-  picaStore.currentPage = 1
-  picaStore.searchPicaList({ isRefresh: true, keyword: tag })
-  router.replace({
+  picaStore.picaSearchList = []
+  picaStore.searchCurrentPage = 1
+  picaStore.searchPicaList({
+    isRefresh: true,
+    keyword: tag,
+    page: picaStore.searchCurrentPage,
+  })
+  const targetRoute = {
     path: '/pica/category',
     query: { tag },
-  })
+  }
+  router.push(targetRoute)
 }
-const route = useRoute()
 // 上滑加载
 const isAllTotal = ref(false)
 const isLoading = () => {

@@ -20,11 +20,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import { spliceImgUrl } from '@/utils/ProxyUrl'
 import usePica from '@/sotre/module/pica'
-import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
+import { throttledFlowFlex } from '@/utils/waterflow'
 import { preLoadImg } from '@/utils/preLoadImg'
 
 const props = defineProps({
@@ -32,7 +32,12 @@ const props = defineProps({
     type: Object,
     default: {},
   },
+  dataList: {
+    type: Array,
+    default: [],
+  },
 })
+const emit = defineEmits(['errorEmit'])
 const picaStore = usePica()
 // 移除加载错误图片
 const handleImgError = (e) => {
@@ -40,6 +45,7 @@ const handleImgError = (e) => {
   if (imageItem) {
     imageItem.remove()
   }
+  emit('errorEmit')
 }
 
 // 初始化默认图片高度
@@ -53,11 +59,12 @@ preLoadImg(showImg.value)
   })
   .catch(() => {})
 
-// 图片加载完毕
+// 图片加载完毕（使用节流以减少重排）
 const handleImgLoad = () => {
-  throttledFlowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
 }
 const router = useRouter()
+const route = useRoute()
 // 进入详情页
 const getDetail = async () => {
   await Promise.all([
@@ -70,21 +77,30 @@ const getDetail = async () => {
     query: { id: props.itemData._id },
   })
 }
-// tag搜索
+// 搜索tag
 const getTag = (tag) => {
   // 删除之前列表
   picaStore.tagName = tag
-  picaStore.categoryList = []
-  picaStore.currentPage = 1
-  picaStore.searchPicaList({ isRefresh: true, keyword: tag })
-  router.replace({
+  picaStore.picaSearchList = []
+  picaStore.searchCurrentPage = 1
+  picaStore.searchPicaList({
+    isRefresh: true,
+    keyword: tag,
+    page: picaStore.searchCurrentPage,
+  })
+  const targetRoute = {
     path: '/pica/category',
     query: { tag },
-  })
+  }
+  if (route.path === '/pica/category') {
+    router.replace(targetRoute)
+  } else {
+    router.push(targetRoute)
+  }
 }
 // 监听窗口
 window.addEventListener('resize', function () {
-  throttledFlowFlex({ imgList: picaStore.categoryList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
 })
 </script>
 

@@ -16,7 +16,7 @@
 
 <script setup>
 import { KeepAlive, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import HeaderCompoment from '@/components/headerComponent/headerCompoment.vue'
 import usePica from '@/sotre/module/pica'
 import myCache from '@/utils/cacheStorage'
@@ -24,7 +24,7 @@ const picaStore = usePica()
 // 移除图片
 onUnmounted(() => {
   console.log('销毁图片列表')
-  picaStore.categoryList = []
+  picaStore.picaSearchList = []
 })
 // 切换最多喜欢
 const mostLike = ref(myCache.get('mostLike') ?? false)
@@ -35,16 +35,27 @@ watch(mostLike, () => {
 })
 // 点击搜索
 const router = useRouter()
+const route = useRoute()
 const searchClick = (tag) => {
-  // 清空列表
-  picaStore.categoryList = []
   picaStore.tagName = tag
-  picaStore.currentPage = 1
-  picaStore.searchPicaList({ isRefresh: true, keyword: tag })
-  router.push({
+  console.log('点击搜索', tag)
+  // 清空之前列表
+  picaStore.picaSearchList = []
+  picaStore.searchCurrentPage = 1
+  picaStore.searchPicaList({
+    isRefresh: true,
+    keyword: tag,
+    page: picaStore.searchCurrentPage,
+  })
+  const targetRoute = {
     path: '/pica/category',
     query: { tag },
-  })
+  }
+  if (route.path === '/pica/category') {
+    router.replace(targetRoute)
+  } else {
+    router.push(targetRoute)
+  }
 }
 </script>
 

@@ -39,6 +39,8 @@ const usePica = defineStore('pica', {
       tagList,
       currentCategoryName: tagList[0],
       categoryList: [],
+      picaSearchList: [],
+      searchCurrentPage: 1,
       picaDetail: {},
       pageList: [],
       picaSeries: [],
@@ -70,13 +72,13 @@ const usePica = defineStore('pica', {
         this.categoryList.push(...list)
       }
     },
-    async searchPicaList({ isRefresh = false, keyword = '', page = this.currentPage } = {}) {
+    async searchPicaList({ isRefresh = false, keyword = '', page = this.searchCurrentPage } = {}) {
       const res = await searchPica(keyword, page)
       const list = res.data.data.comics.docs
       if (isRefresh) {
-        this.categoryList = list
+        this.picaSearchList = list
       } else {
-        this.categoryList.push(...list)
+        this.picaSearchList.push(...list)
       }
     },
     fetchPicaPage({ isRefresh = false, id, page = 1, order = 1 }) {

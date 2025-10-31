@@ -5,11 +5,15 @@
       <div class="text">一览</div>
     </div>
     <div class="list">
-      <template v-for="item in picaStore.categoryList">
-        <ImageItem :itemData="item" />
+      <template v-for="item in picaStore.picaSearchList">
+        <ImageItem
+          :itemData="item"
+          :dataList="picaStore.picaSearchList"
+          @errorEmit="removeErrorData(item)"
+        />
       </template>
     </div>
-    <Loading :dataList="picaStore.categoryList" @loadingEmit="loadingFetch" />
+    <Loading :dataList="picaStore.picaSearchList" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
@@ -25,21 +29,28 @@ const picaStore = usePica()
 // 页面刷新自动给tagName赋值
 picaStore.tagName = route.query.tag
 // 发起图片组请求
-if (!picaStore.categoryList.length) {
-  picaStore.currentPage = 1
-  picaStore.searchPicaList({ isRefresh: true, keyword: picaStore.tagName })
+if (!picaStore.picaSearchList.length) {
+  picaStore.searchCurrentPage = 1
+  picaStore.searchPicaList({
+    isRefresh: true,
+    keyword: picaStore.tagName,
+    page: picaStore.searchCurrentPage,
+  })
 }
 // loading加载发起请求
 const loadingFetch = () => {
-  picaStore.currentPage++
-  picaStore.searchPicaList({ keyword: picaStore.tagName })
+  picaStore.searchCurrentPage++
+  picaStore.searchPicaList({
+    keyword: picaStore.tagName,
+    page: picaStore.searchCurrentPage,
+  })
 }
 // 回到当前位置
 scrollRestore('category', picaStore)
 // 重新请求回到顶部
 const category = ref(null)
 watchEffect(() => {
-  if (!picaStore.categoryList.length) {
+  if (!picaStore.picaSearchList.length) {
     picaStore.scrollTop = 0
     if (category.value) {
       console.log('回到顶部')
@@ -47,6 +58,11 @@ watchEffect(() => {
     }
   }
 })
+// 清除异常数据
+const removeErrorData = (errorItem) => {
+  console.log('异常数据', errorItem)
+  picaStore.picaSearchList = picaStore.picaSearchList.filter((item) => errorItem !== item)
+}
 </script>
 
 <style scoped>

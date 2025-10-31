@@ -3,7 +3,11 @@
   <div ref="home" class="home">
     <div class="list">
       <template v-for="item in picaStore.categoryList">
-        <ImageItem :itemData="item" />
+        <ImageItem
+          :itemData="item"
+          :dataList="picaStore.categoryList"
+          @errorEmit="removeErrorData(item)"
+        />
       </template>
     </div>
     <Loading :dataList="picaStore.categoryList" @loadingEmit="loadingFetch" />
@@ -34,6 +38,11 @@ const scrollTop = () => {
 }
 // 回到当前位置
 scrollRestore('home', picaStore)
+// 清除异常数据
+const removeErrorData = (errorItem) => {
+  console.log('异常数据', errorItem)
+  picaStore.categoryList = picaStore.categoryList.filter((item) => errorItem !== item)
+}
 </script>
 
 <style lang="less" scoped>
