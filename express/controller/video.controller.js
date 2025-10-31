@@ -37,11 +37,12 @@ class VideoController {
   }
   async search(req, res, next) {
     const { keyword, page } = req.query
-    const offset = getOffset(page)
+    const pageNum = page ? parseInt(page) : 1
+    const offset = getOffset(pageNum)
     const result = await videoService.search(keyword, offset)
     res.send({
       code: 0,
-      result,
+      result: result || [],
     })
   }
   async feed(req, res, next) {

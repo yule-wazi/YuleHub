@@ -65,9 +65,10 @@ class VideoService {
       const conn = await getConnection()
       if (!conn) throw new Error('数据库连接不可用')
       const [result] = await conn.execute(statement, [String(offset)])
-      return result
+      return result || []
     } catch (err) {
       console.log(err)
+      return []
     }
   }
   async count() {

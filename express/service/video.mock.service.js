@@ -53,16 +53,21 @@ class VideoMockService {
 
   // 搜索视频（通过标签匹配）
   search(keyword, offset) {
+    if (!keyword || typeof keyword !== 'string') {
+      return []
+    }
     const { videos } = readMockData()
+    const keywordLower = keyword.toLowerCase()
     const filtered = videos.filter((video) => {
       const labels = video.labels || []
+      const title = video.title || ''
       return (
-        labels.some((label) => label.toLowerCase().includes(keyword.toLowerCase())) ||
-        video.title.toLowerCase().includes(keyword.toLowerCase())
+        labels.some((label) => label && label.toLowerCase().includes(keywordLower)) ||
+        title.toLowerCase().includes(keywordLower)
       )
     })
 
-    const start = offset
+    const start = offset || 0
     const end = start + LIMITSIZE
     const result = filtered.slice(start, end)
 
