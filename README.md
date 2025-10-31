@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智能化、个性化的聊天体验。支持 **用户 与 AI** 进行角色扮演进行**无限制**聊天，并提供了 _PC 端_ 和 _移动端_ 的响应式界面及功能模块。同时，已新增YULE插画和YULE小说(需翻墙)分区。
+YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智能化、个性化的聊天体验。支持 **用户 与 AI** 进行角色扮演进行**无限制**聊天，并提供了 _PC 端_ 和 _移动端_ 的响应式界面及功能模块。同时，已新增YULE插画、YULE小说和YULE动漫。
 
 ### AI聊天页面
 
@@ -39,6 +39,19 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
   </tr>
 </table>
 
+### 动漫页面
+
+<table>
+  <tr>
+    <td><img src="public/readMe/video_pc_home_light.png"/></td>
+    <td><img src="public/readMe/video_phone_detail_light.png" width="800px"/></td>
+  </tr>
+  <tr>
+    <td><img src="public/readMe/video_pc_category_dark.png" /></td>
+    <td><img src="public/readMe/video_phone_feed_dark.png" width="800px"/></td>
+  </tr>
+</table>
+
 ## 核心功能
 
 1. **AI聊天**：
@@ -55,12 +68,17 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 
 3. **YULE插画**：
 
-   - [https://image.anosu.top](https://image.anosu.top)API提供
+   - [https://hibiapi.getloli.com](https://hibiapi.getloli.com/docs)API提供
    - 展示Pixiv精选图片(可选择是否开启NSFW)
 
-4. **YULE小说(需翻墙)**
+4. **YULE小说**
+
    - [https://hibiapi.getloli.com](https://hibiapi.getloli.com/docs)API提供
    - 接入pixiv小说接口,可进行搜索
+
+5. **YULE动漫**：
+   - 提供首页、分类、详情页及竖屏Feed模式多种浏览方式
+   - 默认使用Mock文件数据（模拟后端传过来的数据），展示B站精选视频内容
 
 ## 安装项目
 
