@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia'
 import {
   getAllPixivImg,
-  postLoliconList,
-  postNewVipList,
   postPixivRankList,
   postPixivSearchList,
   postPixivMemberIllust,
 } from '@/service/module/vip'
 import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { filterComicsData } from '@/utils/filterData'
+import { getYesterdayDate, getPreviousDate } from '@/utils/formatTime'
 const useVip = defineStore('vip', {
   state: () => {
     return {
@@ -24,13 +23,38 @@ const useVip = defineStore('vip', {
       detailData: {},
       authorOtherImg: [],
       isNSFW: false,
+      validDate: null, // 存储有效的排名日期
     }
   },
   actions: {
     // 请求组图片
     async fetchGroupImgList({ isRefresh = false, options } = {}) {
-      console.log('发起请求', options)
-      const list = await postPixivRankList(options)
+      // 如果是刷新，重置有效日期；否则使用已存储的有效日期
+      let currentDate = isRefresh ? getYesterdayDate() : this.validDate || getYesterdayDate()
+      let list = null
+      let attempts = 0
+      const maxAttempts = 30
+      while (attempts < maxAttempts) {
+        try {
+          list = await postPixivRankList({ page: this.currentPage }, currentDate)
+          if (list.data.illusts && list.data.illusts.length > 0) {
+            console.log(`成功获取数据，使用日期: ${currentDate}`)
+            this.validDate = currentDate
+            break
+          }
+          // 如果没有数据，往前回溯一天
+          currentDate = getPreviousDate(currentDate, 1)
+          this.currentPage = 1
+          attempts++
+        } catch (error) {
+          console.error('请求失败:', error)
+          break
+        }
+      }
+      if (!list || !list.data.illusts || list.data.illusts.length === 0) {
+        console.warn('未能获取到数据')
+        return
+      }
       const formatList = list.data.illusts.map((item) => {
         return {
           pid: item.id,
@@ -43,24 +67,6 @@ const useVip = defineStore('vip', {
           x_restrict: item.x_restrict,
         }
       })
-
-      // const list = await postNewVipList(options)
-      // const formatList = list.data
-
-      // //LoliconAPI
-      // const list = await postLoliconList(options)
-      // // 格式化数据
-      // const formatList = list.data.data.map((item) => {
-      //   return {
-      //     pid: item.pid,
-      //     uid: item.uid,
-      //     title: item.title,
-      //     user: item.author,
-      //     tags: item.tags,
-      //     url: item.urls.small,
-      //   }
-      // })
-
       if (isRefresh) {
         this.vipImgData = formatList
       } else {

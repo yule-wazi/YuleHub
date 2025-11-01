@@ -11,3 +11,8 @@ export function formatTime(time) {
 export function getYesterdayDate() {
   return dayjs().subtract(1, 'day').format('YYYY-MM-DD')
 }
+
+// 获取指定日期减去N天的日期，格式为YYYY-MM-DD
+export function getPreviousDate(dateStr, days = 1) {
+  return dayjs(dateStr).subtract(days, 'day').format('YYYY-MM-DD')
+}

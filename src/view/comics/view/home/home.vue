@@ -22,11 +22,11 @@ import { onMounted, useTemplateRef } from 'vue'
 const vipStore = useVip()
 // 发起图片组请求
 if (!vipStore.vipImgData.length) {
-  vipStore.fetchGroupImgList({ isRefresh: true, options: { page: vipStore.currentPage } })
+  vipStore.fetchGroupImgList({ isRefresh: true })
 }
 const loadingFetch = () => {
   vipStore.currentPage++
-  vipStore.fetchGroupImgList({ options: { page: vipStore.currentPage } })
+  vipStore.fetchGroupImgList()
 }
 // 回到当前位置
 scrollRestore('home', vipStore)

@@ -58,11 +58,10 @@ export function postLoliconList(options) {
 }
 
 // pixivRank
-export function postPixivRankList(options) {
+export function postPixivRankList(options, date = null) {
   let isR18 = myCache.get('isNSFW') ?? false
-  // 添加当前时间减去1天的日期参数
-  const dateParam = getYesterdayDate()
-  let queryString = `&date=${dateParam}`
+  // 如果未提供日期，使用当前时间减去1天的日期
+  let queryString = `&date=${date}`
   for (const k in options) {
     queryString += `&${k}=${options[k]}`
   }
