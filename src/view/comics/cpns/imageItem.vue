@@ -83,7 +83,11 @@ const router = useRouter()
 const route = useRoute()
 // 进入详情页
 const getDetail = () => {
-  router.push('/comics/detail')
+  const pid = props.itemData.pid
+  router.push({
+    path: '/comics/detail',
+    query: { pid },
+  })
   vipStore.detailData = props.itemData
 }
 // 搜索tag

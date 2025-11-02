@@ -21,7 +21,7 @@
       <div class="tagArea">
         <div class="tagTitle">文本标签</div>
         <div class="tagList">
-          <template v-for="tag in detailData.tags">
+          <template v-for="tag in detailData.tags" :key="tag.name">
             <Tag :tag="tag.name" @getTagEmit="getTag" />
           </template>
         </div>
@@ -29,7 +29,7 @@
       <div class="otherArts">
         <div class="artsTitle">其他作品</div>
         <div class="imgList">
-          <template v-for="item in vipStore.authorOtherImg">
+          <template v-for="item in authorOtherImg" :key="item">
             <div class="image">
               <img :src="item" alt="" />
             </div>
@@ -41,34 +41,113 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
-import myCache from '@/utils/cacheStorage'
-import { useRouter } from 'vue-router'
+import { sessionCache } from '@/utils/cacheStorage'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 
 const vipStore = useVip()
-// 清空其他作品列表
-vipStore.authorOtherImg = []
-// 数据持久化保存
-let detailData = {}
-if (Object.keys(vipStore.detailData).length !== 0) {
-  detailData = vipStore.detailData
-  myCache.set('detailData', detailData)
-} else {
-  detailData = myCache.get('detailData')
+const router = useRouter()
+const route = useRoute()
+// SessionStorage key 前缀
+const STORAGE_PREFIX = 'COMICS_DETAIL_CACHE:'
+// 获取缓存 key（基于 pid）
+const getStorageKey = (pid) => {
+  if (!pid) return ''
+  return `${STORAGE_PREFIX}${pid}`
+}
+// 保存数据到 sessionStorage
+const saveToSession = (pid) => {
+  if (!pid || !vipStore.detailData || Object.keys(vipStore.detailData).length === 0) {
+    return
+  }
+  const storageKey = getStorageKey(pid)
+  const cacheData = {
+    detailData: { ...vipStore.detailData },
+    authorOtherImg: [...authorOtherImg.value],
+    timestamp: Date.now(),
+  }
+  sessionCache.set(storageKey, cacheData)
+}
+// 从 sessionStorage 恢复数据
+const restoreFromSession = (pid) => {
+  if (!pid) return null
+  const storageKey = getStorageKey(pid)
+  const cached = sessionCache.get(storageKey)
+  if (cached && cached.detailData) {
+    vipStore.detailData = cached.detailData
+    vipStore.authorOtherImg = cached.authorOtherImg
+    return cached
+  }
+  return null
+}
+// 初始化详情数据
+let detailData = ref({})
+let authorOtherImg = ref([])
+const initDetailData = async () => {
+  const pid = Number(route.query.pid)
+  if (!pid) {
+    return
+  }
+  const cached = restoreFromSession(pid)
+  if (cached) {
+    detailData.value = cached.detailData
+    authorOtherImg.value = cached.authorOtherImg
+  } else {
+    detailData.value = vipStore.detailData
+    await loadOtherArts()
+  }
 }
 // p站获取高清图片
-const showImg = ref(detailData.coverImg.large)
-const origin = switchImgResolutionUrl(detailData.coverImg.large, 'origin')
-preLoadImg(origin).then(({ src }) => (showImg.value = src))
-//遍历展示所有图片
-const imgList = detailData.pageList.map((item) => item.image_urls.large)
-// 其他作品
-vipStore.fetchOtherImgList(detailData.uid)
-const router = useRouter()
+const showImg = ref('')
+const imgList = ref([])
+
+watch(detailData, () => {
+  if (detailData.value.coverImg?.large) {
+    const origin = switchImgResolutionUrl(detailData.value.coverImg.large, 'origin')
+    preLoadImg(origin).then(({ src }) => (showImg.value = src))
+  }
+  //遍历展示所有图片
+  imgList.value = detailData.value.pageList?.map((item) => item.image_urls.large)
+})
+
+
+
+// 加载其他作品（检查缓存）
+const loadOtherArts = async () => {
+  const pid = route.query.pid
+  if (!pid) return
+  if (detailData.value.uid) {
+    await vipStore.fetchOtherImgList(detailData.value.uid)
+    // 请求完成后保存到缓存
+    authorOtherImg.value = vipStore.authorOtherImg
+    authorOtherImg.value = vipStore.authorOtherImg
+  }
+}
+
+// 组件挂载时加载其他作品
+onMounted(async () => {
+  // 如果还没有数据，等待初始化完成
+  if (!detailData.value || Object.keys(detailData.value).length === 0) {
+    await initDetailData()
+  }
+  // 如果从缓存恢复则不需要重新加载
+  if (authorOtherImg.value.length === 0) {
+    await loadOtherArts()
+  }
+})
+
+// 路由离开前保存数据
+onBeforeRouteLeave(() => {
+  const pid = route.query.pid
+  if (pid && detailData.value && Object.keys(detailData.value).length > 0) {
+    saveToSession(pid)
+  }
+})
+
 // tag搜索
 const getTag = (tag) => {
   // 删除之前列表
@@ -85,21 +164,21 @@ const getTag = (tag) => {
   })
 }
 
-// 跳转作者页（跳转前先请求作者作品第一页，进入分类页即可直接展示）
 const goAuthor = async (detail) => {
-  vipStore.tagName = detail.user
+  const detailObj = detail && detail.value ? detail.value : detail
+  vipStore.tagName = detailObj.user
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
   await vipStore.fetchAuthorIllustsList({
     isRefresh: true,
     options: {
-      id: detail.uid,
+      id: detailObj.uid,
       page: vipStore.searchCurrentPage,
     },
   })
   router.push({
     path: '/comics/category',
-    query: { author: detail.user, uid: detail.uid },
+    query: { author: detailObj.user, uid: detailObj.uid },
   })
 }
 </script>
