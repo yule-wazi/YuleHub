@@ -2,7 +2,7 @@
   <div class="imageItem">
     <div class="item">
       <div class="image" :style="{ aspectRatio: imgAspectRatio }" @click="getDetail">
-        <img :src="showImg" alt="" @error="handleImgError" @load="handleImgLoad" />
+        <img :src="showImg" loading="lazy" @error="handleImgError" @load="handleImgLoad" />
         <div v-if="itemData.pageList.length" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
           <span class="pageCount">{{ itemData.pageList.length }}</span>
@@ -90,7 +90,7 @@ const getDetail = () => {
 const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
-  vipStore.vipSearchImgData = []
+  // vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
   vipStore.fetchSearchImgList({
     isRefresh: true,
@@ -100,11 +100,12 @@ const getTag = (tag) => {
     path: '/comics/category',
     query: { tag },
   }
-  if (route.path === '/comics/category') {
-    router.replace(targetRoute)
-  } else {
-    router.push(targetRoute)
-  }
+  router.push(targetRoute)
+  // if (route.path === '/comics/category') {
+  //   router.replace(targetRoute)
+  // } else {
+  //   router.push(targetRoute)
+  // }
 }
 const emit = defineEmits(['errorEmit'])
 </script>

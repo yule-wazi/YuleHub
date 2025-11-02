@@ -5,7 +5,7 @@
       <div class="text">一览</div>
     </div>
     <div class="list">
-      <template v-for="item in vipStore.vipSearchImgData">
+      <template v-for="(item, index) in vipStore.vipSearchImgData" :key="`${item.pid}-${index}`">
         <ImageItem
           :itemData="item"
           :dataList="vipStore.vipSearchImgData"
@@ -18,59 +18,128 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
-import { scrollRestore } from '@/utils/scrollRestore'
-import { ref, useTemplateRef, watchEffect } from 'vue'
+import { createQueryCache } from '@/utils/queryCache'
+import myCache from '@/utils/cacheStorage'
+import { ref, watchEffect, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
+
 const route = useRoute()
 const vipStore = useVip()
-// 页面刷新自动给tagName赋值
-vipStore.tagName = route.query.tag
-// 发起图片组/作者请求
-if (!vipStore.searchCurrentPage.length) {
+const category = ref(null)
+// 创建查询缓存管理器
+const queryCache = createQueryCache({
+  prefix: 'COMICS_CACHE:',
+  getR18Flag: () => myCache.get('isNSFW') ?? false,
+})
+
+// 保存数据到缓存
+const saveToSession = (tag, uid) => {
+  if (vipStore.vipSearchImgData.length > 0) {
+    // 直接从 DOM 元素获取滚动位置
+    const currentScrollTop = category.value ? category.value.scrollTop : 0
+    queryCache.saveToCache(tag, uid, {
+      list: vipStore.vipSearchImgData,
+      page: vipStore.searchCurrentPage,
+      date: vipStore.validDate,
+      scrollTop: currentScrollTop,
+    })
+  }
+}
+
+// 从缓存恢复数据
+const restoreFromSession = (tag, uid) => {
+  const cached = queryCache.restoreFromCache(tag, uid)
+  if (cached) {
+    vipStore.vipSearchImgData = cached.list
+    vipStore.searchCurrentPage = cached.page || 1
+    vipStore.validDate = cached.date || null
+    vipStore.tagName = tag || ''
+    return cached // 返回完整缓存数据
+  }
+  return null
+}
+
+// 加载数据（带缓存检查）
+const loadData = async () => {
+  const tag = route.query.tag
+  const uid = route.query.uid
+  const cached = restoreFromSession(tag, uid)
+  if (cached) {
+    if (category.value && cached.scrollTop > 0) {
+      category.value.scrollTo({ top: cached.scrollTop, behavior: 'smooth' })
+    }
+    return
+  }
+  vipStore.tagName = tag || ''
   vipStore.searchCurrentPage = 1
-  if (route.query.uid) {
-    vipStore.fetchAuthorIllustsList({
+  if (uid) {
+    await vipStore.fetchAuthorIllustsList({
       isRefresh: true,
       options: {
-        id: route.query.uid,
+        id: uid,
         page: vipStore.searchCurrentPage,
       },
     })
-  } else {
-    vipStore.fetchSearchImgList({
+  } else if (tag) {
+    await vipStore.fetchSearchImgList({
       isRefresh: true,
-      options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
+      options: { word: tag, page: vipStore.searchCurrentPage },
     })
   }
 }
-// loading加载发起请求
-const loadingFetch = () => {
-  vipStore.searchCurrentPage++
-  if (route.query.uid) {
-    vipStore.fetchAuthorIllustsList({
-      options: { id: route.query.uid, page: vipStore.searchCurrentPage },
-    })
-  } else {
-    vipStore.fetchSearchImgList({
-      options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
-    })
-  }
-}
-scrollRestore('category', vipStore)
-// 重新请求回到顶部
-const category = ref(null)
-watchEffect(() => {
-  if (!vipStore.vipImgData.length) {
-    vipStore.scrollTop = 0
-    if (category.value) {
-      console.log('回到顶部')
-      category.value.scrollTo({ top: 0 })
-    }
-  }
+
+// 初始加载
+onMounted(async () => {
+  await loadData()
 })
+// KeepAlive 激活时（从缓存恢复）
+onActivated(async () => {
+  await loadData()
+})
+
+// 路由离开前保存滚动位置和缓存
+onBeforeRouteLeave(() => {
+  saveToSession(route.query.tag, route.query.uid)
+})
+
+// 监听路由变化
+watch(
+  () => route.query,
+  async (newQuery, oldQuery) => {
+    const tag = newQuery.tag
+    const uid = newQuery.uid
+    const oldTag = oldQuery?.tag
+    const oldUid = oldQuery?.uid
+    // 如果 tag 或 uid 确实发生变化，才清空数据
+    if ((tag || uid) && (tag !== oldTag || uid !== oldUid)) {
+      saveToSession(oldTag, oldUid)
+      vipStore.vipSearchImgData = []
+      vipStore.searchCurrentPage = 1
+      await loadData()
+      // loadData 内部已经处理了滚动位置恢复
+    }
+  },
+  { immediate: false },
+)
+// loading加载发起请求
+const loadingFetch = async () => {
+  vipStore.searchCurrentPage++
+  const tag = route.query.tag
+  const uid = route.query.uid
+  if (uid) {
+    await vipStore.fetchAuthorIllustsList({
+      options: { id: uid, page: vipStore.searchCurrentPage },
+    })
+  } else if (tag) {
+    await vipStore.fetchSearchImgList({
+      options: { word: tag, page: vipStore.searchCurrentPage },
+    })
+  }
+}
+
 // 清除异常数据
 const removeErrorData = (errorItem) => {
   console.log('异常数据', errorItem)
