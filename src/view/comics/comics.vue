@@ -29,10 +29,7 @@ const searchClick = (tag) => {
   // 清空之前列表
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
-  vipStore.fetchSearchImgList({
-    isRefresh: true,
-    options: { word: tag, page: vipStore.searchCurrentPage },
-  })
+
   const targetRoute = {
     path: '/comics/category',
     query: { tag },

@@ -169,13 +169,7 @@ const goAuthor = async (detail) => {
   vipStore.tagName = detailObj.user
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
-  await vipStore.fetchAuthorIllustsList({
-    isRefresh: true,
-    options: {
-      id: detailObj.uid,
-      page: vipStore.searchCurrentPage,
-    },
-  })
+
   router.push({
     path: '/comics/category',
     query: { author: detailObj.user, uid: detailObj.uid },

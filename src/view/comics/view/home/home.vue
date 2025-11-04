@@ -77,10 +77,6 @@ const loadData = async () => {
   }
 }
 
-// 初始加载
-onMounted(async () => {
-  await loadData()
-})
 
 // KeepAlive 激活时（从缓存恢复）
 onActivated(async () => {
