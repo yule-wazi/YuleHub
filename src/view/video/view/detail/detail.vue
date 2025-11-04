@@ -65,7 +65,7 @@ if (Object.keys(videoStore.videoDetail).length !== 0) {
 const videoRef = useTemplateRef('videoRef')
 onMounted(async () => {
   videoDetailData.videoSrc = await videoStore.fetchProxyVideoInfo(videoDetailData.videoSrc)
-  parseM3U8(videoRef.value, videoDetailData.videoSrc)
+  await parseM3U8(videoRef.value, videoDetailData.videoSrc)
 })
 // 进入竖屏模式
 const router = useRouter()
