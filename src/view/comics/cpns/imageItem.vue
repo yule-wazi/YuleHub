@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
@@ -51,30 +51,25 @@ const handleImgError = (e) => {
   }
   emit('errorEmit')
 }
-// 缩略图占位与比例占位，尽量提前确定尺寸避免跳动
 const LQIPImg = switchImgResolutionUrl(props.itemData.coverImg.large)
 const originImg = switchImgResolutionUrl(props.itemData.coverImg.large, 'origin')
 let showImg = ref(LQIPImg)
-const imgAspectRatio = ref('3 / 4')
-
-// 先用低清图拿到宽高比，立即占位
-preLoadImg(LQIPImg)
-  .then(({ width, height }) => {
-    if (width && height) imgAspectRatio.value = `${width} / ${height}`
-  })
+// 直接使用 API 返回的宽高比，避免通过图片加载获取导致的偏移
+const imgAspectRatio = computed(() => {
+  if (props.itemData.width && props.itemData.height) {
+    return `${props.itemData.width} / ${props.itemData.height}`
+  }
+  return '3 / 4'
+})
+// 加载高清图并替换显示
+preLoadImg(originImg)
+  .then(({ src }) => (showImg.value = src))
   .catch(() => {})
-  .finally(() => {
-    // 再加载高清图并替换显示
-    preLoadImg(originImg)
-      .then(({ src }) => (showImg.value = src))
-      .catch(() => {})
-  })
 
 // 图片加载完毕（使用节流以减少重排）
 const handleImgLoad = () => {
   throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
 }
-
 // 监听窗口
 window.addEventListener('resize', function () {
   throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
@@ -105,11 +100,6 @@ const getTag = (tag) => {
     query: { tag },
   }
   router.push(targetRoute)
-  // if (route.path === '/comics/category') {
-  //   router.replace(targetRoute)
-  // } else {
-  //   router.push(targetRoute)
-  // }
 }
 const emit = defineEmits(['errorEmit'])
 </script>

@@ -65,6 +65,8 @@ const useVip = defineStore('vip', {
           coverImg: item.image_urls,
           pageList: item.meta_pages,
           x_restrict: item.x_restrict,
+          width: item.width,
+          height: item.height,
         }
       })
       if (isRefresh) {
@@ -85,6 +87,8 @@ const useVip = defineStore('vip', {
           coverImg: item.image_urls,
           pageList: item.meta_pages,
           x_restrict: item.x_restrict,
+          width: item.width,
+          height: item.height,
         }
       })
       formatList = filterComicsData(formatList)
@@ -109,6 +113,8 @@ const useVip = defineStore('vip', {
           coverImg: item.image_urls,
           pageList: item.meta_pages,
           x_restrict: item.x_restrict,
+          width: item.width,
+          height: item.height,
         }
       })
       formatList = filterComicsData(formatList)
