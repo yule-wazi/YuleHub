@@ -19,7 +19,7 @@ import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { createQueryCache } from '@/utils/queryCache'
 import myCache from '@/utils/cacheStorage'
-import { ref, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, onMounted, onActivated, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { throttledFlowFlex } from '@/utils/waterflow'
 import { storeToRefs } from 'pinia'
@@ -104,7 +104,7 @@ watch(
   () => vipImgData.value.length,
   () => {
     nextTick(() => {
-      throttledFlowFlex({ imgList: vipImgData.value, imgWidth: 320 })
+      throttledFlowFlex({ imgList: vipImgData.value, imgWidth: 320 , isRefresh: false})
     })
   },
 )

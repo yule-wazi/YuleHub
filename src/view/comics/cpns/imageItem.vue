@@ -66,9 +66,9 @@ preLoadImg(originImg)
   .then(({ src }) => (showImg.value = src))
   .catch(() => {})
 
-// 监听窗口
+// 监听窗口 resize：列数变化时需要重新计算
 window.addEventListener('resize', function () {
-  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320, isRefresh: true })
 })
 const router = useRouter()
 const route = useRoute()

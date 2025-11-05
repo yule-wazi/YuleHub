@@ -104,24 +104,6 @@ onBeforeRouteLeave(() => {
   saveToSession(route.query.tag, route.query.uid)
 })
 
-// 监听路由变化
-watch(
-  () => route.query,
-  async (newQuery, oldQuery) => {
-    const tag = newQuery.tag
-    const uid = newQuery.uid
-    const oldTag = oldQuery?.tag
-    const oldUid = oldQuery?.uid
-    // 如果 tag 或 uid 确实发生变化，才清空数据
-    if ((tag || uid) && (tag !== oldTag || uid !== oldUid)) {
-      saveToSession(oldTag, oldUid)
-      vipStore.vipSearchImgData = []
-      vipStore.searchCurrentPage = 1
-      await loadData()
-    }
-  },
-  { immediate: false },
-)
 // loading加载发起请求
 const loadingFetch = async () => {
   vipStore.searchCurrentPage++
@@ -138,11 +120,31 @@ const loadingFetch = async () => {
   }
 }
 
+// 监听路由变化
+watch(
+  () => route.query,
+  async (newQuery, oldQuery) => {
+    const tag = newQuery.tag
+    const uid = newQuery.uid
+    const oldTag = oldQuery?.tag
+    const oldUid = oldQuery?.uid
+    // 如果 tag 或 uid 确实发生变化，才清空数据
+    if ((tag || uid) && (tag !== oldTag || uid !== oldUid)) {
+      saveToSession(oldTag, oldUid)
+      vipStore.vipSearchImgData = []
+      vipStore.searchCurrentPage = 1
+      await loadData()
+      console.log('重新布局')
+      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: true })
+    }
+  },
+  { immediate: true },
+)
 watch(
   () => vipSearchImgData.value.length,
   () => {
     nextTick(() => {
-      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320 })
+      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: false })
     })
   },
 )
