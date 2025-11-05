@@ -1,10 +1,9 @@
 <template>
-  <div ref="loadingRef" v-if="timeOut" class="loading">{{ text }}</div>
+  <div ref="loadingRef" v-if="isShow && timeOut" class="loading">{{ text }}</div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import useVip from '@/sotre/module/vip'
+import { ref, watch, watchEffect, onBeforeUnmount, nextTick } from 'vue'
 
 const props = defineProps({
   dataList: {
@@ -15,31 +14,76 @@ const props = defineProps({
     type: String,
     default: '加载中···',
   },
+  root: {
+    type: [Object, null],
+    default: null,
+  },
 })
 // 触底刷新
 let ob = null
 const loadingRef = ref(null)
-const vipStore = useVip()
 const timeOut = ref(false)
+const isShow = ref(false)
 setTimeout(() => {
   timeOut.value = true
 }, 3000)
-watch(loadingRef, () => {
+function getScrollableRoot(el) {
+  if (!el) return null
+  let node = el.parentElement
+  while (node) {
+    const style = getComputedStyle(node)
+    const overflowY = style.overflowY
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      return node
+    }
+    node = node.parentElement
+  }
+  return null
+}
+
+watch(loadingRef, async () => {
+  if (ob) {
+    try {
+      if (loadingRef.value) ob.unobserve(loadingRef.value)
+      ob.disconnect()
+    } catch {}
+    ob = null
+  }
+  await nextTick()
+  const rootElem = props.root || getScrollableRoot(loadingRef.value)
   ob = new IntersectionObserver(
     (entires) => {
+      if (!entires[0]) return
       if (entires[0].isIntersecting) {
         emit('loadingEmit')
       }
     },
     {
+      root: rootElem || null,
       threshold: 0,
+      rootMargin: '0px 0px 1000px 0px',
     },
   )
   if (loadingRef.value) {
     ob.observe(loadingRef.value)
   }
 })
+watchEffect(() => {
+  if (props.dataList.length > 0) {
+    isShow.value = true
+  } else {
+    isShow.value = false
+  }
+})
 
+onBeforeUnmount(() => {
+  if (ob) {
+    try {
+      if (loadingRef.value) ob.unobserve(loadingRef.value)
+      ob.disconnect()
+    } catch {}
+  }
+})
 const emit = defineEmits(['loadingEmit'])
 </script>
 

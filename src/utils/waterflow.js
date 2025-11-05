@@ -8,10 +8,8 @@ const containerState = {
 
 function setPosition({ imgList, col, space, imgWidth, parentElem, isRefresh = false }) {
   // 刷新时重置状态
-  if (
-    isRefresh ||
-    containerState.columnHeights.length !== col
-  ) {
+  if (isRefresh || containerState.columnHeights.length !== col) {
+    // console.log('刷新状态')
     containerState.lastIndex = 0
     containerState.columnHeights = new Array(col).fill(0)
     parentElem.style.paddingBottom = 0
@@ -20,7 +18,7 @@ function setPosition({ imgList, col, space, imgWidth, parentElem, isRefresh = fa
   // 从上次计算的索引开始，只计算新增元素
   const startIndex = containerState.lastIndex
   const nextTop = containerState.columnHeights
-
+  // console.log('需要渲染的图片数量', imgList.length - startIndex, startIndex, imgList.length, 'isRefresh=', isRefresh)
   for (let i = startIndex; i < imgList.length; i++) {
     const imgItem = parentElem.children[i]
     if (imgItem) {

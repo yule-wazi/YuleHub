@@ -85,12 +85,6 @@ const getDetail = () => {
 const getTag = (tag) => {
   // 删除之前列表
   vipStore.tagName = tag
-  // vipStore.vipSearchImgData = []
-  vipStore.searchCurrentPage = 1
-  vipStore.fetchSearchImgList({
-    isRefresh: true,
-    options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
-  })
   const targetRoute = {
     path: '/comics/category',
     query: { tag },

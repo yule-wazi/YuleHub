@@ -9,7 +9,7 @@
         />
       </template>
     </div>
-    <Loading :dataList="vipStore.vipImgData" @loadingEmit="loadingFetch" />
+    <Loading :dataList="vipStore.vipImgData" :root="home" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
@@ -21,7 +21,7 @@ import { createQueryCache } from '@/utils/queryCache'
 import myCache from '@/utils/cacheStorage'
 import { ref, onMounted, onActivated, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
-import { throttledFlowFlex } from '@/utils/waterflow'
+import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
 import { storeToRefs } from 'pinia'
 
 const vipStore = useVip()
@@ -68,9 +68,11 @@ const restoreFromSession = () => {
 // 加载数据（带缓存检查）
 const loadData = async () => {
   const cached = restoreFromSession()
+  await nextTick()
   if (cached) {
+    flowFlex({ imgList: vipStore.vipImgData, imgWidth: 320, isRefresh: true })
     if (home.value && cached.scrollTop > 0) {
-      home.value.scrollTo({ top: cached.scrollTop, behavior: 'smooth' })
+      home.value.scrollTo({ top: cached.scrollTop, behavior: 'auto' })
     }
     return
   }
@@ -79,17 +81,14 @@ const loadData = async () => {
     await vipStore.fetchGroupImgList({ isRefresh: true })
   }
 }
-
 // KeepAlive 激活时（从缓存恢复）
 onActivated(async () => {
   await loadData()
 })
-
 // 路由离开前保存滚动位置和缓存
 onBeforeRouteLeave(() => {
   saveToSession()
 })
-
 const loadingFetch = async () => {
   vipStore.currentPage++
   await vipStore.fetchGroupImgList()
@@ -104,7 +103,7 @@ watch(
   () => vipImgData.value.length,
   () => {
     nextTick(() => {
-      throttledFlowFlex({ imgList: vipImgData.value, imgWidth: 320 , isRefresh: false})
+      throttledFlowFlex({ imgList: vipImgData.value, imgWidth: 320, isRefresh: false })
     })
   },
 )

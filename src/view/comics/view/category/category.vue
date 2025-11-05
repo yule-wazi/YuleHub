@@ -13,20 +13,20 @@
         />
       </template>
     </div>
-    <Loading :dataList="vipStore.vipSearchImgData" @loadingEmit="loadingFetch" />
+    <Loading :dataList="vipStore.vipSearchImgData" :root="category" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
 <script setup>
+import { ref, watch, nextTick } from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { createQueryCache } from '@/utils/queryCache'
 import myCache from '@/utils/cacheStorage'
-import { ref, watchEffect, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
-import { throttledFlowFlex } from '@/utils/waterflow'
+import { flowFlex } from '@/utils/waterflow'
 
 const route = useRoute()
 const vipStore = useVip()
@@ -70,15 +70,19 @@ const loadData = async () => {
   const tag = route.query.tag
   const uid = route.query.uid
   const cached = restoreFromSession(tag, uid)
+  await nextTick()
   if (cached) {
+    flowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: true })
     if (category.value && cached.scrollTop > 0) {
-      category.value.scrollTo({ top: cached.scrollTop, behavior: 'smooth' })
+      category.value.scrollTo({ top: cached.scrollTop, behavior: 'auto' })
     }
     return
   }
   vipStore.tagName = tag || ''
   vipStore.searchCurrentPage = 1
-  throttledFlowFlex({ imgList: [], imgWidth: 320, isRefresh: true })
+  await nextTick(() => {
+    flowFlex({ imgList: [], imgWidth: 320, isRefresh: true })
+  })
   if (uid) {
     await vipStore.fetchAuthorIllustsList({
       isRefresh: true,
@@ -94,11 +98,6 @@ const loadData = async () => {
     })
   }
 }
-
-// KeepAlive 激活时（从缓存恢复）
-onActivated(async () => {
-  await loadData()
-})
 
 // 路由离开前保存滚动位置和缓存
 onBeforeRouteLeave(() => {
@@ -135,8 +134,6 @@ watch(
       vipStore.vipSearchImgData = []
       vipStore.searchCurrentPage = 1
       await loadData()
-      console.log('重新布局')
-      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: true })
     }
   },
   { immediate: true },
@@ -144,9 +141,11 @@ watch(
 watch(
   () => vipSearchImgData.value.length,
   () => {
-    nextTick(() => {
-      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: false })
-    })
+    if (vipSearchImgData.value.length > 0) {
+      nextTick(() => {
+        flowFlex({ imgList: vipSearchImgData.value, imgWidth: 320, isRefresh: false })
+      })
+    }
   },
 )
 
