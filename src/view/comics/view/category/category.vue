@@ -78,6 +78,7 @@ const loadData = async () => {
   }
   vipStore.tagName = tag || ''
   vipStore.searchCurrentPage = 1
+  throttledFlowFlex({ imgList: [], imgWidth: 320, isRefresh: true })
   if (uid) {
     await vipStore.fetchAuthorIllustsList({
       isRefresh: true,

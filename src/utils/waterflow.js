@@ -14,6 +14,7 @@ function setPosition({ imgList, col, space, imgWidth, parentElem, isRefresh = fa
   ) {
     containerState.lastIndex = 0
     containerState.columnHeights = new Array(col).fill(0)
+    parentElem.style.paddingBottom = 0
   }
 
   // 从上次计算的索引开始，只计算新增元素
