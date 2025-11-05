@@ -25,9 +25,12 @@ import Loading from '@/components/loading/loading.vue'
 import { createQueryCache } from '@/utils/queryCache'
 import myCache from '@/utils/cacheStorage'
 import { ref, watchEffect, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
+import { storeToRefs } from 'pinia'
+import { throttledFlowFlex } from '@/utils/waterflow'
 
 const route = useRoute()
 const vipStore = useVip()
+const { vipSearchImgData } = storeToRefs(vipStore)
 const category = ref(null)
 // 创建查询缓存管理器
 const queryCache = createQueryCache({
@@ -115,7 +118,6 @@ watch(
       vipStore.vipSearchImgData = []
       vipStore.searchCurrentPage = 1
       await loadData()
-      // loadData 内部已经处理了滚动位置恢复
     }
   },
   { immediate: false },
@@ -135,6 +137,15 @@ const loadingFetch = async () => {
     })
   }
 }
+
+watch(
+  () => vipSearchImgData.value.length,
+  () => {
+    nextTick(() => {
+      throttledFlowFlex({ imgList: vipSearchImgData.value, imgWidth: 320 })
+    })
+  },
+)
 
 // 清除异常数据
 const removeErrorData = (errorItem) => {

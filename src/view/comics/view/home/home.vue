@@ -19,11 +19,14 @@ import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { createQueryCache } from '@/utils/queryCache'
 import myCache from '@/utils/cacheStorage'
-import { ref, onMounted, onActivated, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onActivated, onBeforeUnmount, watch, nextTick } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
+import { throttledFlowFlex } from '@/utils/waterflow'
+import { storeToRefs } from 'pinia'
 
 const vipStore = useVip()
 const home = ref(null)
+const { vipImgData } = storeToRefs(vipStore)
 
 // 创建查询缓存管理器（home 页面使用固定 key）
 const queryCache = createQueryCache({
@@ -77,7 +80,6 @@ const loadData = async () => {
   }
 }
 
-
 // KeepAlive 激活时（从缓存恢复）
 onActivated(async () => {
   await loadData()
@@ -98,6 +100,14 @@ const removeErrorData = (errorItem) => {
   console.log('异常数据', errorItem)
   vipStore.vipImgData = vipStore.vipImgData.filter((item) => errorItem !== item)
 }
+watch(
+  () => vipImgData.value.length,
+  () => {
+    nextTick(() => {
+      throttledFlowFlex({ imgList: vipImgData.value, imgWidth: 320 })
+    })
+  },
+)
 </script>
 
 <style lang="less" scoped>

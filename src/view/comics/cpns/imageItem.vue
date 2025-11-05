@@ -2,7 +2,7 @@
   <div class="imageItem">
     <div class="item">
       <div class="image" :style="{ aspectRatio: imgAspectRatio }" @click="getDetail">
-        <img :src="showImg" loading="lazy" @error="handleImgError" @load="handleImgLoad" />
+        <img :src="showImg" loading="lazy" @error="handleImgError" />
         <div v-if="itemData.pageList.length" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
           <span class="pageCount">{{ itemData.pageList.length }}</span>
@@ -66,10 +66,6 @@ preLoadImg(originImg)
   .then(({ src }) => (showImg.value = src))
   .catch(() => {})
 
-// 图片加载完毕（使用节流以减少重排）
-const handleImgLoad = () => {
-  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
-}
 // 监听窗口
 window.addEventListener('resize', function () {
   throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
