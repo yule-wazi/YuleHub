@@ -61,7 +61,7 @@ preLoadImg(showImg.value)
 
 // 图片加载完毕（使用节流以减少重排）
 const handleImgLoad = () => {
-  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320, isRefresh: true })
 }
 const router = useRouter()
 const route = useRoute()
@@ -100,7 +100,7 @@ const getTag = (tag) => {
 }
 // 监听窗口
 window.addEventListener('resize', function () {
-  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320 })
+  throttledFlowFlex({ imgList: props.dataList, imgWidth: 320, isRefresh: true })
 })
 </script>
 
