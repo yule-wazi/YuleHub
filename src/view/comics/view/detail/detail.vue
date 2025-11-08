@@ -1,41 +1,16 @@
 <template>
   <div class="detail">
-    <div class="title">
-      <div class="text">{{ detailData.title }}</div>
-      <div class="pid">(PID：{{ detailData.pid }})</div>
+    <div class="main">
+      <div class="imageArea">
+        <div class="image">
+          <img :src="showImg" />
+        </div>
+        <ImageInfoAndDownoad />
+      </div>
+      <ImageInfoCard />
     </div>
-    <div class="headerImg">
-      <img v-if="!imgList.length" :src="showImg" />
-      <template v-for="item in imgList">
-        <img :src="switchImgResolutionUrl(item, 'origin')" alt="加载中..." />
-      </template>
-    </div>
-    <div class="desc">
-      <div class="author" @click="goAuthor(detailData)">
-        <div class="authorName">
-          <div class="text">作者:</div>
-          <div class="name link">{{ detailData.user }}</div>
-        </div>
-        <div class="uid">(UID：{{ detailData.uid }})</div>
-      </div>
-      <div class="tagArea">
-        <div class="tagTitle">文本标签</div>
-        <div class="tagList">
-          <template v-for="tag in detailData.tags" :key="tag.name">
-            <Tag :tag="tag.name" @getTagEmit="getTag" />
-          </template>
-        </div>
-      </div>
-      <div class="otherArts">
-        <div class="artsTitle">其他作品</div>
-        <div class="imgList">
-          <template v-for="item in authorOtherImg" :key="item">
-            <div class="image">
-              <img :src="item" alt="" />
-            </div>
-          </template>
-        </div>
-      </div>
+    <div class="sideBar">
+      <ArtistCard />
     </div>
   </div>
 </template>
@@ -48,6 +23,10 @@ import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { sessionCache } from '@/utils/cacheStorage'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
+import Card from '../../cpns/card.vue'
+import ArtistCard from './cpns/artistCard.vue'
+import ImageInfoCard from './cpns/imgInfoCard.vue'
+import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
 
 const vipStore = useVip()
 const router = useRouter()
@@ -114,8 +93,6 @@ watch(detailData, () => {
   imgList.value = detailData.value.pageList?.map((item) => item.image_urls.large)
 })
 
-
-
 // 加载其他作品（检查缓存）
 const loadOtherArts = async () => {
   const pid = route.query.pid
@@ -130,11 +107,9 @@ const loadOtherArts = async () => {
 
 // 组件挂载时加载其他作品
 onMounted(async () => {
-  // 如果还没有数据，等待初始化完成
   if (!detailData.value || Object.keys(detailData.value).length === 0) {
     await initDetailData()
   }
-  // 如果从缓存恢复则不需要重新加载
   if (authorOtherImg.value.length === 0) {
     await loadOtherArts()
   }
@@ -179,96 +154,25 @@ const goAuthor = async (detail) => {
 
 <style lang="less" scoped>
 .detail {
-  max-width: 800px;
+  max-width: 85vw;
   margin: auto;
-  .title {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: #323232;
-    color: var(--comics-cardTitle-color);
-    padding: 0 10px;
-    .pid {
-      margin-bottom: 5px;
-      font-size: 11px;
-      color: #666;
-    }
+  margin-top: 24px;
+  display: grid;
+  grid-gap: 24px;
+  @media (min-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr) 420px;
   }
-  .headerImg {
-    width: 100%;
-    box-shadow: 0 0 5px 0 rgba(131, 131, 131, 1);
-    img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-  .desc {
-    .author {
-      cursor: pointer;
-      padding: 0 15px;
-      color: var(--comics-cardTitle-color);
-      font-weight: 700;
-      .authorName {
-        display: flex;
-        justify-content: end;
-        margin-top: 10px;
-        .text {
-          margin-right: 10px;
-        }
-      }
-      .uid {
-        margin-right: 10px;
-        text-align: end;
-        font-size: 11px;
-        color: #666;
-      }
-    }
-    .tagArea {
-      padding: 10px 15px;
-      color: var(--comics-cardTitle-color);
-      margin-top: 20px;
-      background-color: var(--comics-cardBg-color);
-      .tagTitle {
-        font-weight: 900;
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-      .tagList {
-        display: flex;
-        flex-wrap: wrap;
-        .tag {
-          font-size: 14px;
-          border-radius: 5px;
-          padding: 7px 13px;
-          border: 1px solid #969696;
-          margin: 0 14px 14px 0;
-        }
-      }
-    }
-    .otherArts {
-      margin-top: 20px;
-      padding-top: 10px;
-      background-color: var(--comics-cardBg-color);
-      color: var(--comics-cardTitle-color);
-      .artsTitle {
-        padding: 0 10px;
-        font-weight: 900;
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-      .imgList {
-        display: flex;
-        flex-wrap: wrap;
-        .image {
-          width: 50%;
-          img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: cover;
-          }
+  .main {
+    .imageArea {
+      .image {
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       }
     }

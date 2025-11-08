@@ -4,10 +4,15 @@
   --chat-card-inputBg-color: #1c1c1c;
 
   --comics-bg-color: #000;
-  --comics-cardBg-color: #1f1f1f;
   --comics-cardTitle-color: #d6d6d6;
   --comics-headerBg-color: #1f1f1f;
   --comics-headerIcon-color: #858585;
   --comics-headerSearchBg-color: #858585;
   --comics-menuText-color: #d6d6d6;
+  
+  --comics-cardBg-color: #05050D;
+  --comics-tagBg-color: #10111a;
+  --comics-border-color: #191a24;
+  --comics-cardSubTitle-color: #7f8086;
+  --comics-cardText-color: #edeef5;
 }

@@ -1,18 +1,23 @@
 :root {
-  --primary-color: #3FB480;
+  --primary-color: #3fb480;
   --primary-pink-color: #ff007a;
-  --primary-deep-color: #34495E;
+  --primary-deep-color: #34495e;
 
-  --chat-card-bg-color:#FFFFFF;
+  --chat-card-bg-color: #ffffff;
   --chat-card-text-color: #606266;
-  --chat-card-inputBg-color: #FFFFFF;
+  --chat-card-inputBg-color: #ffffff;
 
   --comics-bg-color: #f4f4f4;
-  --comics-cardBg-color: #fff;
   --comics-cardTitle-color: #323232;
   --comics-headerBg-color: #f0f8ff;
-  --comics-headerTitle-color: #409EFF;
+  --comics-headerTitle-color: #409eff;
   --comics-headerIcon-color: #858585;
   --comics-headerSearchBg-color: #f5f5f5;
   --comics-menuText-color: #474747;
+  
+  --comics-cardBg-color: #FFFFFF;
+  --comics-tagBg-color: #e8ebf2;
+  --comics-border-color: #d5d7de;
+  --comics-cardSubTitle-color: #616369;
+  --comics-cardText-color: #090b0f;
 }
