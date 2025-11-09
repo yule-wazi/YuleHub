@@ -1,7 +1,7 @@
 <template>
   <div class="commentsCard">
     <Card>
-      <template #headerLeft>评论（3）</template>
+      <template #headerLeft>评论（{{ commentsCount }}）</template>
       <template #content>
         <div class="content">
           <div class="commentArea">
@@ -13,19 +13,24 @@
             </div>
           </div>
           <div class="showComments">
-            <template v-for="item in comments">
+            <template v-for="item in comments.slice(0, 3)">
               <div class="commentItem">
                 <div class="image">
                   <img
-                    src="https://i.pximg.org/img-master/img/2025/11/08/23/36/27/137248862_p0_master1200.jpg"
+                    :src="switchImgResolutionUrl(item.user.profile_image_urls.medium)"
+                    @error="
+                      (e) => {
+                        e.target.src = 'https://s.pximg.net/common/images/no_profile.png'
+                      }
+                    "
                   />
                 </div>
                 <div class="data">
                   <div class="user">
-                    <div class="name">ArtLover23</div>
-                    <div class="date">2 hours age</div>
+                    <div class="name">{{ item.user?.name }}</div>
+                    <div class="date">{{ formatTime(item.date) }}</div>
                   </div>
-                  <div class="text">MASTERPIECE! The level of detail is incredible</div>
+                  <div class="text">{{ item.comment }}</div>
                 </div>
               </div>
             </template>
@@ -40,11 +45,23 @@
 </template>
 
 <script setup>
+import { formatTime } from '@/utils/formatTime'
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+
+const props = defineProps({
+  comments: {
+    type: Array,
+    default: [],
+  },
+  commentsCount: {
+    type: Number,
+    default: 0,
+  },
+})
 
 const input = ref('')
-const comments = ['1', 2, 3]
 </script>
 
 <style lang="less" scoped>

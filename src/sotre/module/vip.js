@@ -1,9 +1,13 @@
 import { defineStore } from 'pinia'
 import {
   getAllPixivImg,
-  postPixivRankList,
-  postPixivSearchList,
-  postPixivMemberIllust,
+  getPixivSearchList,
+  getPixivMemberIllust,
+  getPixivRankList,
+  getPixivImgDetail,
+  getPixivArtistDetail,
+  getPixivRelatedArtist,
+  getPixivImgComments,
 } from '@/service/module/vip'
 import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { filterComicsData } from '@/utils/filterData'
@@ -21,6 +25,7 @@ const useVip = defineStore('vip', {
       vipImgData: [],
       vipSearchImgData: [],
       detailData: {},
+      detailDataAll: {},
       authorOtherImg: [],
       isNSFW: false,
       validDate: null, // 存储有效的排名日期
@@ -36,7 +41,7 @@ const useVip = defineStore('vip', {
       const maxAttempts = 30
       while (attempts < maxAttempts) {
         try {
-          list = await postPixivRankList({ page: this.currentPage }, currentDate)
+          list = await getPixivRankList({ page: this.currentPage }, currentDate)
           if (list.data.illusts && list.data.illusts.length > 0) {
             console.log(`成功获取数据，使用日期: ${currentDate}`)
             this.validDate = currentDate
@@ -76,7 +81,7 @@ const useVip = defineStore('vip', {
       }
     },
     async fetchSearchImgList({ isRefresh = false, options } = {}) {
-      const list = await postPixivSearchList(options)
+      const list = await getPixivSearchList(options)
       let formatList = list.data.illusts.map((item) => {
         return {
           pid: item.id,
@@ -101,7 +106,7 @@ const useVip = defineStore('vip', {
     // 根据作者获取作品（优先使用 uid，若无则通过作者名搜索获取 uid 再查作品）
     async fetchAuthorIllustsList({ isRefresh = false, options } = {}) {
       // 使用 member_illust 接口直接获取作品列表
-      const illustRes = await postPixivMemberIllust(options)
+      const illustRes = await getPixivMemberIllust(options)
       const illusts = illustRes.data.illusts || []
       let formatList = illusts.map((item) => {
         return {
@@ -128,6 +133,55 @@ const useVip = defineStore('vip', {
     async fetchOtherImgList(uid) {
       const resList = await getAllPixivImg(uid)
       this.authorOtherImg = resList.map((item) => switchProxyUrl(item))
+    },
+    // 获取详情页数据集合
+    async fetchImgDetailAll(pid, uid) {
+      const [imgRes, artistRes, moreImgRes] = await Promise.all([
+        getPixivImgDetail(pid),
+        getPixivArtistDetail(uid),
+        getPixivMemberIllust({ id: uid, page: 1 }),
+      ])
+      const { name, account, profile_image_urls } = artistRes.data.user
+      const { total_illusts, total_follow_users, total_mypixiv_users } = artistRes.data.profile
+      const {
+        id,
+        image_urls,
+        total_view,
+        total_bookmarks,
+        total_comments,
+        title,
+        caption,
+        create_date,
+        tags,
+        width,
+        height,
+      } = imgRes.data.illust
+      this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(0, 6)
+      this.detailDataAll.artistDetail = {
+        id: uid,
+        name,
+        account,
+        profile_image_urls,
+        total_illusts,
+        total_follow_users,
+        total_mypixiv_users,
+      }
+      this.detailDataAll.imgDetail = {
+        pid: id,
+        uid: uid,
+        artist: name,
+        coverImg: image_urls,
+        total_view,
+        total_bookmarks,
+        total_comments,
+        title,
+        caption,
+        create_date,
+        tags,
+        width,
+        height,
+      }
+      console.log(this.detailDataAll)
     },
   },
 })

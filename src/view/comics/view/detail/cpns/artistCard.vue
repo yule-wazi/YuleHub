@@ -4,15 +4,12 @@
       <template #headerLeft>
         <div class="artist">
           <div class="image">
-            <img
-              src="https://i.pximg.org/img-master/img/2025/11/06/12/29/04/137152766_p0_master1200.jpg"
-              alt=""
-            />
+            <img :src="switchImgResolutionUrl(profile_image_urls.medium)" alt="" />
           </div>
           <div class="info">
-            <div class="name">寺田てら</div>
-            <div class="account">@trcoot</div>
-            <div class="UID">UID：10509347</div>
+            <div class="name">{{ name }}</div>
+            <div class="account">@{{ account }}</div>
+            <div class="UID">UID：{{ id }}</div>
           </div>
         </div>
       </template>
@@ -23,15 +20,15 @@
           </div>
           <div class="artistInfo">
             <div class="works">
-              <div class="data">288</div>
+              <div class="data">{{ total_illusts }}</div>
               <div class="name">作品数</div>
             </div>
             <div class="followers">
-              <div class="data">720</div>
+              <div class="data">{{ total_follow_users }}</div>
               <div class="name">粉丝数</div>
             </div>
             <div class="following">
-              <div class="data">79</div>
+              <div class="data">{{ total_mypixiv_users }}</div>
               <div class="name">关注数</div>
             </div>
           </div>
@@ -42,7 +39,38 @@
 </template>
 
 <script setup>
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
+defineProps({
+  id: {
+    type: Number,
+    default: 0
+  },
+  profile_image_urls: {
+    type: Object,
+    default: {},
+  },
+  name: {
+    type: String,
+    default: '',
+  },
+  account: {
+    type: String,
+    default: '',
+  },
+  total_illusts: {
+    type: Number,
+    default: 0,
+  },
+  total_follow_users: {
+    type: Number,
+    default: 0,
+  },
+  total_mypixiv_users: {
+    type: Number,
+    default: 0,
+  },
+})
 </script>
 
 <style lang="less" scoped>

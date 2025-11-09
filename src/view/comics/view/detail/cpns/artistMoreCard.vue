@@ -9,7 +9,7 @@
           <div class="imgList">
             <template v-for="item in imgList">
               <div class="image">
-                <img :src="item" alt="" />
+                <img :src="switchImgResolutionUrl(item.image_urls.large, 'origin')" alt="" />
               </div>
             </template>
           </div>
@@ -20,16 +20,15 @@
 </template>
 
 <script setup>
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 
-const imgList = [
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/11/06/12/24/45/137152697_p0_master1200.jpg',
-]
+defineProps({
+  imgList: {
+    type: Array,
+    default: [],
+  },
+})
 </script>
 
 <style lang="less" scoped>
@@ -50,7 +49,7 @@ const imgList = [
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: .2s ease;
+          transition: 0.2s ease;
           &:hover {
             transform: scale(1.1);
           }

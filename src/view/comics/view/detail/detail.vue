@@ -5,27 +5,29 @@
         <div class="image">
           <img :src="showImg" />
         </div>
-        <ImageInfoAndDownoad />
+        <ImageInfoAndDownoad v-bind="detailDataAll.imgDetail" />
       </div>
-      <ImageInfoCard />
+      <ImageInfoCard v-bind="detailDataAll.imgDetail" />
       <div class="comment pc">
-        <CommentsCard />
+        <CommentsCard
+          :comments="comments"
+          :commentsCount="detailDataAll.imgDetail?.total_comments"
+        />
       </div>
     </div>
     <div class="sideBar">
-      <ArtistCard />
-      <ArtistMoreCard />
-      <RelatedArtistCard />
+      <ArtistCard v-bind="detailDataAll.artistDetail" />
+      <ArtistMoreCard :imgList="detailDataAll.moreImgFromArtist" />
+      <RelatedArtistCard :artistList="relatedArtist.slice(0, 3)" />
     </div>
     <div class="comment mobel">
-      <CommentsCard />
+      <CommentsCard :comments="comments" :commentsCount="detailDataAll.imgDetail?.total_comments" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import Tag from '@/components/tag/tag.vue'
+import { ref, onMounted, watch, onBeforeUnmount, reactive } from 'vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
@@ -37,6 +39,7 @@ import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
 import ArtistMoreCard from './cpns/artistMoreCard.vue'
 import RelatedArtistCard from './cpns/relatedArtistCard.vue'
 import CommentsCard from './cpns/commentsCard.vue'
+import { getPixivImgComments, getPixivRelatedArtist } from '@/service/module/vip'
 
 const vipStore = useVip()
 const router = useRouter()
@@ -50,13 +53,13 @@ const getStorageKey = (pid) => {
 }
 // 保存数据到 sessionStorage
 const saveToSession = (pid) => {
-  if (!pid || !vipStore.detailData || Object.keys(vipStore.detailData).length === 0) {
+  if (!pid || !vipStore.detailDataAll || Object.keys(vipStore.detailDataAll).length === 0) {
     return
   }
   const storageKey = getStorageKey(pid)
   const cacheData = {
     detailData: { ...vipStore.detailData },
-    authorOtherImg: [...authorOtherImg.value],
+    detailDataAll: { ...vipStore.detailDataAll },
     timestamp: Date.now(),
   }
   sessionCache.set(storageKey, cacheData)
@@ -66,16 +69,17 @@ const restoreFromSession = (pid) => {
   if (!pid) return null
   const storageKey = getStorageKey(pid)
   const cached = sessionCache.get(storageKey)
-  if (cached && cached.detailData) {
+  if (cached && cached.detailDataAll) {
+    vipStore.detailDataAll = cached.detailDataAll
     vipStore.detailData = cached.detailData
-    vipStore.authorOtherImg = cached.authorOtherImg
     return cached
   }
   return null
 }
 // 初始化详情数据
-let detailData = ref({})
-let authorOtherImg = ref([])
+let detailDataAll = ref({})
+let comments = ref([])
+let relatedArtist = ref([])
 const initDetailData = async () => {
   const pid = Number(route.query.pid)
   if (!pid) {
@@ -83,52 +87,49 @@ const initDetailData = async () => {
   }
   const cached = restoreFromSession(pid)
   if (cached) {
-    detailData.value = cached.detailData
-    authorOtherImg.value = cached.authorOtherImg
+    detailDataAll.value = cached.detailDataAll
   } else {
-    detailData.value = vipStore.detailData
-    await loadOtherArts()
+    await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
+    detailDataAll.value = vipStore.detailDataAll
+    // 首次拿到数据缓存
+    saveToSession(pid)
   }
 }
 // p站获取高清图片
 const showImg = ref('')
 const imgList = ref([])
 
-watch(detailData, () => {
-  if (detailData.value.coverImg?.large) {
-    const origin = switchImgResolutionUrl(detailData.value.coverImg.large, 'origin')
+watch(detailDataAll, () => {
+  console.log('watch,detailDataAll=', detailDataAll.value)
+  if (detailDataAll.value.imgDetail.coverImg?.large) {
+    const origin = switchImgResolutionUrl(detailDataAll.value.imgDetail.coverImg.large, 'origin')
     preLoadImg(origin).then(({ src }) => (showImg.value = src))
   }
   //遍历展示所有图片
-  imgList.value = detailData.value.pageList?.map((item) => item.image_urls.large)
+  imgList.value = detailDataAll.value.moreImgFromArtist?.map((item) =>
+    switchImgResolutionUrl(item.image_urls.large, 'origin'),
+  )
 })
-
-// 加载其他作品（检查缓存）
-const loadOtherArts = async () => {
-  const pid = route.query.pid
-  if (!pid) return
-  if (detailData.value.uid) {
-    await vipStore.fetchOtherImgList(detailData.value.uid)
-    // 请求完成后保存到缓存
-    authorOtherImg.value = vipStore.authorOtherImg
-    authorOtherImg.value = vipStore.authorOtherImg
-  }
-}
 
 // 组件挂载时加载其他作品
 onMounted(async () => {
-  if (!detailData.value || Object.keys(detailData.value).length === 0) {
+  if (!detailDataAll.value || Object.keys(detailDataAll.value).length === 0) {
     await initDetailData()
   }
-  if (authorOtherImg.value.length === 0) {
-    await loadOtherArts()
-  }
+  getPixivImgComments(route.query.pid).then((res) => {
+    comments.value = res.data.comments
+    // console.log('comments.value=', comments.value)
+  })
+  getPixivRelatedArtist(vipStore.detailData.uid).then((res) => {
+    relatedArtist.value = res.data.user_previews
+    console.log(relatedArtist.value)
+  })
 })
 
 // 路由离开前保存数据
 onBeforeRouteLeave(() => {
   const pid = route.query.pid
-  if (pid && detailData.value && Object.keys(detailData.value).length > 0) {
+  if (pid && detailDataAll.value && Object.keys(detailDataAll.value).length > 0) {
     saveToSession(pid)
   }
 })

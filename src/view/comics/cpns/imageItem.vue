@@ -73,8 +73,10 @@ window.addEventListener('resize', function () {
 const router = useRouter()
 const route = useRoute()
 // 进入详情页
-const getDetail = () => {
+const getDetail = async () => {
   const pid = props.itemData.pid
+  const uid = props.itemData.uid
+  // await vipStore.fetchImgDetailAll(pid, uid)
   router.push({
     path: '/comics/detail',
     query: { pid },

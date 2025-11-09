@@ -11,6 +11,9 @@ export function emunProxyUrl(url, index) {
 }
 // 切换图片分辨率
 export function switchImgResolutionUrl(url, quality = 'low') {
+  if(!url) {
+    return
+  }
   let newUrl = ''
   const reg = /c[^/]*\/[^/]*\//
   switch (quality) {

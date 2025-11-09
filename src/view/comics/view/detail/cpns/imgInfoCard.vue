@@ -4,50 +4,53 @@
       <template #headerLeft>
         <div class="artise">
           <div class="image">
-            <img
-              src="https://i.pximg.org/img-master/img/2025/11/06/12/29/04/137152766_p0_master1200.jpg"
-              alt=""
-            />
+            <img :src="showImg" alt="" />
           </div>
           <div class="info">
-            <div class="titl">Magical Summoning</div>
-            <div class="artist">by Cyrene</div>
-            <div class="date">2025-11-04 20:04</div>
+            <div class="title">{{ title }}</div>
+            <div class="artist">{{ artist }}</div>
+            <div class="date">
+              <el-icon><Calendar /></el-icon>
+              <span class="text">{{ formatTime(create_date) }}</span>
+            </div>
           </div>
         </div>
       </template>
       <template #headerRight>
-        <el-button color="#ff007a" >收藏</el-button>
+        <el-button color="#ff007a">收藏</el-button>
       </template>
       <template #content>
         <div class="content">
-          <div class="desc">
-            A magical illustration depicting the art of summoning. The ethereal purple and pink
-            tones create a mystical atmosphere, while the ornate frame adds a classic fantasy touch.
-          </div>
+          <div class="desc" :innerHTML="caption" />
           <div class="tagList">
-            <template v-for="item in tagList">
+            <template v-for="item in tags">
               <div class="imgTag">
-                <Tag :tag="item" />
+                <Tag :tag="item.name" />
               </div>
             </template>
           </div>
           <div class="metadata">
             <div class="resolution">
-              <div class="name">分辨率</div>
-              <div class="data">2580x3643</div>
+              <div class="name">
+                <el-icon><Picture /></el-icon>
+                <span class="text">分辨率</span>
+              </div>
+              <div class="data">{{ width }}x{{ height }}</div>
             </div>
             <div class="views">
-              <div class="name">观看次数</div>
-              <div class="data">43846</div>
+              <div class="name">
+                <el-icon><View /></el-icon>
+                <span class="text">观看次数</span>
+              </div>
+              <div class="data">{{ total_view }}</div>
             </div>
             <div class="PID">
               <div class="name">PID</div>
-              <div class="data">137095402</div>
+              <div class="data">{{ pid }}</div>
             </div>
             <div class="UID">
               <div class="name">UID</div>
-              <div class="data">10509347</div>
+              <div class="data">{{ uid }}</div>
             </div>
           </div>
         </div>
@@ -59,6 +62,68 @@
 <script setup>
 import Card from '@/view/comics/cpns/card.vue'
 import Tag from '@/components/tag/tag.vue'
+import { Calendar, Picture, View } from '@element-plus/icons-vue'
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
+import { preLoadImg } from '@/utils/preLoadImg'
+import { ref, watch } from 'vue'
+import { formatTime } from '@/utils/formatTime'
+
+const props = defineProps({
+  coverImg: {
+    type: Object,
+    default: {},
+  },
+  title: {
+    type: String,
+    default: '',
+  },
+  artist: {
+    type: String,
+    default: '',
+  },
+  create_date: {
+    type: String,
+    default: '',
+  },
+  caption: {
+    type: String,
+    default: '',
+  },
+  tags: {
+    type: Array,
+    default: [],
+  },
+  height: {
+    type: Number,
+    default: 0,
+  },
+  width: {
+    type: Number,
+    default: 0,
+  },
+  total_view: {
+    type: Number,
+    default: 0,
+  },
+  pid: {
+    type: Number,
+    default: 0,
+  },
+  uid: {
+    type: Number,
+    default: 0,
+  },
+})
+const showImg = ref('')
+watch(
+  () => props.coverImg,
+  () => {
+    if (('props.coverImg?.large=', props.coverImg.large)) {
+      const origin = switchImgResolutionUrl(props.coverImg.large, 'origin')
+      preLoadImg(origin).then(({ src }) => (showImg.value = src))
+    }
+  },
+)
 
 const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
 </script>
@@ -70,10 +135,13 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
     align-items: start;
     .image {
       width: 50px;
-      height: 50px;
+      height: 65px;
       overflow: hidden;
-      border-radius: 50%;
+      border-radius: 4px;
       margin-right: 10px;
+      @media (max-width: 1000px) {
+        display: none;
+      }
       img {
         width: 100%;
         height: 100%;
@@ -85,12 +153,18 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
       flex-direction: column;
       justify-content: start;
       color: var(--comics-cardText-color);
+      .title {
+        font-size: 20px;
+      }
       .artist,
       .date {
         font-size: 12px;
         font-weight: 400;
         margin-bottom: 3px;
         color: var(--comics-cardSubTitle-color);
+        .text {
+          margin-left: 3px;
+        }
       }
       .date {
         font-weight: 400;
@@ -103,6 +177,17 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
       margin-bottom: 30px;
       font-weight: 500;
       color: var(--comics-cardText-color);
+      line-height: 1.6;
+      :deep(a) {
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        max-width: 100%;
+        color: var(--primary-pink-color, #ff007a);
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
   }
   .tagList {
@@ -128,11 +213,14 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
     .UID {
       width: 25%;
       font-size: 13px;
-      @media(max-width: 1000px) {
+      @media (max-width: 1000px) {
         width: 50%;
       }
       .name {
         color: var(--comics-cardSubTitle-color);
+        .text {
+          margin-left: 3px;
+        }
       }
       .data {
         color: var(--comics-cardText-color);

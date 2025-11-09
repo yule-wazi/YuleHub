@@ -11,14 +11,12 @@
               <div class="artistItem">
                 <div class="artist">
                   <div class="image">
-                    <img
-                      src="https://i.pximg.org/img-master/img/2025/11/09/02/00/02/137254620_p0_master1200.jpg"
-                    />
+                    <img :src="switchImgResolutionUrl(item.user.profile_image_urls.medium)" />
                   </div>
                   <div class="info">
-                    <div class="name">SakuraPixel</div>
-                    <div class="account">@sakura_pixel</div>
-                    <div class="UID">UID：1034567</div>
+                    <div class="name">{{ item.user.name }}</div>
+                    <div class="account">@{{ item.user.account }}</div>
+                    <div class="UID">UID：{{ item.user.id }}</div>
                   </div>
                 </div>
                 <div class="viewBtn">
@@ -28,7 +26,7 @@
             </template>
           </div>
           <div class="viewMore">
-            <el-button style="width: 100%; margin-top: 12px;" size="large">查看更多</el-button>
+            <el-button style="width: 100%; margin-top: 12px" size="large">查看更多</el-button>
           </div>
         </div>
       </template>
@@ -37,9 +35,15 @@
 </template>
 
 <script setup>
+import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 
-const artistList = [1, 2, 3]
+defineProps({
+  artistList: {
+    type: Array,
+    default: [],
+  },
+})
 </script>
 
 <style lang="less" scoped>
@@ -53,7 +57,7 @@ const artistList = [1, 2, 3]
         margin-bottom: 14px;
         padding: 8px;
         border-radius: 8px;
-        transition: .1s;
+        transition: 0.1s;
         &:hover {
           background-color: var(--comics-tagBg-color);
         }

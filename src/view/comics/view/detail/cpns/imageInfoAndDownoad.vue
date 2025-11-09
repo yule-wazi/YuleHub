@@ -4,15 +4,15 @@
       <div class="infoData">
         <div class="bookmarks">
           <el-icon><Star /></el-icon>
-          <span class="count">4183</span>
+          <span class="count">{{ total_bookmarks }}</span>
         </div>
         <div class="comments">
           <el-icon><ChatRound /></el-icon>
-          <span class="count">243</span>
+          <span class="count">{{ total_comments }}</span>
         </div>
         <div class="view">
           <el-icon><View /></el-icon>
-          <span class="count">43846</span>
+          <span class="count">{{ total_view }}</span>
         </div>
       </div>
       <div class="downLoad">
@@ -32,17 +32,29 @@ import { throttle } from '@/utils/throttle'
 import { ChatRound, Download, Star, View } from '@element-plus/icons-vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const showDownloadText = ref(true)
+defineProps({
+  total_bookmarks: {
+    type: Number,
+    default: 0,
+  },
+  total_comments: {
+    type: Number,
+    default: 0,
+  },
+  total_view: {
+    type: Number,
+    default: 0,
+  },
+})
 
+const showDownloadText = ref(true)
 const checkWidth = throttle(() => {
   showDownloadText.value = window.innerWidth > 1000
 }, 200)
-
 onMounted(() => {
   checkWidth()
   window.addEventListener('resize', checkWidth)
 })
-
 onUnmounted(() => {
   window.removeEventListener('resize', checkWidth)
 })
