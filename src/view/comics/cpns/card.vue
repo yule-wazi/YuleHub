@@ -24,12 +24,16 @@
   border: var(--comics-border-color) 1px solid;
   box-shadow: 0 1px 1px 0 rgba(131, 131, 131, 0.5);
   .header {
-    font-size: 15px;
-    font-weight: 700;
     display: flex;
     justify-content: space-between;
     align-items: start;
+    color: var(--comics-cardText-color);
+    font-size: 15px;
+    font-weight: 700;
     margin-bottom: 12px;
+  }
+  .content {
+    margin-top: 30px;
   }
 }
 </style>

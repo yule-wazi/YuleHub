@@ -100,7 +100,7 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
   .content {
     .desc {
       font-size: 14px;
-      margin: 30px 0;
+      margin-bottom: 30px;
       font-weight: 500;
       color: var(--comics-cardText-color);
     }

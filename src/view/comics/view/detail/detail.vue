@@ -8,9 +8,17 @@
         <ImageInfoAndDownoad />
       </div>
       <ImageInfoCard />
+      <div class="comment pc">
+        <CommentsCard />
+      </div>
     </div>
     <div class="sideBar">
       <ArtistCard />
+      <ArtistMoreCard />
+      <RelatedArtistCard />
+    </div>
+    <div class="comment mobel">
+      <CommentsCard />
     </div>
   </div>
 </template>
@@ -23,10 +31,12 @@ import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { sessionCache } from '@/utils/cacheStorage'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
-import Card from '../../cpns/card.vue'
 import ArtistCard from './cpns/artistCard.vue'
 import ImageInfoCard from './cpns/imgInfoCard.vue'
 import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
+import ArtistMoreCard from './cpns/artistMoreCard.vue'
+import RelatedArtistCard from './cpns/relatedArtistCard.vue'
+import CommentsCard from './cpns/commentsCard.vue'
 
 const vipStore = useVip()
 const router = useRouter()
@@ -158,7 +168,7 @@ const goAuthor = async (detail) => {
   margin: auto;
   margin-top: 24px;
   display: grid;
-  grid-gap: 24px;
+  gap: 24px;
   @media (min-width: 1000px) {
     grid-template-columns: minmax(0, 1fr) 420px;
   }
@@ -174,6 +184,30 @@ const goAuthor = async (detail) => {
           height: 100%;
           object-fit: cover;
         }
+      }
+    }
+    .comment {
+      &.pc {
+        margin-top: 24px;
+      }
+    }
+  }
+  .sideBar {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 24px;
+  }
+  .comment {
+    &.pc {
+      display: block;
+      @media (max-width: 1000px) {
+        display: none;
+      }
+    }
+    &.mobel {
+      display: none;
+      @media (max-width: 1000px) {
+        display: block;
       }
     }
   }

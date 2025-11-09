@@ -12,12 +12,13 @@
           <div class="info">
             <div class="name">寺田てら</div>
             <div class="account">@trcoot</div>
+            <div class="UID">UID：10509347</div>
           </div>
         </div>
       </template>
       <template #content>
         <div class="content">
-          <div class="viewArtist">
+          <div class="viewBtn">
             <el-button color="#ff007a" style="width: 100%" size="large">查看作者</el-button>
           </div>
           <div class="artistInfo">
@@ -67,7 +68,8 @@ import Card from '@/view/comics/cpns/card.vue'
       flex-direction: column;
       justify-content: start;
       color: var(--comics-cardText-color);
-      .account {
+      .account,
+      .UID {
         font-size: 12px;
         font-weight: 400;
         color: var(--comics-cardSubTitle-color);
