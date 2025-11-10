@@ -2,17 +2,20 @@
   <div class="imageInfoAndDownoad">
     <div class="info">
       <div class="infoData">
-        <div class="bookmarks">
-          <el-icon><Star /></el-icon>
-          <span class="count">{{ total_bookmarks }}</span>
+        <div ref="bookmarks" class="bookmarks" @click="starClick">
+          <el-icon>
+            <template v-if="isStar"><StarFilled /></template>
+            <template v-else><Star /></template>
+          </el-icon>
+          <span class="count">{{ imgDetail.total_bookmarks }}</span>
         </div>
         <div class="comments">
           <el-icon><ChatRound /></el-icon>
-          <span class="count">{{ total_comments }}</span>
+          <span class="count">{{ imgDetail.total_comments }}</span>
         </div>
         <div class="view">
           <el-icon><View /></el-icon>
-          <span class="count">{{ total_view }}</span>
+          <span class="count">{{ imgDetail.total_view }}</span>
         </div>
       </div>
       <div class="downLoad">
@@ -29,25 +32,19 @@
 
 <script setup>
 import { throttle } from '@/utils/throttle'
-import { ChatRound, Download, Star, View } from '@element-plus/icons-vue'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ChatRound, Download, Star, StarFilled, View } from '@element-plus/icons-vue'
+import { ref, onMounted, onUnmounted, toRef, useTemplateRef } from 'vue'
 
-defineProps({
-  total_bookmarks: {
-    type: Number,
-    default: 0,
-  },
-  total_comments: {
-    type: Number,
-    default: 0,
-  },
-  total_view: {
-    type: Number,
-    default: 0,
-  },
+const imgDetail = defineModel({
+  type: Object,
+  default: () => ({
+    total_bookmarks: 0,
+    total_comments: 0,
+    total_view: 0,
+  }),
 })
-
 const showDownloadText = ref(true)
+const isStar = ref(false)
 const checkWidth = throttle(() => {
   showDownloadText.value = window.innerWidth > 1000
 }, 200)
@@ -58,6 +55,24 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', checkWidth)
 })
+// 点击收藏
+const bookmarksRef = useTemplateRef('bookmarks')
+const starClick = () => {
+  if (!isStar.value) {
+    isStar.value = true
+    imgDetail.value = {
+      ...imgDetail.value,
+      total_bookmarks: imgDetail.value.total_bookmarks + 1,
+    }
+  } else {
+    isStar.value = false
+    imgDetail.value = {
+      ...imgDetail.value,
+      total_bookmarks: imgDetail.value.total_bookmarks - 1,
+    }
+  }
+  bookmarksRef.value.classList.toggle('isStar', isStar.value)
+}
 </script>
 
 <style lang="less" scoped>
@@ -86,9 +101,12 @@ onUnmounted(() => {
           transition: 0.2s ease;
 
           background-color: var(--primary-pink-color);
-          color: #fff;
+          color: #fff !important;
           cursor: pointer;
         }
+      }
+      .isStar {
+        color: var(--primary-pink-color);
       }
     }
   }

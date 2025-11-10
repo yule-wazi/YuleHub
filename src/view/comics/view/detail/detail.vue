@@ -5,7 +5,7 @@
         <div class="image">
           <img :src="showImg" />
         </div>
-        <ImageInfoAndDownoad v-bind="detailDataAll.imgDetail" />
+        <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
       </div>
       <ImageInfoCard v-bind="detailDataAll.imgDetail" />
       <div class="comment pc">

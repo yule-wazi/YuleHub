@@ -17,7 +17,11 @@
         </div>
       </template>
       <template #headerRight>
-        <el-button color="#ff007a">收藏</el-button>
+        <div ref="followBtn" class="followBtn">
+          <el-button @click="followClick" color="#ff007a">{{
+            isFollow ? '已收藏' : '收藏'
+          }}</el-button>
+        </div>
       </template>
       <template #content>
         <div class="content">
@@ -65,7 +69,7 @@ import Tag from '@/components/tag/tag.vue'
 import { Calendar, Picture, View } from '@element-plus/icons-vue'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { preLoadImg } from '@/utils/preLoadImg'
-import { ref, watch } from 'vue'
+import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import { formatTime } from '@/utils/formatTime'
 
 const props = defineProps({
@@ -115,6 +119,19 @@ const props = defineProps({
   },
 })
 const showImg = ref('')
+const isFollow = ref(false)
+const followBtnRes = useTemplateRef('followBtn')
+
+// 点击收藏
+const followClick = () => {
+  console.log('点击')
+  isFollow.value = !isFollow.value
+  followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+}
+onMounted(() => {
+  followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+})
+
 watch(
   () => props.coverImg,
   () => {
@@ -124,8 +141,6 @@ watch(
     }
   },
 )
-
-const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
 </script>
 
 <style lang="less" scoped>
@@ -168,6 +183,18 @@ const tagList = ['1231', 'adada', 'a阿萨大大', '大大大的']
       }
       .date {
         font-weight: 400;
+      }
+    }
+  }
+  .notFollow {
+    :deep(.el-button) {
+      transition: 0.2s;
+      background-color: transparent;
+      color: var(--comics-cardText-color);
+      border: 1px var(--comics-border-color) solid;
+      &:hover {
+        background-color: var(--primary-pink-color);
+        color: #edeef5;
       }
     }
   }

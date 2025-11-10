@@ -96,6 +96,7 @@ defineProps({
     }
     .viewMore {
       :deep(.el-button) {
+        transition: 0.2s;
         background-color: transparent;
         border: none;
         color: var(--comics-cardText-color);

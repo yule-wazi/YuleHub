@@ -122,6 +122,7 @@ const input = ref('')
     }
     .viewMore {
       :deep(.el-button) {
+        transition: .2s;
         background-color: transparent;
         border: 1px var(--comics-border-color) solid;
         border: none;
