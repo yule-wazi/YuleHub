@@ -18,7 +18,7 @@
     <div class="sideBar">
       <ArtistCard v-bind="detailDataAll.artistDetail" />
       <ArtistMoreCard :imgList="detailDataAll.moreImgFromArtist" />
-      <RelatedArtistCard :artistList="relatedArtist.slice(0, 3)" />
+      <RelatedArtistCard :artistList="relatedArtist" />
     </div>
     <div class="comment mobel">
       <CommentsCard :comments="comments" :commentsCount="detailDataAll.imgDetail?.total_comments" />

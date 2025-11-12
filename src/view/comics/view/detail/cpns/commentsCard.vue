@@ -13,7 +13,7 @@
             </div>
           </div>
           <div class="showComments">
-            <template v-for="item in comments.slice(0, 3)">
+            <template v-for="item in showAllComments ? comments : comments.slice(0, 3)">
               <div class="commentItem">
                 <div class="image">
                   <img
@@ -36,7 +36,13 @@
             </template>
           </div>
           <div class="viewMore">
-            <el-button style="width: 100%; margin-top: 12px" size="large">查看更多</el-button>
+            <el-button
+              v-show="!showAllComments"
+              style="width: 100%; margin-top: 12px"
+              size="large"
+              @click="showAllComments = true"
+              >查看更多</el-button
+            >
           </div>
         </div>
       </template>
@@ -60,7 +66,7 @@ const props = defineProps({
     default: 0,
   },
 })
-
+const showAllComments = ref(false)
 const input = ref('')
 </script>
 
@@ -83,6 +89,25 @@ const input = ref('')
     }
     .showComments {
       margin-top: 40px;
+      max-height: 224px;
+      overflow-y: auto;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+      @media (min-width: 1000px) {
+        &::-webkit-scrollbar {
+          display: block;
+          width: 8px;
+        }
+        &::-webkit-scrollbar-thumb {
+          background: var(--primary-pink-color);
+          border-radius: 4px;
+        }
+        &::-webkit-scrollbar-track {
+          background: transparent;
+          border-radius: 4px;
+        }
+      }
       .commentItem {
         display: flex;
         align-items: center;
@@ -122,7 +147,7 @@ const input = ref('')
     }
     .viewMore {
       :deep(.el-button) {
-        transition: .2s;
+        transition: 0.2s;
         background-color: transparent;
         border: 1px var(--comics-border-color) solid;
         border: none;

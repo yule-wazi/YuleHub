@@ -7,7 +7,7 @@
       <template #content>
         <div class="content">
           <div class="artistList">
-            <template v-for="item in artistList">
+            <template v-for="item in showAllArtist ? artistList : artistList.slice(0, 3)">
               <div class="artistItem">
                 <div class="artist">
                   <div class="image">
@@ -26,7 +26,14 @@
             </template>
           </div>
           <div class="viewMore">
-            <el-button style="width: 100%; margin-top: 12px" size="large">查看更多</el-button>
+            <el-button
+              style="width: 100%; margin-top: 12px"
+              v-show="!showAllArtist"
+              size="large"
+              @click="showAllArtist = true"
+            >
+              查看更多
+            </el-button>
           </div>
         </div>
       </template>
@@ -38,6 +45,7 @@
 import useVip from '@/sotre/module/vip'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -46,12 +54,12 @@ const props = defineProps({
     default: [],
   },
 })
+const showAllArtist = ref(false)
 const router = useRouter()
 const vipStore = useVip()
 const viewArtist = (currentUser) => {
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
-
   router.push({
     path: '/comics/category',
     query: { author: currentUser.user.name, uid: currentUser.user.id },
@@ -62,6 +70,25 @@ const viewArtist = (currentUser) => {
 <style lang="less" scoped>
 .relatedArtistCard {
   .content {
+    max-height: 306px;
+    overflow-y: auto;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    @media (min-width: 1000px) {
+      &::-webkit-scrollbar {
+        display: block;
+        width: 8px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: var(--primary-pink-color);
+        border-radius: 4px;
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 4px;
+      }
+    }
     .artistList {
       .artistItem {
         display: flex;
