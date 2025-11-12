@@ -148,19 +148,27 @@ const getTag = (tag) => {
     query: { tag },
   })
 }
-onMounted(() => {
-  followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
-})
-
 watch(
-  () => props.coverImg,
+  () => vipStore.detailDataAll,
   () => {
-    if (('props.coverImg?.large=', props.coverImg.large)) {
-      const origin = switchImgResolutionUrl(props.coverImg.large, 'origin')
+    if (vipStore.detailDataAll.imgDetail?.coverImg?.large) {
+      const origin = switchImgResolutionUrl(
+        vipStore.detailDataAll.imgDetail?.coverImg?.large,
+        'origin',
+      )
       preLoadImg(origin).then(({ src }) => (showImg.value = src))
     }
   },
+  { deep: true },
 )
+onMounted(() => {
+  followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+  // 展示主图
+  if (vipStore.detailData?.coverImg?.large) {
+    const origin = switchImgResolutionUrl(vipStore.detailData.coverImg.large, 'origin')
+    preLoadImg(origin).then(({ src }) => (showImg.value = src))
+  }
+})
 </script>
 
 <style lang="less" scoped>

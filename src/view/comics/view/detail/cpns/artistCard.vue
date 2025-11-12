@@ -80,7 +80,6 @@ const vipStore = useVip()
 const viewArtist = () => {
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
-
   router.push({
     path: '/comics/category',
     query: { author: props.name, uid: props.id },

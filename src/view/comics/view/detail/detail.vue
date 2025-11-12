@@ -1,12 +1,8 @@
 <template>
   <div class="detail">
     <div class="main">
-      <div class="imageArea">
-        <div class="image">
-          <img :src="showImg" />
-        </div>
-        <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
-      </div>
+      <MainImg />
+      <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
       <ImageInfoCard v-bind="detailDataAll.imgDetail" />
       <div class="comment pc">
         <CommentsCard
@@ -27,12 +23,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount, reactive } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { sessionCache } from '@/utils/cacheStorage'
-import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import ArtistCard from './cpns/artistCard.vue'
 import ImageInfoCard from './cpns/imgInfoCard.vue'
 import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
@@ -40,9 +36,9 @@ import ArtistMoreCard from './cpns/artistMoreCard.vue'
 import RelatedArtistCard from './cpns/relatedArtistCard.vue'
 import CommentsCard from './cpns/commentsCard.vue'
 import { getPixivImgComments, getPixivRelatedArtist } from '@/service/module/vip'
+import MainImg from './cpns/mainImg.vue'
 
 const vipStore = useVip()
-const router = useRouter()
 const route = useRoute()
 // SessionStorage key 前缀
 const STORAGE_PREFIX = 'COMICS_DETAIL_CACHE:'
@@ -105,7 +101,7 @@ watch(
     const pid = newQuery.pid
     const oldPid = oldQuery.pid
     if ((pid || oldPid) && pid !== oldPid) {
-      await initDetailData()
+      initDetailData()
     }
     getPixivImgComments(route.query.pid).then((res) => {
       comments.value = res.data.comments
@@ -129,8 +125,14 @@ watch(
 // 组件挂载时加载其他作品
 onMounted(async () => {
   if (!detailDataAll.value || Object.keys(detailDataAll.value).length === 0) {
-    await initDetailData()
+    initDetailData()
   }
+  // 展示主图
+  // if (vipStore.detailData?.coverImg?.large) {
+  //   const origin = switchImgResolutionUrl(vipStore.detailData.coverImg.large, 'origin')
+  //   preLoadImg(origin).then(({ src }) => (showImg.value = src))
+  // }
+
   getPixivImgComments(route.query.pid).then((res) => {
     comments.value = res.data.comments
   })
@@ -159,19 +161,6 @@ onBeforeRouteLeave(() => {
     grid-template-columns: minmax(0, 1fr) 420px;
   }
   .main {
-    .imageArea {
-      .image {
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 24px;
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-    }
     .comment {
       &.pc {
         margin-top: 24px;
