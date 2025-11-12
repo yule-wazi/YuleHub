@@ -29,7 +29,7 @@
           <div class="tagList">
             <template v-for="item in tags">
               <div class="imgTag">
-                <Tag :tag="item.name" />
+                <Tag :tag="item.name" @click="getTag(item.name)" />
               </div>
             </template>
           </div>
@@ -71,6 +71,8 @@ import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { onMounted, ref, useTemplateRef, watch } from 'vue'
 import { formatTime } from '@/utils/formatTime'
+import useVip from '@/sotre/module/vip'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   coverImg: {
@@ -118,6 +120,9 @@ const props = defineProps({
     default: 0,
   },
 })
+const vipStore = useVip()
+const router = useRouter()
+
 const showImg = ref('')
 const isFollow = ref(false)
 const followBtnRes = useTemplateRef('followBtn')
@@ -127,6 +132,21 @@ const followClick = () => {
   console.log('点击')
   isFollow.value = !isFollow.value
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+}
+// tag搜索
+const getTag = (tag) => {
+  // 删除之前列表
+  vipStore.tagName = tag
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
+  vipStore.fetchSearchImgList({
+    isRefresh: true,
+    options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
+  })
+  router.push({
+    path: '/comics/category',
+    query: { tag },
+  })
 }
 onMounted(() => {
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)

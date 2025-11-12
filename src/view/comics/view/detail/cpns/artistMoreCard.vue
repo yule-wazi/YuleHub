@@ -8,7 +8,7 @@
         <div class="content">
           <div class="imgList">
             <template v-for="item in imgList">
-              <div class="image">
+              <div class="image" @click="getDetail(item)">
                 <img :src="switchImgResolutionUrl(item.image_urls.large, 'origin')" alt="" />
               </div>
             </template>
@@ -20,15 +20,26 @@
 </template>
 
 <script setup>
+import useVip from '@/sotre/module/vip'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const vipStore = useVip()
 defineProps({
   imgList: {
     type: Array,
     default: [],
   },
 })
+const getDetail = async (imgInfo) => {
+  const pid = imgInfo.id
+  router.push({
+    path: '/comics/detail',
+    query: { pid },
+  })
+}
 </script>
 
 <style lang="less" scoped>

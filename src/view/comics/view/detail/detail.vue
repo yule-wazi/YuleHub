@@ -32,7 +32,7 @@ import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { sessionCache } from '@/utils/cacheStorage'
-import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import ArtistCard from './cpns/artistCard.vue'
 import ImageInfoCard from './cpns/imgInfoCard.vue'
 import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
@@ -99,17 +99,33 @@ const initDetailData = async () => {
 const showImg = ref('')
 const imgList = ref([])
 
-watch(detailDataAll, () => {
-  if (detailDataAll.value.imgDetail.coverImg?.large) {
-    const origin = switchImgResolutionUrl(detailDataAll.value.imgDetail.coverImg.large, 'origin')
-    preLoadImg(origin).then(({ src }) => (showImg.value = src))
-  }
-  //遍历展示所有图片
-  imgList.value = detailDataAll.value.moreImgFromArtist?.map((item) =>
-    switchImgResolutionUrl(item.image_urls.large, 'origin'),
-  )
-})
-
+watch(
+  () => route.query,
+  async (newQuery, oldQuery) => {
+    const pid = newQuery.pid
+    const oldPid = oldQuery.pid
+    if ((pid || oldPid) && pid !== oldPid) {
+      await initDetailData()
+    }
+    getPixivImgComments(route.query.pid).then((res) => {
+      comments.value = res.data.comments
+    })
+  },
+)
+watch(
+  detailDataAll,
+  () => {
+    if (detailDataAll.value.imgDetail?.coverImg?.large) {
+      const origin = switchImgResolutionUrl(detailDataAll.value.imgDetail.coverImg.large, 'origin')
+      preLoadImg(origin).then(({ src }) => (showImg.value = src))
+    }
+    //遍历展示所有图片
+    imgList.value = detailDataAll.value.moreImgFromArtist?.map((item) =>
+      switchImgResolutionUrl(item.image_urls.large, 'origin'),
+    )
+  },
+  { deep: true },
+)
 // 组件挂载时加载其他作品
 onMounted(async () => {
   if (!detailDataAll.value || Object.keys(detailDataAll.value).length === 0) {
@@ -130,22 +146,6 @@ onBeforeRouteLeave(() => {
     saveToSession(pid)
   }
 })
-
-// tag搜索
-const getTag = (tag) => {
-  // 删除之前列表
-  vipStore.tagName = tag
-  vipStore.vipSearchImgData = []
-  vipStore.searchCurrentPage = 1
-  vipStore.fetchSearchImgList({
-    isRefresh: true,
-    options: { word: vipStore.tagName, page: vipStore.searchCurrentPage },
-  })
-  router.push({
-    path: '/comics/category',
-    query: { tag },
-  })
-}
 </script>
 
 <style lang="less" scoped>
