@@ -100,7 +100,6 @@ const showImg = ref('')
 const imgList = ref([])
 
 watch(detailDataAll, () => {
-  console.log('watch,detailDataAll=', detailDataAll.value)
   if (detailDataAll.value.imgDetail.coverImg?.large) {
     const origin = switchImgResolutionUrl(detailDataAll.value.imgDetail.coverImg.large, 'origin')
     preLoadImg(origin).then(({ src }) => (showImg.value = src))
@@ -118,11 +117,9 @@ onMounted(async () => {
   }
   getPixivImgComments(route.query.pid).then((res) => {
     comments.value = res.data.comments
-    // console.log('comments.value=', comments.value)
   })
   getPixivRelatedArtist(vipStore.detailData.uid).then((res) => {
     relatedArtist.value = res.data.user_previews
-    console.log(relatedArtist.value)
   })
 })
 
@@ -147,18 +144,6 @@ const getTag = (tag) => {
   router.push({
     path: '/comics/category',
     query: { tag },
-  })
-}
-
-const goAuthor = async (detail) => {
-  const detailObj = detail && detail.value ? detail.value : detail
-  vipStore.tagName = detailObj.user
-  vipStore.vipSearchImgData = []
-  vipStore.searchCurrentPage = 1
-
-  router.push({
-    path: '/comics/category',
-    query: { author: detailObj.user, uid: detailObj.uid },
   })
 }
 </script>

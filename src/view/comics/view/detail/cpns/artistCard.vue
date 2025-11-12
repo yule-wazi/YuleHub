@@ -16,7 +16,9 @@
       <template #content>
         <div class="content">
           <div class="viewBtn">
-            <el-button color="#ff007a" style="width: 100%" size="large">查看作者</el-button>
+            <el-button color="#ff007a" style="width: 100%" size="large" @click="viewArtist"
+              >查看作者</el-button
+            >
           </div>
           <div class="artistInfo">
             <div class="works">
@@ -39,12 +41,14 @@
 </template>
 
 <script setup>
+import useVip from '@/sotre/module/vip'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
-defineProps({
+import { useRouter } from 'vue-router'
+const props = defineProps({
   id: {
     type: Number,
-    default: 0
+    default: 0,
   },
   profile_image_urls: {
     type: Object,
@@ -71,6 +75,17 @@ defineProps({
     default: 0,
   },
 })
+const router = useRouter()
+const vipStore = useVip()
+const viewArtist = () => {
+  vipStore.vipSearchImgData = []
+  vipStore.searchCurrentPage = 1
+
+  router.push({
+    path: '/comics/category',
+    query: { author: props.name, uid: props.id },
+  })
+}
 </script>
 
 <style lang="less" scoped>

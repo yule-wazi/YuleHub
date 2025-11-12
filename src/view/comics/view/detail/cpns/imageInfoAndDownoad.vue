@@ -60,16 +60,10 @@ const bookmarksRef = useTemplateRef('bookmarks')
 const starClick = () => {
   if (!isStar.value) {
     isStar.value = true
-    imgDetail.value = {
-      ...imgDetail.value,
-      total_bookmarks: imgDetail.value.total_bookmarks + 1,
-    }
+    imgDetail.value.total_bookmarks += 1
   } else {
     isStar.value = false
-    imgDetail.value = {
-      ...imgDetail.value,
-      total_bookmarks: imgDetail.value.total_bookmarks - 1,
-    }
+    imgDetail.value.total_bookmarks -= 1
   }
   bookmarksRef.value.classList.toggle('isStar', isStar.value)
 }

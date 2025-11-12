@@ -181,7 +181,6 @@ const useVip = defineStore('vip', {
         width,
         height,
       }
-      console.log(this.detailDataAll)
     },
   },
 })
