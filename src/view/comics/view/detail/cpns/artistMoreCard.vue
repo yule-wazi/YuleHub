@@ -29,16 +29,22 @@
 import useVip from '@/sotre/module/vip'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
-import { useRouter } from 'vue-router'
+import { watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const router = useRouter()
 const vipStore = useVip()
+const router = useRouter()
 defineProps({
   imgList: {
     type: Array,
     default: [...Array(6)],
   },
 })
+const scrollToTop = () => {
+  const container = document.querySelector('.comics')
+  container.scrollTo({ top: 0 })
+}
+
 const getDetail = async (imgInfo) => {
   const pid = imgInfo.id
   router.push({
@@ -46,6 +52,18 @@ const getDetail = async (imgInfo) => {
     query: { pid },
   })
 }
+const route = useRoute()
+watch(
+  [() => route.query, () => vipStore.detailDataAll],
+  ([newQuery, newObj], [oldQuery, oldObj]) => {
+    const pid = newQuery.pid
+    const oldPid = oldQuery.pid
+    if ((pid || oldPid) && pid !== oldPid && newObj === oldObj) {
+      scrollToTop()
+    }
+  },
+  { deep: true },
+)
 </script>
 
 <style lang="less" scoped>
