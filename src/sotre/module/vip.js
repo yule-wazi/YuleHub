@@ -146,6 +146,7 @@ const useVip = defineStore('vip', {
       const {
         id,
         image_urls,
+        meta_pages,
         total_view,
         total_bookmarks,
         total_comments,
@@ -171,6 +172,7 @@ const useVip = defineStore('vip', {
         uid: uid,
         artist: name,
         coverImg: image_urls,
+        pageList: meta_pages,
         total_view,
         total_bookmarks,
         total_comments,

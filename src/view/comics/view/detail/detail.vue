@@ -161,6 +161,7 @@ onBeforeRouteLeave(() => {
     grid-template-columns: minmax(0, 1fr) 420px;
   }
   .main {
+    max-width: 85vw;
     .comment {
       &.pc {
         margin-top: 24px;
