@@ -4,7 +4,13 @@
       <template #headerLeft>
         <div class="artist">
           <div class="image">
-            <img :src="switchImgResolutionUrl(profile_image_urls.medium)" alt="" />
+            <img
+              :src="
+                switchImgResolutionUrl(profile_image_urls.medium) ??
+                'https://s.pximg.net/common/images/no_profile.png'
+              "
+              alt=""
+            />
           </div>
           <div class="info">
             <div class="name">{{ name }}</div>

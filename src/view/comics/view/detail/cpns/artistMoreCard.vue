@@ -9,7 +9,13 @@
           <div class="imgList">
             <template v-for="item in imgList">
               <div class="image" @click="getDetail(item)">
-                <img :src="switchImgResolutionUrl(item.image_urls.large, 'origin')" alt="" />
+                <img
+                  :src="
+                    switchImgResolutionUrl(item?.image_urls?.large, 'origin') ??
+                    'https://s.pximg.net/common/images/no_profile.png'
+                  "
+                  alt=""
+                />
               </div>
             </template>
           </div>
@@ -30,7 +36,7 @@ const vipStore = useVip()
 defineProps({
   imgList: {
     type: Array,
-    default: [],
+    default: [...Array(6)],
   },
 })
 const getDetail = async (imgInfo) => {
