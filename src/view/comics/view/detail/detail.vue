@@ -127,12 +127,6 @@ onMounted(async () => {
   if (!detailDataAll.value || Object.keys(detailDataAll.value).length === 0) {
     initDetailData()
   }
-  // 展示主图
-  // if (vipStore.detailData?.coverImg?.large) {
-  //   const origin = switchImgResolutionUrl(vipStore.detailData.coverImg.large, 'origin')
-  //   preLoadImg(origin).then(({ src }) => (showImg.value = src))
-  // }
-
   getPixivImgComments(route.query.pid).then((res) => {
     comments.value = res.data.comments
   })

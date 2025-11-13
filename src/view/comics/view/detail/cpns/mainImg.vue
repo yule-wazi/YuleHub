@@ -86,17 +86,36 @@ const onSlideChange = (swiperInstance) => {
 <style lang="less" scoped>
 .mainImg {
   width: 100%;
+  height: auto;
+  margin-bottom: 24px;
+  border-radius: 10px;
+  background-color: var(--comics-cardBg-color);
+  @media (min-width: 1000px) {
+    height: calc(100vh - 100px);
+  }
   .image {
     width: 100%;
+    height: auto;
     border-radius: 10px;
     position: relative;
-    margin-bottom: 24px;
-    img {
+    @media (min-width: 1000px) {
+      height: calc(100vh - 100px);
+    }
+    :deep(.mySwiper) {
       width: 100%;
       height: 100%;
-      display: block;
-      object-fit: cover;
-      border-radius: 10px;
+    }
+    :deep(.swiper-wrapper) {
+      width: 100%;
+      height: 100%;
+    }
+    :deep(.swiper-slide) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background-color: var(--comics-cardBg-color);
     }
     :deep(.swiper-button-prev),
     :deep(.swiper-button-next) {
@@ -126,6 +145,14 @@ const onSlideChange = (swiperInstance) => {
       width: 30px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.95);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      margin: auto;
+      display: block;
+      object-fit: contain;
+      border-radius: 10px;
     }
     .page-indicator {
       position: absolute;
