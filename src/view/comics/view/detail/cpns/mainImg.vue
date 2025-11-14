@@ -89,6 +89,7 @@ const onSlideChange = (swiperInstance) => {
   height: auto;
   margin-bottom: 24px;
   border-radius: 10px;
+  overflow: hidden;
   background-color: var(--comics-cardBg-color);
   @media (min-width: 1000px) {
     height: calc(100vh - 100px);

@@ -4,7 +4,8 @@ import myCache from '@/utils/cacheStorage'
 import MyRequest from '../request/index'
 const HOST = import.meta.env.VITE_HOST || 'localhost'
 // const baseURL = 'api.cocomi.eu.org'
-const baseURL = 'hibiapi.getloli.com'
+// const baseURL = 'hibiapi.getloli.com'
+const baseURL = 'hi.yyaan.com'
 // 获取画师作品id列表
 function getPixivUID(uid) {
   MyRequest.setBaseUrl(
