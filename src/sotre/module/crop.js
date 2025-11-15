@@ -93,7 +93,6 @@ const useCropStore = defineStore('crop', {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d', { alpha: true })
 
-      // 禁用图像平滑，保持像素完美
       ctx.imageSmoothingEnabled = true
       ctx.imageSmoothingQuality = 'high'
 
@@ -132,24 +131,29 @@ const useCropStore = defineStore('crop', {
     // 通过后端代理加载图片（解决CORS问题）
     async loadImageWithFetch(url) {
       console.log('通过代理加载图片:', url)
-      const proxyUrl = `http://${HOST}:${PORT}/proxy?url=${encodeURIComponent(url)}&format=base64`
+      const proxyUrl = `http://${HOST}:${PORT}/proxy?url=${encodeURIComponent(url)}`
       const response = await fetch(proxyUrl)
       if (!response.ok) {
         throw new Error(`代理请求失败: ${response.status}`)
       }
-      const data = await response.json()
-      if (!data.success || !data.dataUrl) {
-        throw new Error('代理返回数据格式错误')
-      }
-      // 使用base64 dataURL创建图片
+
+      // 获取图片Blob
+      const blob = await response.blob()
+      console.log('获取到图片Blob:', blob.type, blob.size)
+      const objectURL = URL.createObjectURL(blob)
+      // 使用ObjectURL创建图片
       return new Promise((resolve, reject) => {
         const img = new Image()
-        img.src = data.dataUrl
+        img.src = objectURL
         img.onload = () => {
+          console.log('代理图片加载成功')
+          URL.revokeObjectURL(objectURL)
           resolve(img)
         }
         img.onerror = () => {
-          reject(new Error('base64图片加载失败'))
+          console.error('代理图片加载失败')
+          URL.revokeObjectURL(objectURL)
+          reject(new Error('图片加载失败'))
         }
       })
     },
