@@ -3,8 +3,8 @@
     <el-dialog v-model="showDialog" :show-close="false" align-center width="70vw">
       <template #header="{ close }">
         <div class="header">
-          <el-button type="danger" @click="close" circle>
-            <el-icon :size="40"><CircleCloseFilled /></el-icon>
+          <el-button color="#ff007a" @click="close" circle>
+            <el-icon :size="45"><CircleCloseFilled /></el-icon>
           </el-button>
         </div>
       </template>
@@ -65,6 +65,9 @@ const vipStore = useVip()
     flex-direction: row;
     justify-content: end;
     gap: 16px;
+    .el-icon {
+      color: var(--comics-tagBg-color);
+    }
   }
   .content {
     display: grid;
@@ -92,7 +95,7 @@ const vipStore = useVip()
         background-color: var(--comics-cardBg-color);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
       }
-     
+
       .preview {
         overflow: hidden;
       }
