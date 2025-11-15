@@ -1,31 +1,34 @@
 <template>
   <div class="crop-controls">
-    <el-button type="primary" class="download-btn" @click="handleDownload" :loading="downloading">
-      <el-icon><Download /></el-icon>
-      Download
+    <el-button
+      color="#ff007a"
+      class="download-btn"
+      @click="handleDownload"
+      :loading="downloading"
+      :icon="Download"
+    >
+      下载
     </el-button>
     <div class="section">
-      <h3 class="section-title">Controls</h3>
-      <el-button class="control-btn" @click="handleReset">
-        <el-icon><RefreshLeft /></el-icon>
-        Reset
+      <div class="section-title">操控面板</div>
+      <el-button class="reset-btn" @click="handleReset" :icon="RefreshLeft">
+        <span class="text">重置</span>
       </el-button>
-      <el-button class="control-btn" @click="handleRotate">
-        <el-icon><RefreshRight /></el-icon>
-        Rotate
+      <el-button class="getRatio-btn" :icon="Aim">
+        <span class="text">获取设备分辨率</span>
       </el-button>
       <div class="switch-item">
-        <span>Maintain Ratio</span>
-        <el-switch v-model="maintainRatio" />
-      </div>
-      <div class="switch-item">
-        <span>Original Quality</span>
-        <el-switch v-model="originalQuality" />
+        <span>等比缩放</span>
+        <el-switch
+          v-model="maintainRatio"
+          size="large"
+          style="--el-switch-on-color: #ff007a; --el-switch-off-color: var(--comics-tagBg-color)"
+        />
       </div>
     </div>
     <div class="section">
-      <h3 class="section-title">Aspect Ratios</h3>
-      <p class="section-subtitle">Desktop / Landscape</p>
+      <div class="section-title">快捷选择</div>
+      <p class="section-subtitle">桌面 / 平板</p>
       <div class="ratio-grid">
         <button
           v-for="ratio in desktopRatios"
@@ -36,7 +39,7 @@
           {{ ratio.label }}
         </button>
       </div>
-      <p class="section-subtitle">Mobile / Portrait</p>
+      <p class="section-subtitle">手机 / 头像</p>
       <div class="ratio-grid">
         <button
           v-for="ratio in mobileRatios"
@@ -49,12 +52,12 @@
       </div>
     </div>
     <div class="section">
-      <h3 class="section-title">Custom Ratio</h3>
+      <div class="section-title">自定义比率</div>
       <div class="custom-ratio">
         <el-input v-model="customWidth" placeholder="W" type="number" />
         <span class="separator">:</span>
         <el-input v-model="customHeight" placeholder="H" type="number" />
-        <el-button type="primary" @click="applyCustomRatio">Apply</el-button>
+        <el-button color="#ff007a" @click="applyCustomRatio">确定</el-button>
       </div>
     </div>
   </div>
@@ -63,7 +66,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Download, RefreshLeft, RefreshRight } from '@element-plus/icons-vue'
+import { Aim, Download, RefreshLeft, RefreshRight } from '@element-plus/icons-vue'
 import useCropStore from '@/sotre/module/crop'
 import { storeToRefs } from 'pinia'
 
@@ -185,105 +188,113 @@ const applyCustomRatio = () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-
   .download-btn {
     width: 100%;
     height: 48px;
     font-size: 16px;
     font-weight: 600;
-    background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-    border: none;
-
-    &:hover {
-      background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
-    }
   }
-
   .section {
+    display: flex;
+    flex-direction: column;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: var(--comics-cardText-color);
     .section-title {
       font-size: 18px;
       font-weight: 600;
-      margin: 0 0 12px 0;
-      color: var(--el-text-color-primary);
+      margin: 0 0 6px 0;
+      color: var(--comics-cardText-color);
     }
-
     .section-subtitle {
       font-size: 14px;
-      color: var(--el-text-color-secondary);
       margin: 12px 0 8px 0;
+      color: var(--comics-cardSubTitle-color);
     }
-
-    .control-btn {
+    .reset-btn,
+    .getRatio-btn {
       width: 100%;
       height: 44px;
       margin-bottom: 8px;
       justify-content: flex-start;
-      font-size: 15px;
-
-      .el-icon {
-        margin-right: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      margin-left: 0;
+      transition: 0.2s;
+      background-color: transparent;
+      color: var(--comics-cardText-color);
+      border: 2px var(--comics-border-color) solid;
+      &:hover {
+        background-color: var(--primary-pink-color);
+        color: #edeef5;
+      }
+      .text {
+        margin-left: 8px;
       }
     }
-
     .switch-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 12px 16px;
-      background: var(--el-fill-color-light);
       border-radius: 8px;
+      border: 2px var(--comics-border-color) solid;
       margin-bottom: 8px;
-
       span {
-        font-size: 15px;
+        font-size: 16px;
       }
     }
   }
-
   .ratio-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
     margin-bottom: 8px;
-
     .ratio-btn {
       height: 40px;
-      border: 2px solid var(--el-border-color);
-      background: var(--el-fill-color-blank);
+      border: 2px solid var(--comics-border-color);
+      background: var(--comics-cardBg-color);
+      color: var(--comics-cardText-color);
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
       transition: all 0.2s;
-
       &:hover {
-        border-color: #a855f7;
-        color: #a855f7;
+        border-color: var(--primary-pink-color);
+        color: var(--primary-pink-color);
       }
-
       &.active {
-        background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-        border-color: #a855f7;
-        color: white;
+        background-color: var(--primary-pink-color);
+        border-color: var(--primary-pink-color);
+        color: #fff;
       }
     }
   }
-
   .custom-ratio {
     display: flex;
     align-items: center;
     gap: 8px;
-
     .el-input {
       flex: 1;
-    }
 
+      :deep(.el-input__wrapper) {
+        background-color: var(--comics-cardBg-color);
+        border-color: var(--comics-border-color);
+        &.is-focus {
+          box-shadow: 0 0 0 1px var(--primary-pink-color);
+        }
+        .el-input__inner {
+          color: var(--comics-cardText-color);
+        }
+      }
+    }
     .separator {
       font-size: 18px;
       font-weight: 600;
       color: var(--el-text-color-secondary);
     }
-
     .el-button {
       flex-shrink: 0;
     }
