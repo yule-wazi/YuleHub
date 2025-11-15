@@ -5,7 +5,9 @@
       <span v-if="originalSize" class="original-size">({{ originalSize }})</span>
     </div>
     <div class="preview-container" ref="previewRef">
-      <canvas ref="canvasRef" :style="canvasStyle"></canvas>
+      <div class="preview-wrapper" :style="previewWrapperStyle">
+        <img :src="imageUrl" :style="previewImageStyle" />
+      </div>
     </div>
   </div>
 </template>
@@ -23,14 +25,21 @@ const props = defineProps({
 })
 
 const cropStore = useCropStore()
-const { cropData, imageSize } = storeToRefs(cropStore)
+const { cropData, imageSize, imageOffset } = storeToRefs(cropStore)
 
 const previewRef = ref(null)
-const canvasRef = ref(null)
 const containerWidth = ref(0)
 const containerHeight = ref(0)
 
-// 计算原始尺寸
+// 更新容器尺寸
+const updateContainerSize = () => {
+  if (previewRef.value) {
+    containerWidth.value = previewRef.value.clientWidth
+    containerHeight.value = previewRef.value.clientHeight
+  }
+}
+
+// 计算原始尺寸（下载时的实际尺寸）
 const originalSize = computed(() => {
   const img = cropStore.imageElement
   if (!img || !cropData.value.width || !cropData.value.height) {
@@ -45,56 +54,40 @@ const originalSize = computed(() => {
   return `${originalWidth} × ${originalHeight}`
 })
 
-// 更新容器尺寸
-const updateContainerSize = () => {
-  if (previewRef.value) {
-    containerWidth.value = previewRef.value.clientWidth
-    containerHeight.value = previewRef.value.clientHeight
-  }
-}
-
-// 更新Canvas预览
-const updateCanvasPreview = () => {
-  const canvas = canvasRef.value
-  const img = cropStore.imageElement
-  if (!canvas || !img || !cropData.value.width || !cropData.value.height) {
-    return
-  }
-
-  const ctx = canvas.getContext('2d', { alpha: true })
-
-  // 启用高质量图像平滑（预览时可以用）
-  ctx.imageSmoothingEnabled = true
-  ctx.imageSmoothingQuality = 'high'
-
-  // 设置Canvas尺寸
-  canvas.width = Math.round(cropData.value.width)
-  canvas.height = Math.round(cropData.value.height)
-
-  // 计算裁剪区域在原始图片上的位置
-  const scaleX = img.naturalWidth / imageSize.value.width
-  const scaleY = img.naturalHeight / imageSize.value.height
-
-  const sourceX = Math.round(cropData.value.x * scaleX)
-  const sourceY = Math.round(cropData.value.y * scaleY)
-  const sourceWidth = Math.round(cropData.value.width * scaleX)
-  const sourceHeight = Math.round(cropData.value.height * scaleY)
-
-  // 清空Canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-  // 绘制裁剪后的图片
-  ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
-}
-
-// Canvas样式
-const canvasStyle = computed(() => {
-  if (!cropData.value.width || !cropData.value.height) {
+// 预览容器样式
+const previewWrapperStyle = computed(() => {
+  if (
+    !cropData.value.width ||
+    !cropData.value.height ||
+    !containerWidth.value ||
+    !containerHeight.value
+  ) {
     return { display: 'none' }
   }
   return {
-    border: '2px solid #a855f7',
-    borderRadius: '4px',
+    width: `${cropData.value.width}px`,
+    height: `${cropData.value.height}px`,
+    overflow: 'hidden',
+    position: 'relative',
+  }
+})
+
+// 预览图片样式
+const previewImageStyle = computed(() => {
+  if (
+    !cropData.value.width ||
+    !cropData.value.height ||
+    !imageSize.value.width ||
+    !containerWidth.value ||
+    !containerHeight.value
+  ) {
+    return { display: 'none' }
+  }
+  return {
+    width: `${imageSize.value.width}px`,
+    height: `${imageSize.value.height}px`,
+    transform: `translate(${-cropData.value.x}px, ${-cropData.value.y}px)`,
+    transformOrigin: 'top left',
     display: 'block',
   }
 })
@@ -103,36 +96,17 @@ onMounted(() => {
     updateContainerSize()
   })
 })
-// 监听cropData变化，更新预览
+// 监听cropData变化，确保容器尺寸已更新
 watch(
   () => cropData.value,
   () => {
     if (containerWidth.value === 0 || containerHeight.value === 0) {
       nextTick(() => {
         updateContainerSize()
-        updateCanvasPreview()
       })
-    } else {
-      updateCanvasPreview()
     }
   },
   { deep: true, immediate: true },
-)
-
-// 监听容器尺寸变化
-watch([containerWidth, containerHeight], () => {
-  updateCanvasPreview()
-})
-// 监听图片加载
-watch(
-  () => cropStore.imageElement,
-  () => {
-    if (cropStore.imageElement) {
-      nextTick(() => {
-        updateCanvasPreview()
-      })
-    }
-  },
 )
 </script>
 
@@ -164,9 +138,13 @@ watch(
     display: flex;
     align-items: center;
     justify-content: center;
-    canvas {
-      max-width: 100%;
-      max-height: 100%;
+    .preview-wrapper {
+      border: 2px solid #a855f7;
+      border-radius: 4px;
+      overflow: hidden;
+      img {
+        display: block;
+      }
     }
   }
 }

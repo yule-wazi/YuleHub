@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { PORT } from '../../../express/config/globalVar'
+const HOST = import.meta.env.VITE_HOST || 'localhost'
 
 const useCropStore = defineStore('crop', {
   state: () => {
@@ -51,23 +53,19 @@ const useCropStore = defineStore('crop', {
         height: imageSize.height * 0.5,
       }
     },
-
     // 更新裁剪数据
     updateCropData(data) {
       this.cropData = { ...this.cropData, ...data }
     },
-
     // 设置拖拽状态
     setDragging(isDragging) {
       this.isDragging = isDragging
     },
-
     // 设置调整大小状态
     setResizing(isResizing, handle = null) {
       this.isResizing = isResizing
       this.resizeHandle = handle
     },
-
     // 重置状态
     reset() {
       this.cropData = { x: 0, y: 0, width: 0, height: 0 }
@@ -82,30 +80,30 @@ const useCropStore = defineStore('crop', {
       if (!this.imageElement) {
         throw new Error('图片未加载')
       }
-
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d', { alpha: true })
-
-      // 禁用图像平滑，保持像素完美
-      ctx.imageSmoothingEnabled = false
-      ctx.imageSmoothingQuality = 'high'
-
       // 计算裁剪区域在原始图片上的位置
       const scaleX = this.imageElement.naturalWidth / this.imageSize.width
       const scaleY = this.imageElement.naturalHeight / this.imageSize.height
-
       const sourceX = Math.round(this.cropData.x * scaleX)
       const sourceY = Math.round(this.cropData.y * scaleY)
       const sourceWidth = Math.round(this.cropData.width * scaleX)
       const sourceHeight = Math.round(this.cropData.height * scaleY)
 
+      // 直接使用fetch重新加载图片，避免CORS问题
+      const img = await this.loadImageWithFetch(this.imageElement.src)
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d', { alpha: true })
+
+      // 禁用图像平滑，保持像素完美
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+
       // 设置Canvas尺寸为裁剪区域的原始尺寸（整数像素）
       canvas.width = sourceWidth
       canvas.height = sourceHeight
 
-      // 绘制裁剪后的图片（1:1比例，无缩放）
+      // 绘制裁剪后的图片
       ctx.drawImage(
-        this.imageElement,
+        img,
         sourceX,
         sourceY,
         sourceWidth,
@@ -115,17 +113,45 @@ const useCropStore = defineStore('crop', {
         sourceWidth,
         sourceHeight,
       )
-
       if (format === 'blob') {
-        return new Promise((resolve) => {
-          // PNG是无损格式，不需要quality参数
-          canvas.toBlob(resolve, 'image/png')
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Canvas转换失败'))
+            }
+          }, 'image/png')
         })
       } else if (format === 'dataURL') {
         return canvas.toDataURL('image/png')
       } else if (format === 'canvas') {
         return canvas
       }
+    },
+    // 通过后端代理加载图片（解决CORS问题）
+    async loadImageWithFetch(url) {
+      console.log('通过代理加载图片:', url)
+      const proxyUrl = `http://${HOST}:${PORT}/proxy?url=${encodeURIComponent(url)}&format=base64`
+      const response = await fetch(proxyUrl)
+      if (!response.ok) {
+        throw new Error(`代理请求失败: ${response.status}`)
+      }
+      const data = await response.json()
+      if (!data.success || !data.dataUrl) {
+        throw new Error('代理返回数据格式错误')
+      }
+      // 使用base64 dataURL创建图片
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.src = data.dataUrl
+        img.onload = () => {
+          resolve(img)
+        }
+        img.onerror = () => {
+          reject(new Error('base64图片加载失败'))
+        }
+      })
     },
 
     // 下载裁剪后的图片

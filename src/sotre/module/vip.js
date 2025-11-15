@@ -1,15 +1,11 @@
 import { defineStore } from 'pinia'
 import {
-  getAllPixivImg,
   getPixivSearchList,
   getPixivMemberIllust,
   getPixivRankList,
   getPixivImgDetail,
   getPixivArtistDetail,
-  getPixivRelatedArtist,
-  getPixivImgComments,
 } from '@/service/module/vip'
-import { switchProxyUrl } from '@/utils/ProxyUrl'
 import { filterComicsData } from '@/utils/filterData'
 import { getYesterdayDate, getPreviousDate } from '@/utils/formatTime'
 const useVip = defineStore('vip', {
@@ -128,11 +124,6 @@ const useVip = defineStore('vip', {
       } else {
         this.vipSearchImgData.push(...formatList)
       }
-    },
-    // 请求作者其他图片
-    async fetchOtherImgList(uid) {
-      const resList = await getAllPixivImg(uid)
-      this.authorOtherImg = resList.map((item) => switchProxyUrl(item))
     },
     // 获取详情页数据集合
     async fetchImgDetailAll(pid, uid) {

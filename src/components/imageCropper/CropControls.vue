@@ -1,37 +1,28 @@
 <template>
   <div class="crop-controls">
-    <!-- 下载按钮 -->
     <el-button type="primary" class="download-btn" @click="handleDownload" :loading="downloading">
       <el-icon><Download /></el-icon>
       Download
     </el-button>
-
-    <!-- 控制区 -->
     <div class="section">
       <h3 class="section-title">Controls</h3>
-
       <el-button class="control-btn" @click="handleReset">
         <el-icon><RefreshLeft /></el-icon>
         Reset
       </el-button>
-
       <el-button class="control-btn" @click="handleRotate">
         <el-icon><RefreshRight /></el-icon>
         Rotate
       </el-button>
-
       <div class="switch-item">
         <span>Maintain Ratio</span>
         <el-switch v-model="maintainRatio" />
       </div>
-
       <div class="switch-item">
         <span>Original Quality</span>
         <el-switch v-model="originalQuality" />
       </div>
     </div>
-
-    <!-- 宽高比预设 -->
     <div class="section">
       <h3 class="section-title">Aspect Ratios</h3>
       <p class="section-subtitle">Desktop / Landscape</p>
@@ -45,7 +36,6 @@
           {{ ratio.label }}
         </button>
       </div>
-
       <p class="section-subtitle">Mobile / Portrait</p>
       <div class="ratio-grid">
         <button
@@ -58,8 +48,6 @@
         </button>
       </div>
     </div>
-
-    <!-- 自定义比例 -->
     <div class="section">
       <h3 class="section-title">Custom Ratio</h3>
       <div class="custom-ratio">
