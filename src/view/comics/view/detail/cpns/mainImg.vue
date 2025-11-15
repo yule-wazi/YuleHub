@@ -80,6 +80,7 @@ onMounted(() => {
 
 const onSlideChange = (swiperInstance) => {
   currentIndex.value = (swiperInstance?.realIndex ?? 0) + 1
+  vipStore.currentDetailShowImg = pageList.value[swiperInstance?.realIndex ?? 0].image_urls.large
 }
 </script>
 

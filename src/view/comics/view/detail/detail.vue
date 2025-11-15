@@ -56,6 +56,7 @@ const saveToSession = (pid) => {
   const cacheData = {
     detailData: { ...vipStore.detailData },
     detailDataAll: { ...vipStore.detailDataAll },
+    currentDetailShowImg: vipStore.currentDetailShowImg,
     timestamp: Date.now(),
   }
   sessionCache.set(storageKey, cacheData)
@@ -68,6 +69,7 @@ const restoreFromSession = (pid) => {
   if (cached && cached.detailDataAll) {
     vipStore.detailDataAll = cached.detailDataAll
     vipStore.detailData = cached.detailData
+    vipStore.currentDetailShowImg = cached.currentDetailShowImg
     return cached
   }
   return null
@@ -87,6 +89,7 @@ const initDetailData = async () => {
   } else {
     await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
     detailDataAll.value = vipStore.detailDataAll
+    vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
     // 首次拿到数据缓存
     saveToSession(pid)
   }

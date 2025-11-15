@@ -80,6 +80,7 @@ const getDetail = async () => {
     query: { pid },
   })
   vipStore.detailData = props.itemData
+  vipStore.currentDetailShowImg = props.itemData.coverImg.large
 }
 // 搜索tag
 const getTag = (tag) => {

@@ -18,7 +18,7 @@
           <span class="count">{{ imgDetail.total_view }}</span>
         </div>
       </div>
-      <div class="downLoad">
+      <div class="downLoad" @click="showDialog = true">
         <template v-if="showDownloadText">
           <el-button color="#ff007a" :icon="Download">下载</el-button>
         </template>
@@ -28,12 +28,14 @@
       </div>
     </div>
   </div>
+  <DownloadDialog v-if="showDialog" v-model="showDialog" />
 </template>
 
 <script setup>
-import { throttle } from '@/utils/throttle'
+import { ref, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { ChatRound, Download, Star, StarFilled, View } from '@element-plus/icons-vue'
-import { ref, onMounted, onUnmounted, toRef, useTemplateRef } from 'vue'
+import { throttle } from '@/utils/throttle'
+import DownloadDialog from './downloadDialog.vue'
 
 const imgDetail = defineModel({
   type: Object,
@@ -43,6 +45,7 @@ const imgDetail = defineModel({
     total_view: 0,
   }),
 })
+const showDialog = ref(false)
 const showDownloadText = ref(true)
 const isStar = ref(false)
 const checkWidth = throttle(() => {

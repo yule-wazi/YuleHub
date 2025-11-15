@@ -26,7 +26,7 @@ const useVip = defineStore('vip', {
       vipSearchImgData: [],
       detailData: {},
       detailDataAll: {},
-      authorOtherImg: [],
+      currentDetailShowImg: '',
       isNSFW: false,
       validDate: null, // 存储有效的排名日期
     }
