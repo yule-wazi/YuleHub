@@ -11,10 +11,10 @@
     </el-button>
     <div class="section">
       <div class="section-title">操控面板</div>
-      <el-button class="reset-btn" @click="handleReset" :icon="RefreshLeft">
+      <el-button class="reset-btn" :icon="RefreshLeft" @click="handleReset">
         <span class="text">重置</span>
       </el-button>
-      <el-button class="getRatio-btn" :icon="Aim">
+      <el-button class="getRatio-btn" :icon="Aim" @click="handleGetDeviceResolution">
         <span class="text">获取设备分辨率</span>
       </el-button>
       <div class="switch-item">
@@ -65,16 +65,18 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Aim, Download, RefreshLeft, RefreshRight } from '@element-plus/icons-vue'
+import { Aim, Download, RefreshLeft } from '@element-plus/icons-vue'
 import useCropStore from '@/sotre/module/crop'
 import { storeToRefs } from 'pinia'
 
 const cropStore = useCropStore()
-const { cropData, imageSize } = storeToRefs(cropStore)
+const { cropData, imageSize, maintainRatio: storeMaintainRatio } = storeToRefs(cropStore)
 
 const downloading = ref(false)
-const maintainRatio = ref(false)
+const maintainRatio = computed({
+  get: () => storeMaintainRatio.value,
+  set: (val) => cropStore.setMaintainRatio(val),
+})
 const originalQuality = ref(true)
 const selectedRatio = ref('')
 const customWidth = ref('')
@@ -107,9 +109,7 @@ const handleDownload = async () => {
   try {
     downloading.value = true
     await cropStore.downloadCroppedImage('cropped-image.png')
-    ElMessage.success('下载成功')
   } catch (error) {
-    ElMessage.error('下载失败，请重试')
   } finally {
     downloading.value = false
   }
@@ -119,41 +119,48 @@ const handleDownload = async () => {
 const handleReset = () => {
   const { width, height } = imageSize.value
   cropStore.updateCropData({
-    x: width * 0.25,
-    y: height * 0.25,
-    width: width * 0.5,
-    height: height * 0.5,
+    x: 0,
+    y: 0,
+    width: width,
+    height: height,
   })
   selectedRatio.value = ''
-  ElMessage.success('已重置')
+  cropStore.setMaintainRatio(false)
 }
 
-// 旋转（暂未实现旋转功能）
-const handleRotate = () => {
-  ElMessage.info('旋转功能开发中')
+// 获取设备分辨率
+const handleGetDeviceResolution = () => {
+  const screenWidth = window.screen.width
+  const screenHeight = window.screen.height
+  // 应用设备分辨率比例
+  applyRatio(screenWidth, screenHeight)
+  selectedRatio.value = `${screenWidth}:${screenHeight}`
+  // 同时填充到自定义输入框
+  customWidth.value = screenWidth.toString()
+  customHeight.value = screenHeight.toString()
 }
-
 // 应用宽高比
 const applyRatio = (ratioWidth, ratioHeight) => {
   const { width: imgWidth, height: imgHeight } = imageSize.value
   const targetRatio = ratioWidth / ratioHeight
+  const imageRatio = imgWidth / imgHeight
 
-  let newWidth, newHeight
+  let newWidth, newHeight, newX, newY
 
-  // 根据图片尺寸计算最大可能的裁剪尺寸
-  if (imgWidth / imgHeight > targetRatio) {
-    // 图片更宽，以高度为准
-    newHeight = imgHeight * 0.8
+  // 根据图片尺寸计算最大可能的裁剪尺寸（撑满宽或高）
+  if (imageRatio > targetRatio) {
+    // 图片更宽，以高度撑满
+    newHeight = imgHeight
     newWidth = newHeight * targetRatio
+    newX = (imgWidth - newWidth) / 2 // 水平居中
+    newY = 0
   } else {
-    // 图片更高，以宽度为准
-    newWidth = imgWidth * 0.8
+    // 图片更高或相等，以宽度撑满
+    newWidth = imgWidth
     newHeight = newWidth / targetRatio
+    newX = 0
+    newY = (imgHeight - newHeight) / 2 // 垂直居中
   }
-
-  // 居中裁剪框
-  const newX = (imgWidth - newWidth) / 2
-  const newY = (imgHeight - newHeight) / 2
 
   cropStore.updateCropData({
     x: newX,
@@ -162,6 +169,8 @@ const applyRatio = (ratioWidth, ratioHeight) => {
     height: newHeight,
   })
 
+  // 自动开启等比缩放并设置比例
+  cropStore.setMaintainRatio(true, targetRatio)
   selectedRatio.value = `${ratioWidth}:${ratioHeight}`
 }
 
@@ -169,12 +178,9 @@ const applyRatio = (ratioWidth, ratioHeight) => {
 const applyCustomRatio = () => {
   const w = parseInt(customWidth.value)
   const h = parseInt(customHeight.value)
-
   if (!w || !h || w <= 0 || h <= 0) {
-    ElMessage.warning('请输入有效的宽高比')
     return
   }
-
   applyRatio(w, h)
   selectedRatio.value = `${w}:${h}`
 }

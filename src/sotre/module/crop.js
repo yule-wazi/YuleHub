@@ -36,6 +36,10 @@ const useCropStore = defineStore('crop', {
       isDragging: false,
       isResizing: false,
       resizeHandle: null,
+
+      // 宽高比锁定
+      maintainRatio: false,
+      aspectRatio: null, // 当前宽高比 (width / height)
     }
   },
 
@@ -47,10 +51,10 @@ const useCropStore = defineStore('crop', {
       this.imageElement = imageElement
       this.containerSize = containerSize
       this.cropData = {
-        x: imageSize.width * 0.25,
-        y: imageSize.height * 0.25,
-        width: imageSize.width * 0.5,
-        height: imageSize.height * 0.5,
+        x: 0,
+        y: 0,
+        width: imageSize.width,
+        height: imageSize.height,
       }
     },
     // 更新裁剪数据
@@ -66,6 +70,17 @@ const useCropStore = defineStore('crop', {
       this.isResizing = isResizing
       this.resizeHandle = handle
     },
+    // 设置等比缩放
+    setMaintainRatio(maintain, ratio = null) {
+      this.maintainRatio = maintain
+      if (maintain && ratio) {
+        this.aspectRatio = ratio
+      } else if (maintain && this.cropData.width && this.cropData.height) {
+        // 如果没有指定比例，使用当前裁剪框的比例
+        this.aspectRatio = this.cropData.width / this.cropData.height
+      }
+    },
+
     // 重置状态
     reset() {
       this.cropData = { x: 0, y: 0, width: 0, height: 0 }
@@ -73,6 +88,8 @@ const useCropStore = defineStore('crop', {
       this.isResizing = false
       this.resizeHandle = null
       this.imageElement = null
+      this.maintainRatio = false
+      this.aspectRatio = null
     },
 
     // 获取裁剪后的图片（返回Canvas或Blob）

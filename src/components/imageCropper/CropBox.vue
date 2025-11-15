@@ -116,61 +116,211 @@ const onHandleMouseDown = (e, position) => {
 // 计算调整大小后的裁剪数据
 const calculateResize = (start, deltaX, deltaY, handle) => {
   let { x, y, width, height } = start
+  const maintainRatio = cropStore.maintainRatio
+  const aspectRatio = cropStore.aspectRatio
 
-  switch (handle) {
-    case 'se': // 东南角
-      width = Math.max(MIN_SIZE, width + deltaX)
-      height = Math.max(MIN_SIZE, height + deltaY)
-      break
-    case 'nw': // 西北角
-      const newWidth = Math.max(MIN_SIZE, width - deltaX)
-      const newHeight = Math.max(MIN_SIZE, height - deltaY)
-      x = x + (width - newWidth)
-      y = y + (height - newHeight)
-      width = newWidth
-      height = newHeight
-      break
-    case 'ne': // 东北角
-      width = Math.max(MIN_SIZE, width + deltaX)
-      const newH = Math.max(MIN_SIZE, height - deltaY)
-      y = y + (height - newH)
-      height = newH
-      break
-    case 'sw': // 西南角
-      const newW = Math.max(MIN_SIZE, width - deltaX)
-      x = x + (width - newW)
-      width = newW
-      height = Math.max(MIN_SIZE, height + deltaY)
-      break
-    case 'n': // 北边
-      const h = Math.max(MIN_SIZE, height - deltaY)
-      y = y + (height - h)
-      height = h
-      break
-    case 's': // 南边
-      height = Math.max(MIN_SIZE, height + deltaY)
-      break
-    case 'e': // 东边
-      width = Math.max(MIN_SIZE, width + deltaX)
-      break
-    case 'w': // 西边
-      const w = Math.max(MIN_SIZE, width - deltaX)
-      x = x + (width - w)
-      width = w
-      break
+  // 角落控制点：同时调整宽高
+  if (['nw', 'ne', 'se', 'sw'].includes(handle)) {
+    if (maintainRatio && aspectRatio) {
+      // 等比缩放：根据主要拖拽方向决定
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+
+      if (handle === 'se') {
+        if (isHorizontal) {
+          width = Math.max(MIN_SIZE, width + deltaX)
+          height = Math.max(MIN_SIZE, width / aspectRatio)
+        } else {
+          height = Math.max(MIN_SIZE, height + deltaY)
+          width = Math.max(MIN_SIZE, height * aspectRatio)
+        }
+      } else if (handle === 'nw') {
+        if (isHorizontal) {
+          const newWidth = Math.max(MIN_SIZE, width - deltaX)
+          const newHeight = Math.max(MIN_SIZE, newWidth / aspectRatio)
+          x = x + (width - newWidth)
+          y = y + (height - newHeight)
+          width = newWidth
+          height = newHeight
+        } else {
+          const newHeight = Math.max(MIN_SIZE, height - deltaY)
+          const newWidth = Math.max(MIN_SIZE, newHeight * aspectRatio)
+          x = x + (width - newWidth)
+          y = y + (height - newHeight)
+          width = newWidth
+          height = newHeight
+        }
+      } else if (handle === 'ne') {
+        if (isHorizontal) {
+          width = Math.max(MIN_SIZE, width + deltaX)
+          const newHeight = Math.max(MIN_SIZE, width / aspectRatio)
+          y = y + (height - newHeight)
+          height = newHeight
+        } else {
+          const newHeight = Math.max(MIN_SIZE, height - deltaY)
+          width = Math.max(MIN_SIZE, newHeight * aspectRatio)
+          y = y + (height - newHeight)
+          height = newHeight
+        }
+      } else if (handle === 'sw') {
+        if (isHorizontal) {
+          const newWidth = Math.max(MIN_SIZE, width - deltaX)
+          height = Math.max(MIN_SIZE, newWidth / aspectRatio)
+          x = x + (width - newWidth)
+          width = newWidth
+        } else {
+          height = Math.max(MIN_SIZE, height + deltaY)
+          const newWidth = Math.max(MIN_SIZE, height * aspectRatio)
+          x = x + (width - newWidth)
+          width = newWidth
+        }
+      }
+    } else {
+      // 自由缩放
+      switch (handle) {
+        case 'se':
+          width = Math.max(MIN_SIZE, width + deltaX)
+          height = Math.max(MIN_SIZE, height + deltaY)
+          break
+        case 'nw':
+          const newWidth = Math.max(MIN_SIZE, width - deltaX)
+          const newHeight = Math.max(MIN_SIZE, height - deltaY)
+          x = x + (width - newWidth)
+          y = y + (height - newHeight)
+          width = newWidth
+          height = newHeight
+          break
+        case 'ne':
+          width = Math.max(MIN_SIZE, width + deltaX)
+          const newH = Math.max(MIN_SIZE, height - deltaY)
+          y = y + (height - newH)
+          height = newH
+          break
+        case 'sw':
+          const newW = Math.max(MIN_SIZE, width - deltaX)
+          x = x + (width - newW)
+          width = newW
+          height = Math.max(MIN_SIZE, height + deltaY)
+          break
+      }
+    }
+  } else {
+    // 边缘控制点：只调整一个方向
+    if (maintainRatio && aspectRatio) {
+      // 等比缩放时，边缘控制点也要保持比例
+      switch (handle) {
+        case 'n':
+        case 's':
+          // 调整高度，宽度跟随
+          if (handle === 'n') {
+            const newHeight = Math.max(MIN_SIZE, height - deltaY)
+            const newWidth = Math.max(MIN_SIZE, newHeight * aspectRatio)
+            x = x + (width - newWidth) / 2 // 居中
+            y = y + (height - newHeight)
+            width = newWidth
+            height = newHeight
+          } else {
+            height = Math.max(MIN_SIZE, height + deltaY)
+            const newWidth = Math.max(MIN_SIZE, height * aspectRatio)
+            x = x + (width - newWidth) / 2 // 居中
+            width = newWidth
+          }
+          break
+        case 'e':
+        case 'w':
+          // 调整宽度，高度跟随
+          if (handle === 'e') {
+            width = Math.max(MIN_SIZE, width + deltaX)
+            const newHeight = Math.max(MIN_SIZE, width / aspectRatio)
+            y = y + (height - newHeight) / 2 // 居中
+            height = newHeight
+          } else {
+            const newWidth = Math.max(MIN_SIZE, width - deltaX)
+            const newHeight = Math.max(MIN_SIZE, newWidth / aspectRatio)
+            x = x + (width - newWidth)
+            y = y + (height - newHeight) / 2 // 居中
+            width = newWidth
+            height = newHeight
+          }
+          break
+      }
+    } else {
+      // 自由缩放
+      switch (handle) {
+        case 'n':
+          const h = Math.max(MIN_SIZE, height - deltaY)
+          y = y + (height - h)
+          height = h
+          break
+        case 's':
+          height = Math.max(MIN_SIZE, height + deltaY)
+          break
+        case 'e':
+          width = Math.max(MIN_SIZE, width + deltaX)
+          break
+        case 'w':
+          const w = Math.max(MIN_SIZE, width - deltaX)
+          x = x + (width - w)
+          width = w
+          break
+      }
+    }
   }
 
   // 边界约束
-  if (x < 0) {
-    width += x
-    x = 0
+  if (maintainRatio && aspectRatio) {
+    // 等比缩放时的边界约束
+    // 检查是否超出边界
+    if (x < 0) {
+      x = 0
+      width = Math.min(width, imageSize.value.width)
+      height = width / aspectRatio
+    }
+    if (y < 0) {
+      y = 0
+      height = Math.min(height, imageSize.value.height)
+      width = height * aspectRatio
+    }
+    if (x + width > imageSize.value.width) {
+      width = imageSize.value.width - x
+      height = width / aspectRatio
+    }
+    if (y + height > imageSize.value.height) {
+      height = imageSize.value.height - y
+      width = height * aspectRatio
+    }
+
+    // 二次检查：确保调整后仍在边界内
+    if (x + width > imageSize.value.width) {
+      width = imageSize.value.width - x
+      height = width / aspectRatio
+    }
+    if (y + height > imageSize.value.height) {
+      height = imageSize.value.height - y
+      width = height * aspectRatio
+    }
+
+    // 确保不小于最小尺寸
+    if (width < MIN_SIZE) {
+      width = MIN_SIZE
+      height = width / aspectRatio
+    }
+    if (height < MIN_SIZE) {
+      height = MIN_SIZE
+      width = height * aspectRatio
+    }
+  } else {
+    // 自由缩放时的边界约束
+    if (x < 0) {
+      width += x
+      x = 0
+    }
+    if (y < 0) {
+      height += y
+      y = 0
+    }
+    if (x + width > imageSize.value.width) width = imageSize.value.width - x
+    if (y + height > imageSize.value.height) height = imageSize.value.height - y
   }
-  if (y < 0) {
-    height += y
-    y = 0
-  }
-  if (x + width > imageSize.value.width) width = imageSize.value.width - x
-  if (y + height > imageSize.value.height) height = imageSize.value.height - y
 
   return { x, y, width, height }
 }
