@@ -179,15 +179,19 @@ const calculateResize = (start, deltaX, deltaY, handle) => {
 <style lang="less" scoped>
 .crop-box {
   position: absolute;
-  border: 2px solid #a855f7;
+  border: 2px solid var(--primary-pink-color);
   cursor: move;
   user-select: none;
+  transition: box-shadow 0.3s ease;
+  &:hover {
+    box-shadow: 0 0 20px 0 var(--primary-pink-color);
+  }
   .size-label {
     position: absolute;
     top: -30px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(168, 85, 247, 0.9);
+    background-color: var(--primary-pink-color);
     color: white;
     padding: 4px 12px;
     border-radius: 4px;
@@ -198,7 +202,7 @@ const calculateResize = (start, deltaX, deltaY, handle) => {
   .crop-handle {
     position: absolute;
     background: #ffffff;
-    border: 2px solid #a855f7;
+    border: 2px solid var(--primary-pink-color);
     /* 角落控制点 */
     &.nw,
     &.ne,
@@ -228,30 +232,30 @@ const calculateResize = (start, deltaX, deltaY, handle) => {
     &.n,
     &.s {
       width: 40px;
-      height: 8px;
+      height: 6px;
       border-radius: 4px;
       left: 50%;
       transform: translateX(-50%);
     }
     &.n {
-      top: -4px;
+      top: -6px;
     }
     &.s {
-      bottom: -4px;
+      bottom: -6px;
     }
     &.e,
     &.w {
-      width: 8px;
+      width: 6px;
       height: 40px;
       border-radius: 4px;
       top: 50%;
       transform: translateY(-50%);
     }
     &.e {
-      right: -4px;
+      right: -6px;
     }
     &.w {
-      left: -4px;
+      left: -6px;
     }
   }
 }
