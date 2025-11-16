@@ -48,6 +48,8 @@ const vipStore = useVip()
     position: relative;
     @media (max-width: 1000px) {
       width: 100vw;
+      padding: 0;
+      overflow: hidden;
     }
     .el-dialog__header {
       position: absolute;
@@ -57,6 +59,11 @@ const vipStore = useVip()
         position: absolute;
         top: -25px;
         right: -10px;
+        @media (max-width: 1000px) {
+          top: 10px;
+          right: 10px;
+          z-index: 9;
+        }
       }
     }
   }
@@ -79,6 +86,10 @@ const vipStore = useVip()
     @media (min-width: 1000px) {
       grid-template-columns: minmax(0, 1fr) 350px;
     }
+    @media (max-width: 1000px) {
+      gap: 10px;
+      height: 100vh;
+    }
     .canvas {
       width: 100%;
       height: 100%;
@@ -86,6 +97,9 @@ const vipStore = useVip()
       min-height: 0;
       flex-direction: column;
       justify-content: space-between;
+      @media (max-width: 1000px) {
+        height: 70vh;
+      }
       .cropper,
       .preview {
         height: 48%;
@@ -94,11 +108,13 @@ const vipStore = useVip()
         border: 2px solid var(--comics-border-color);
         background-color: var(--comics-cardBg-color);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        @media (max-width: 1000px) {
+          height: 50%;
+        }
       }
       .cropper {
         border: none;
       }
-
       .preview {
         overflow: hidden;
       }

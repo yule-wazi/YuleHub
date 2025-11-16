@@ -1,5 +1,5 @@
 <template>
-  <div class="crop-box" :style="boxStyle" @mousedown="onBoxMouseDown">
+  <div class="crop-box" :style="boxStyle" @mousedown="onBoxMouseDown" @touchstart="onBoxTouchStart">
     <div class="size-label">
       {{ Math.round(cropData.width) }} × {{ Math.round(cropData.height) }}
     </div>
@@ -10,6 +10,7 @@
       :class="['crop-handle', handle.position]"
       :style="{ cursor: handle.cursor }"
       @mousedown.stop="onHandleMouseDown($event, handle.position)"
+      @touchstart.stop="onHandleTouchStart($event, handle.position)"
     ></div>
   </div>
 </template>
@@ -79,6 +80,43 @@ const onBoxMouseDown = (e) => {
   document.addEventListener('mouseup', onMouseUp)
 }
 
+// 触摸拖拽裁剪框
+const onBoxTouchStart = (e) => {
+  e.preventDefault()
+  const touch = e.touches[0]
+  cropStore.setDragging(true)
+  const startX = touch.clientX - cropData.value.x
+  const startY = touch.clientY - cropData.value.y
+
+  let rafId = null
+  const onTouchMove = (e) => {
+    if (!cropStore.isDragging || rafId) return
+    const touch = e.touches[0]
+    rafId = requestAnimationFrame(() => {
+      let newX = touch.clientX - startX
+      let newY = touch.clientY - startY
+      // 边界约束
+      newX = Math.max(0, Math.min(newX, imageSize.value.width - cropData.value.width))
+      newY = Math.max(0, Math.min(newY, imageSize.value.height - cropData.value.height))
+
+      cropStore.updateCropData({ x: newX, y: newY })
+      rafId = null
+    })
+  }
+  const onTouchEnd = () => {
+    cropStore.setDragging(false)
+    if (rafId) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+    document.removeEventListener('touchmove', onTouchMove)
+    document.removeEventListener('touchend', onTouchEnd)
+  }
+
+  document.addEventListener('touchmove', onTouchMove, { passive: false })
+  document.addEventListener('touchend', onTouchEnd)
+}
+
 // 调整裁剪框大小
 const onHandleMouseDown = (e, position) => {
   e.preventDefault()
@@ -111,6 +149,43 @@ const onHandleMouseDown = (e, position) => {
   }
   document.addEventListener('mousemove', onMouseMove)
   document.addEventListener('mouseup', onMouseUp)
+}
+
+// 触摸调整裁剪框大小
+const onHandleTouchStart = (e, position) => {
+  e.preventDefault()
+  const touch = e.touches[0]
+  cropStore.setResizing(true, position)
+
+  const startX = touch.clientX
+  const startY = touch.clientY
+  const startCropData = { ...cropData.value }
+
+  let rafId = null
+
+  const onTouchMove = (e) => {
+    if (!cropStore.isResizing || rafId) return
+    const touch = e.touches[0]
+    rafId = requestAnimationFrame(() => {
+      const deltaX = touch.clientX - startX
+      const deltaY = touch.clientY - startY
+      const newCropData = calculateResize(startCropData, deltaX, deltaY, position)
+      cropStore.updateCropData(newCropData)
+      rafId = null
+    })
+  }
+  const onTouchEnd = () => {
+    cropStore.setResizing(false)
+    if (rafId) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+    }
+    document.removeEventListener('touchmove', onTouchMove)
+    document.removeEventListener('touchend', onTouchEnd)
+  }
+
+  document.addEventListener('touchmove', onTouchMove, { passive: false })
+  document.addEventListener('touchend', onTouchEnd)
 }
 
 // 计算调整大小后的裁剪数据
@@ -353,6 +428,7 @@ const calculateResize = (start, deltaX, deltaY, handle) => {
     position: absolute;
     background: #ffffff;
     border: 2px solid var(--primary-pink-color);
+    transition: all 0.2s ease;
     /* 角落控制点 */
     &.nw,
     &.ne,
