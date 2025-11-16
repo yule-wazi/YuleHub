@@ -110,6 +110,7 @@ const onImageError = () => {
     width: 100%;
     height: 100%;
     position: relative;
+    border-radius: 12px;
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC);
     img {
       display: block;
@@ -123,6 +124,7 @@ const onImageError = () => {
       left: 0;
       width: 100%;
       height: 100%;
+      border-radius: 12px;
       background: rgba(0, 0, 0, 0.5);
       pointer-events: none;
     }
