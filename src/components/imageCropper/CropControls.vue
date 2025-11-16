@@ -68,16 +68,16 @@ import { ref, computed } from 'vue'
 import { Aim, Download, RefreshLeft } from '@element-plus/icons-vue'
 import useCropStore from '@/sotre/module/crop'
 import { storeToRefs } from 'pinia'
+import useVip from '@/sotre/module/vip'
 
 const cropStore = useCropStore()
-const { cropData, imageSize, maintainRatio: storeMaintainRatio } = storeToRefs(cropStore)
+const { imageSize, maintainRatio: storeMaintainRatio } = storeToRefs(cropStore)
 
 const downloading = ref(false)
 const maintainRatio = computed({
   get: () => storeMaintainRatio.value,
   set: (val) => cropStore.setMaintainRatio(val),
 })
-const originalQuality = ref(true)
 const selectedRatio = ref('')
 const customWidth = ref('')
 const customHeight = ref('')
@@ -103,12 +103,14 @@ const mobileRatios = [
   { label: '9:16', width: 9, height: 16 },
   { label: '8:19', width: 8, height: 19 },
 ]
+const vipStore = useVip()
 
 // 下载图片
 const handleDownload = async () => {
   try {
     downloading.value = true
-    await cropStore.downloadCroppedImage('cropped-image.png')
+    const imgTitle = vipStore.detailDataAll.imgDetail.title ?? ''
+    await cropStore.downloadCroppedImage(`YuleHub_${imgTitle}.png`)
   } catch (error) {
   } finally {
     downloading.value = false
