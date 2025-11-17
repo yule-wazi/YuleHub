@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
@@ -56,15 +56,36 @@ const getStorageKey = (pid) => {
   if (!pid) return ''
   return `${STORAGE_PREFIX}${pid}`
 }
+// 获取滚动容器
+const getScrollContainer = () => {
+  // 查找 .comics 滚动容器
+  let element = document.querySelector('.detail')
+  while (element && element.parentElement) {
+    const parent = element.parentElement
+    const style = getComputedStyle(parent)
+    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+      return parent
+    }
+    element = parent
+  }
+  return null
+}
+
 // 保存数据到 sessionStorage
 const saveToSession = (pid) => {
   if (!pid || !vipStore.detailDataAll || Object.keys(vipStore.detailDataAll).length === 0) {
     return
   }
+  // 获取当前滚动位置
+  const scrollContainer = getScrollContainer()
+  const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0
   const storageKey = getStorageKey(pid)
   const cacheData = {
     detailData: { ...vipStore.detailData },
-    detailDataAll: { ...vipStore.detailDataAll },
+    detailDataAll: {
+      ...vipStore.detailDataAll,
+      scrollTop: scrollTop, // 保存滚动位置
+    },
     currentDetailShowImg: vipStore.currentDetailShowImg,
     timestamp: Date.now(),
   }
@@ -83,6 +104,19 @@ const restoreFromSession = (pid) => {
   }
   return null
 }
+// 恢复滚动位置
+const restoreScrollPosition = (scrollTop) => {
+  if (!scrollTop || scrollTop === 0) return
+
+  const scrollContainer = getScrollContainer()
+  if (scrollContainer) {
+    // 使用 nextTick 确保 DOM 已更新
+    setTimeout(() => {
+      scrollContainer.scrollTo({ top: scrollTop, behavior: 'auto' })
+    }, 100)
+  }
+}
+
 // 初始化详情数据
 let detailDataAll = ref({})
 let comments = ref([])
@@ -95,10 +129,18 @@ const initDetailData = async () => {
   const cached = restoreFromSession(pid)
   if (cached) {
     detailDataAll.value = cached.detailDataAll
+    // 恢复滚动位置
+    const scrollTop = cached.detailDataAll?.scrollTop || 0
+    restoreScrollPosition(scrollTop)
   } else {
     await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
     detailDataAll.value = vipStore.detailDataAll
     vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
+    // 首次加载，滚动到顶部
+    const scrollContainer = getScrollContainer()
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
+    }
     // 首次拿到数据缓存
     saveToSession(pid)
   }
