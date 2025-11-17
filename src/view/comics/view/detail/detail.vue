@@ -113,6 +113,11 @@ watch(
     const pid = newQuery.pid
     const oldPid = oldQuery.pid
     if ((pid || oldPid) && pid !== oldPid) {
+      // 先保存旧的 pid 数据
+      if (oldPid && vipStore.detailDataAll && Object.keys(vipStore.detailDataAll).length > 0) {
+        saveToSession(oldPid)
+      }
+      // 再加载新的 pid 数据
       initDetailData()
     }
     getPixivImgComments(route.query.pid).then((res) => {

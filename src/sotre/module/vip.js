@@ -178,13 +178,37 @@ const useVip = defineStore('vip', {
         width,
         height,
       }
-      this.detailDataAll.relatedImgList = illusts
-      console.log('moreRelatedImgRes=', moreRelatedImgRes.data.illusts)
+      // 将 relatedImgList 改为对象结构，包含 list 和 page
+      this.detailDataAll.relatedImgList = {
+        list: illusts,
+        page: 1,
+      }
     },
-    // 获取相关作品
-    async fetchRelatedImg(pid, page) {
-      const list = await getPixivRelatedImg(pid, page)
-      console.log('list=', list)
+    // 获取相关作品（支持加载更多）
+    async fetchRelatedImgList({ isRefresh = false, pid } = {}) {
+      // 如果没有初始化，先初始化
+      if (!this.detailDataAll.relatedImgList) {
+        this.detailDataAll.relatedImgList = {
+          list: [],
+          page: 1,
+        }
+      }
+      // 基于当前 page 请求下一页
+      const currentPage = isRefresh ? 1 : this.detailDataAll.relatedImgList.page + 1
+      const res = await getPixivRelatedImg(pid, currentPage)
+      const illusts = res.data.illusts || []
+
+      if (isRefresh) {
+        // 刷新：重置数据
+        this.detailDataAll.relatedImgList = {
+          list: illusts,
+          page: 1,
+        }
+      } else {
+        // 追加数据
+        this.detailDataAll.relatedImgList.list.push(...illusts)
+        this.detailDataAll.relatedImgList.page = currentPage
+      }
     },
   },
 })
