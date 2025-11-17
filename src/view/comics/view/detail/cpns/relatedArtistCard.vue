@@ -70,7 +70,7 @@ const viewArtist = (currentUser) => {
 <style lang="less" scoped>
 .relatedArtistCard {
   .content {
-    max-height: 306px;
+    max-height: 310px;
     overflow-y: auto;
     &::-webkit-scrollbar {
       display: none;
