@@ -3,9 +3,9 @@
     <div class="item">
       <div class="image" :style="{ aspectRatio: imgAspectRatio }" @click="getDetail">
         <img :src="showImg" loading="lazy" @error="handleImgError" />
-        <div v-if="itemData.pageList.length" class="pageIcon">
+        <div v-if="pageLength" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
-          <span class="pageCount">{{ itemData.pageList.length }}</span>
+          <span class="pageCount">{{ pageLength }}</span>
         </div>
       </div>
       <div class="content">
@@ -51,8 +51,10 @@ const handleImgError = (e) => {
   }
   emit('errorEmit')
 }
-const LQIPImg = switchImgResolutionUrl(props.itemData.coverImg.large)
-const originImg = switchImgResolutionUrl(props.itemData.coverImg.large, 'origin')
+const imgUrl = props.itemData.coverImg?.large
+const pageLength = props.itemData.pageList?.length
+const LQIPImg = switchImgResolutionUrl(imgUrl)
+const originImg = switchImgResolutionUrl(imgUrl, 'origin')
 let showImg = ref(LQIPImg)
 // 直接使用 API 返回的宽高比，避免通过图片加载获取导致的偏移
 const imgAspectRatio = computed(() => {

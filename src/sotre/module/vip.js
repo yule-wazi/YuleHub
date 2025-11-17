@@ -5,6 +5,7 @@ import {
   getPixivRankList,
   getPixivImgDetail,
   getPixivArtistDetail,
+  getPixivRelatedImg,
 } from '@/service/module/vip'
 import { filterComicsData } from '@/utils/filterData'
 import { getYesterdayDate, getPreviousDate } from '@/utils/formatTime'
@@ -127,10 +128,11 @@ const useVip = defineStore('vip', {
     },
     // 获取详情页数据集合
     async fetchImgDetailAll(pid, uid) {
-      const [imgRes, artistRes, moreImgRes] = await Promise.all([
+      const [imgRes, artistRes, moreImgRes, moreRelatedImgRes] = await Promise.all([
         getPixivImgDetail(pid),
         getPixivArtistDetail(uid),
         getPixivMemberIllust({ id: uid, page: 1 }),
+        getPixivRelatedImg(pid, 1),
       ])
       const { name, account, profile_image_urls } = artistRes.data.user
       const { total_illusts, total_follow_users, total_mypixiv_users } = artistRes.data.profile
@@ -148,6 +150,8 @@ const useVip = defineStore('vip', {
         width,
         height,
       } = imgRes.data.illust
+      const { illusts } = moreRelatedImgRes.data
+
       this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(0, 6)
       this.detailDataAll.artistDetail = {
         id: uid,
@@ -174,6 +178,13 @@ const useVip = defineStore('vip', {
         width,
         height,
       }
+      this.detailDataAll.relatedImgList = illusts
+      console.log('moreRelatedImgRes=', moreRelatedImgRes.data.illusts)
+    },
+    // 获取相关作品
+    async fetchRelatedImg(pid, page) {
+      const list = await getPixivRelatedImg(pid, page)
+      console.log('list=', list)
     },
   },
 })

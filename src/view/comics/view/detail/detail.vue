@@ -1,23 +1,31 @@
 <template>
   <div class="detail">
-    <div class="main">
-      <MainImg />
-      <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
-      <ImageInfoCard v-bind="detailDataAll.imgDetail" />
-      <div class="comment pc">
+    <div class="gridArea">
+      <div class="main">
+        <MainImg />
+        <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
+        <ImageInfoCard v-bind="detailDataAll.imgDetail" />
+        <div class="comment pc">
+          <CommentsCard
+            :comments="comments"
+            :commentsCount="detailDataAll.imgDetail?.total_comments"
+          />
+        </div>
+      </div>
+      <div class="sideBar">
+        <ArtistCard v-bind="detailDataAll.artistDetail" />
+        <ArtistMoreCard :imgList="detailDataAll.moreImgFromArtist" />
+        <RelatedArtistCard :artistList="relatedArtist" />
+      </div>
+      <div class="comment mobel">
         <CommentsCard
           :comments="comments"
           :commentsCount="detailDataAll.imgDetail?.total_comments"
         />
       </div>
     </div>
-    <div class="sideBar">
-      <ArtistCard v-bind="detailDataAll.artistDetail" />
-      <ArtistMoreCard :imgList="detailDataAll.moreImgFromArtist" />
-      <RelatedArtistCard :artistList="relatedArtist" />
-    </div>
-    <div class="comment mobel">
-      <CommentsCard :comments="comments" :commentsCount="detailDataAll.imgDetail?.total_comments" />
+    <div class="relatedImg">
+      <RelatedImgCard />
     </div>
   </div>
 </template>
@@ -37,6 +45,7 @@ import RelatedArtistCard from './cpns/relatedArtistCard.vue'
 import CommentsCard from './cpns/commentsCard.vue'
 import { getPixivImgComments, getPixivRelatedArtist } from '@/service/module/vip'
 import MainImg from './cpns/mainImg.vue'
+import RelatedImgCard from './cpns/relatedImgCard.vue'
 
 const vipStore = useVip()
 const route = useRoute()
@@ -151,38 +160,53 @@ onBeforeRouteLeave(() => {
 .detail {
   max-width: 85vw;
   margin: auto;
-  margin-top: 24px;
-  display: grid;
-  gap: 24px;
-  @media (min-width: 1000px) {
-    grid-template-columns: minmax(0, 1fr) 420px;
+  @media (max-width: 1000px) {
+    max-width: 100vw;
   }
-  .main {
-    max-width: 85vw;
+  .gridArea {
+    margin-top: 24px;
+    display: grid;
+    gap: 24px;
+    @media (min-width: 1000px) {
+      grid-template-columns: minmax(0, 1fr) 420px;
+    }
+    @media (max-width: 1000px) {
+      margin-top: 0;
+    }
+    .main {
+      max-width: 85vw;
+      @media (max-width: 1000px) {
+        max-width: 100vw;
+      }
+      .comment {
+        &.pc {
+          margin-top: 24px;
+        }
+      }
+    }
+    .sideBar {
+      display: flex;
+      flex-direction: column;
+      grid-gap: 24px;
+    }
     .comment {
       &.pc {
-        margin-top: 24px;
-      }
-    }
-  }
-  .sideBar {
-    display: flex;
-    flex-direction: column;
-    grid-gap: 24px;
-  }
-  .comment {
-    &.pc {
-      display: block;
-      @media (max-width: 1000px) {
-        display: none;
-      }
-    }
-    &.mobel {
-      display: none;
-      @media (max-width: 1000px) {
         display: block;
+        @media (max-width: 1000px) {
+          display: none;
+        }
+      }
+      &.mobel {
+        display: none;
+        @media (max-width: 1000px) {
+          display: block;
+        }
       }
     }
+  }
+  .relatedImg {
+    margin-top: 24px;
+    border-top: 2px solid var(--comics-border-color);
   }
 }
 </style>

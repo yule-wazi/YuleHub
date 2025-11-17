@@ -54,3 +54,8 @@ export function getPixivRelatedArtist(uid) {
   MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/related_member?id=${uid}`)
   return MyRequest.get()
 }
+// 获取pixiv相关作品
+export function getPixivRelatedImg(pid, page = 1) {
+  MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/related?id=${pid}&page=${page}`)
+  return MyRequest.get()
+}
