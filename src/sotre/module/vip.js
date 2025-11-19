@@ -149,6 +149,7 @@ const useVip = defineStore('vip', {
         tags,
         width,
         height,
+        type,
       } = imgRes.data.illust
       const { illusts } = moreRelatedImgRes.data
 
@@ -177,6 +178,7 @@ const useVip = defineStore('vip', {
         tags,
         width,
         height,
+        type,
       }
       // 将 relatedImgList 改为对象结构，包含 list 和 page
       this.detailDataAll.relatedImgList = {

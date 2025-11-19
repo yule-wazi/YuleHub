@@ -59,3 +59,8 @@ export function getPixivRelatedImg(pid, page = 1) {
   MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/related?id=${pid}&page=${page}`)
   return MyRequest.get()
 }
+// 获取pixiv动图元数据
+export function getPixivUgoiraMetadata(pid) {
+  MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/ugoira_metadata?id=${pid}`)
+  return MyRequest.get()
+}
