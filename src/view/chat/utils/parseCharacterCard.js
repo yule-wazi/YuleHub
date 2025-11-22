@@ -41,8 +41,6 @@ const MAX_JSON_DEPTH = 10
  */
 export async function parsePNGCharacterCard(file) {
   try {
-    console.log('[CharacterCard] 开始解析文件:', file.name)
-
     // 0. 检查文件大小
     if (file.size > MAX_FILE_SIZE) {
       throw new CharacterCardError(
@@ -55,18 +53,13 @@ export async function parsePNGCharacterCard(file) {
     const buffer = await readFileAsArrayBuffer(file)
     const bytes = new Uint8Array(buffer)
 
-    console.log('[CharacterCard] 文件大小:', bytes.length, 'bytes')
-
     // 2. 验证 PNG 签名
     if (!validatePNGSignature(bytes)) {
       throw new CharacterCardError(ErrorCodes.INVALID_FILE, '非有效的 PNG 文件')
     }
 
-    console.log('[CharacterCard] PNG 签名验证通过')
-
     // 3. 读取 PNG 数据块
     const chunks = readPNGChunks(bytes)
-    console.log('[CharacterCard] 找到', chunks.length, '个数据块')
 
     // 4. 提取角色数据
     const rawData = extractCharacterData(chunks)
@@ -74,18 +67,14 @@ export async function parsePNGCharacterCard(file) {
       throw new CharacterCardError(ErrorCodes.NO_CHARA_DATA, '该 PNG 文件不包含角色卡数据')
     }
 
-    console.log('[CharacterCard] 成功提取角色数据，长度:', rawData.length)
-
     // 5. 解码 JSON
     const jsonData = decodeJSON(rawData)
-    console.log('[CharacterCard] JSON 解析成功')
 
     // 5.5 验证 JSON 深度
     validateJSONDepth(jsonData)
 
     // 6. 标准化数据
     const normalizedData = normalizeCardData(jsonData)
-    console.log('[CharacterCard] 数据标准化完成，版本:', normalizedData.spec || 'V1/V2')
 
     return {
       success: true,
@@ -179,7 +168,6 @@ function readPNGChunks(bytes) {
 
     // 遇到 IEND 块停止（优化：提前退出）
     if (type === 'IEND') {
-      console.log('[CharacterCard] 到达 IEND 块，停止读取')
       break
     }
   }
@@ -231,8 +219,6 @@ function extractFromTextChunk(chunkData, chunkType) {
       return null
     }
 
-    console.log('[CharacterCard] 找到角色数据块，key:', key, 'type:', chunkType)
-
     // 提取 value
     let valueText = ''
 
@@ -279,7 +265,6 @@ function decodeJSON(rawData) {
   // 1. 尝试直接 JSON.parse
   try {
     const json = JSON.parse(rawData)
-    console.log('[CharacterCard] 直接 JSON 解析成功')
     return json
   } catch (e) {
     console.log('[CharacterCard] 直接 JSON 解析失败，尝试 Base64 解码')
@@ -291,7 +276,6 @@ function decodeJSON(rawData) {
     const bytes = Uint8Array.from(decoded, (c) => c.charCodeAt(0))
     const text = new TextDecoder('utf-8').decode(bytes)
     const json = JSON.parse(text)
-    console.log('[CharacterCard] Base64 解码后 JSON 解析成功')
     return json
   } catch (e) {
     console.error('[CharacterCard] Base64 解码失败:', e)
@@ -307,7 +291,6 @@ function decodeJSON(rawData) {
 function normalizeCardData(jsonData) {
   // 检查是否是 V3 格式
   if (jsonData.spec === 'chara_card_v3' && jsonData.data) {
-    console.log('[CharacterCard] 识别为 V3 格式')
     return {
       spec: jsonData.spec,
       spec_version: jsonData.spec_version || '3.0',
@@ -317,7 +300,6 @@ function normalizeCardData(jsonData) {
   }
 
   // V1/V2 格式
-  console.log('[CharacterCard] 识别为 V1/V2 格式')
   return {
     spec: 'V1/V2',
     spec_version: '',

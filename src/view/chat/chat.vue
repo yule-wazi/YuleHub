@@ -343,17 +343,6 @@
           {{ previewData.firstMessage.substring(0, 200) }}
           <span v-if="previewData.firstMessage.length > 200">...</span>
         </div>
-
-        <el-alert
-          v-if="previewData.regexScripts?.length > 0"
-          type="info"
-          :closable="false"
-          style="margin-top: 20px"
-        >
-          <template #title>
-            检测到 {{ previewData.regexScripts.length }} 个正则脚本，当前版本暂不执行
-          </template>
-        </el-alert>
       </div>
 
       <template #footer>
@@ -361,7 +350,6 @@
         <el-button type="primary" @click="confirmImport">确认导入</el-button>
       </template>
     </el-dialog>
-
     <!-- API Token -->
     <el-dialog
       v-model="addTokenVisible"
