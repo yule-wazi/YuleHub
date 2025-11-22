@@ -96,6 +96,21 @@
       @closed="addUserCard = false"
     >
       <el-form ref="ruleFormRef" :model="roleForm">
+        <!-- 新增：导入角色卡按钮 -->
+        <el-form-item>
+          <el-button type="primary" plain @click="triggerImportPNG" style="width: 100%">
+            <el-icon><Upload /></el-icon>
+            导入角色卡 PNG
+          </el-button>
+          <input
+            ref="pngImportInput"
+            type="file"
+            accept=".png"
+            @change="handlePNGImport"
+            style="display: none"
+          />
+        </el-form-item>
+
         <el-form-item prop="userName">
           <span>角色名</span>
           <el-input
@@ -284,6 +299,69 @@
         </div>
       </div>
     </el-dialog>
+    <!-- 导入预览对话框 -->
+    <el-dialog
+      v-model="importPreviewVisible"
+      title="角色卡导入预览"
+      width="90vw"
+      style="max-width: 800px"
+      center
+    >
+      <div v-if="previewData" class="preview-content">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="角色名">
+            {{ previewData.userName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="规范版本">
+            {{ previewData.metadata.spec }}
+          </el-descriptions-item>
+          <el-descriptions-item label="创建者">
+            {{ previewData.metadata.creator || '未知' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="创建日期">
+            {{ previewData.metadata.createDate || '未知' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="世界书条目" :span="2">
+            {{ previewData.loreBooks?.value?.length || 0 }} 个条目
+          </el-descriptions-item>
+          <el-descriptions-item label="正则脚本" :span="2">
+            {{ previewData.regexScripts?.length || 0 }} 个脚本
+          </el-descriptions-item>
+          <el-descriptions-item label="备用开场白" :span="2">
+            {{ previewData.alternateGreetings?.length || 0 }} 个
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <el-divider>角色描述预览</el-divider>
+        <div class="description-preview">
+          {{ previewData.description.substring(0, 200) }}
+          <span v-if="previewData.description.length > 200">...</span>
+        </div>
+
+        <el-divider>开场白预览</el-divider>
+        <div class="greeting-preview">
+          {{ previewData.firstMessage.substring(0, 200) }}
+          <span v-if="previewData.firstMessage.length > 200">...</span>
+        </div>
+
+        <el-alert
+          v-if="previewData.regexScripts?.length > 0"
+          type="info"
+          :closable="false"
+          style="margin-top: 20px"
+        >
+          <template #title>
+            检测到 {{ previewData.regexScripts.length }} 个正则脚本，当前版本暂不执行
+          </template>
+        </el-alert>
+      </div>
+
+      <template #footer>
+        <el-button @click="importPreviewVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmImport">确认导入</el-button>
+      </template>
+    </el-dialog>
+
     <!-- API Token -->
     <el-dialog
       v-model="addTokenVisible"
@@ -367,9 +445,13 @@ import {
   VideoPlay,
   Collection,
   VideoCameraFilled,
+  Upload,
 } from '@element-plus/icons-vue'
-import { systemPrompt } from '@/utils/systemPrompt'
+import { systemPrompt } from './utils/systemPrompt'
 import { audioList } from '@/sotre/agentAudioConfig'
+import { parsePNGCharacterCard } from './utils/parseCharacterCard'
+import { mapToInternalFormat, validateCharacterCard } from './utils/mapCharacterCard'
+import { ElLoading, ElMessage } from 'element-plus'
 // 初始化世界书
 const loreBooksOptions = [
   {
@@ -421,6 +503,112 @@ const addUserCard = ref(false)
 const openEditCard = () => {
   centerDialogVisible.value = true
   addUserCard.value = true
+}
+
+// PNG 导入相关
+const pngImportInput = ref(null)
+const importPreviewVisible = ref(false)
+const previewData = ref(null)
+
+// 触发文件选择
+const triggerImportPNG = () => {
+  pngImportInput.value?.click()
+}
+
+// 处理 PNG 导入
+const handlePNGImport = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  let loading = null
+  try {
+    // 显示加载提示
+    loading = ElLoading.service({
+      lock: true,
+      text: '正在解析角色卡...',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+
+    // 1. 解析 PNG
+    const parsed = await parsePNGCharacterCard(file)
+
+    // 2. 验证数据
+    validateCharacterCard(parsed.data)
+
+    // 3. 映射为内部格式
+    const mapped = mapToInternalFormat(parsed.data)
+
+    // 4. 显示预览对话框
+    previewData.value = mapped
+    importPreviewVisible.value = true
+
+    loading.close()
+  } catch (error) {
+    if (loading) loading.close()
+    handleImportError(error)
+  } finally {
+    e.target.value = '' // 清空文件选择
+  }
+}
+
+// 错误处理
+const handleImportError = (error) => {
+  let userMessage = '导入失败'
+
+  if (error.code) {
+    switch (error.code) {
+      case 'INVALID_FILE':
+        userMessage = '非有效的 PNG 文件，请选择正确的角色卡图片'
+        break
+      case 'NO_CHARA_DATA':
+        userMessage = '该 PNG 文件不包含角色卡数据'
+        break
+      case 'PARSE_ERROR':
+        userMessage = '角色卡数据格式错误，无法解析'
+        break
+      case 'MISSING_REQUIRED':
+        userMessage = `角色卡缺少必要信息：${error.details?.field || '未知'}`
+        break
+      default:
+        userMessage = error.message || '导入失败'
+    }
+  } else {
+    userMessage = error.message || '导入失败'
+  }
+
+  ElMessage.error(userMessage)
+  console.error('Character card import error:', error)
+}
+
+// 确认导入
+const confirmImport = () => {
+  if (!previewData.value) return
+
+  // 填充表单
+  roleForm.userName = previewData.value.userName
+  roleForm.image = previewData.value.image
+  roleForm.description = previewData.value.description
+  roleForm.firstMessage = previewData.value.firstMessage
+  roleForm.voiceId = previewData.value.voiceId || ''
+
+  // 处理世界书
+  if (previewData.value.loreBooks) {
+    roleForm.addLoreBooksData.push(previewData.value.loreBooks)
+    roleForm.loreBooks = previewData.value.loreBooks.value
+    loreBooksModel.value = JSON.stringify(previewData.value.loreBooks.value)
+  }
+
+  // 存储扩展数据（用于后续使用）
+  roleForm.regexScripts = previewData.value.regexScripts || []
+  roleForm.systemPrompt = previewData.value.systemPrompt || ''
+  roleForm.postHistoryInstructions = previewData.value.postHistoryInstructions || ''
+  roleForm.depthPrompt = previewData.value.depthPrompt || null
+  roleForm.alternateGreetings = previewData.value.alternateGreetings || []
+  roleForm.metadata = previewData.value.metadata || {}
+
+  importPreviewVisible.value = false
+
+  ElMessage.success('角色卡导入成功！请检查并确认信息')
 }
 // 打开添加API面板
 const addAPICard = (isAddChat = false) => {
@@ -540,15 +728,44 @@ const addAPIToken = () => {
 const addRoleCardConfirm = () => {
   centerDialogVisible.value = false
   drawer.value = false
-  const { userName, image, description, firstMessage, loreBooks, voiceId } = roleForm
+  const {
+    userName,
+    image,
+    description,
+    firstMessage,
+    loreBooks,
+    voiceId,
+    systemPrompt: customSystemPrompt,
+    postHistoryInstructions,
+    depthPrompt,
+    regexScripts,
+    alternateGreetings,
+    metadata,
+  } = roleForm
+
   users.push({
     userName,
     voiceId,
     image,
     isVip: true,
     loreBooks,
+    // 存储扩展数据
+    regexScripts: regexScripts || [],
+    systemPrompt: customSystemPrompt || '',
+    postHistoryInstructions: postHistoryInstructions || '',
+    depthPrompt: depthPrompt || null,
+    alternateGreetings: alternateGreetings || [],
+    metadata: metadata || {},
     message: [
-      { description: systemPrompt({ firstMessage, description }) },
+      {
+        description: systemPrompt({
+          firstMessage,
+          description,
+          systemPrompt: customSystemPrompt,
+          postHistoryInstructions,
+          depthPrompt,
+        }),
+      },
       { audioSrc: '', image, isMe: false, message: firstMessage },
     ],
   })
@@ -794,6 +1011,19 @@ onMounted(() => {
   }
   .active {
     background-color: var(--comics-headerIcon-color);
+  }
+  .preview-content {
+    .description-preview,
+    .greeting-preview {
+      padding: 10px;
+      background-color: var(--chat-card-inputBg-color);
+      border-radius: 4px;
+      color: var(--chat-card-text-color);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 150px;
+      overflow-y: auto;
+    }
   }
 }
 </style>

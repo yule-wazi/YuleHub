@@ -55,8 +55,8 @@
 
 <script setup>
 import { ref, watchEffect } from 'vue'
-import { formatSpecialOutput } from '@/utils/formatOutput'
-import { createAudio, playAudio } from '@/utils/createAudio'
+import { formatSpecialOutput } from '@/view/chat/utils/formatOutput'
+import { createAudio, playAudio } from '@/view/chat/utils/createAudio'
 import { EditPen } from '@element-plus/icons-vue'
 import useAgent from '@/sotre/module/agent'
 const agentStore = useAgent()

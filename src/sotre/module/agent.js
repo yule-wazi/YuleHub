@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { postAgent, textToAudio } from '@/service/module/agents'
-import { formatInputMessage } from '@/utils/formatOutput'
-import { createAudio } from '@/utils/createAudio'
+import { formatInputMessage } from '@/view/chat/utils/formatOutput'
+import { createAudio } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 const useAgent = defineStore('agent', {

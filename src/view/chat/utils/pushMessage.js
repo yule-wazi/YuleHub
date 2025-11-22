@@ -22,7 +22,19 @@ export function updateMessage({
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
   // 世界书插入（支持TopK/预算等参数，可按需调整）
-  const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, targetUser.loreBooks, {
+  // 提取世界书数组（兼容旧格式和新格式）
+  let loreBooksArray = []
+  if (targetUser.loreBooks) {
+    if (Array.isArray(targetUser.loreBooks)) {
+      // 旧格式：直接是数组
+      loreBooksArray = targetUser.loreBooks
+    } else if (targetUser.loreBooks.value && Array.isArray(targetUser.loreBooks.value)) {
+      // 新格式：{ label, value }
+      loreBooksArray = targetUser.loreBooks.value
+    }
+  }
+
+  const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, loreBooksArray, {
     topK: 4,
     minScore: 0.4,
     tokenBudget: 2000,
@@ -36,16 +48,59 @@ export function updateMessage({
     cooldownRounds: 2,
     maxUsesPerSession: 3,
     repetitionPenalty: 0.6,
+    // 新增：角色卡增强选项
+    respectPriority: true, // 使用 insertionOrder
+    respectPosition: true, // 使用 position 属性
+    respectProbability: true, // 应用概率过滤
+    includeConstant: true, // 包含常驻条目
   })
+
   if (loreBooksMessageList.length) {
     console.log('世界书匹配到：', loreBooksMessageList, '关键词：', messageKeys)
-    messageList.splice(
-      -1,
-      0,
-      ...loreBooksMessageList.map((message) => {
-        return { role: 'system', content: message.content }
-      }),
-    )
+
+    // 根据 position 属性分组插入
+    const positionGroups = {
+      beforeChar: [], // position: 0 - 角色描述前
+      afterChar: [], // position: 1 - 角色描述后
+      beforeUser: [], // position: 4 或默认 - 用户消息前
+    }
+
+    // 按位置分组
+    loreBooksMessageList.forEach((loreMsg) => {
+      const position = loreMsg.position ?? 4 // 默认为用户消息前
+      const systemMsg = { role: 'system', content: loreMsg.content }
+
+      if (position === 0) {
+        positionGroups.beforeChar.push(systemMsg)
+      } else if (position === 1) {
+        positionGroups.afterChar.push(systemMsg)
+      } else {
+        // position: 2, 3, 4 或其他，都插入到用户消息前
+        positionGroups.beforeUser.push(systemMsg)
+      }
+    })
+
+    // 找到第一个 system 消息的位置（角色描述）
+    const firstSystemIndex = messageList.findIndex((m) => m.role === 'system')
+
+    // 1. 在角色描述前插入 (position: 0)
+    if (positionGroups.beforeChar.length > 0 && firstSystemIndex !== -1) {
+      messageList.splice(firstSystemIndex, 0, ...positionGroups.beforeChar)
+      console.log(`[LoreBook] 在角色描述前插入 ${positionGroups.beforeChar.length} 个条目`)
+    }
+
+    // 2. 在角色描述后插入 (position: 1)
+    if (positionGroups.afterChar.length > 0 && firstSystemIndex !== -1) {
+      const insertIndex = firstSystemIndex + 1 + positionGroups.beforeChar.length
+      messageList.splice(insertIndex, 0, ...positionGroups.afterChar)
+      console.log(`[LoreBook] 在角色描述后插入 ${positionGroups.afterChar.length} 个条目`)
+    }
+
+    // 3. 在用户最后一条消息前插入 (position: 2, 3, 4 或其他)
+    if (positionGroups.beforeUser.length > 0) {
+      messageList.splice(-1, 0, ...positionGroups.beforeUser)
+      console.log(`[LoreBook] 在用户消息前插入 ${positionGroups.beforeUser.length} 个条目`)
+    }
   }
   // 给ai将要回答预留位置
   targetUser.message.push({
@@ -111,9 +166,6 @@ async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio
           if (jsonData.choices?.[0]?.delta?.content) {
             const content = jsonData.choices[0].delta.content
             currentMessage.message += content
-            // nextTick(() => {
-            //   contentElem.scrollTop = contentElem.scrollHeight
-            // })
           }
         } catch (e) {
           if (line.trim()) {
