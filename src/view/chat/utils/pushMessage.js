@@ -56,8 +56,6 @@ export function updateMessage({
   })
 
   if (loreBooksMessageList.length) {
-    console.log('世界书匹配到：', loreBooksMessageList, '关键词：', messageKeys)
-
     // 根据 position 属性分组插入
     const positionGroups = {
       beforeChar: [], // position: 0 - 角色描述前
@@ -86,20 +84,17 @@ export function updateMessage({
     // 1. 在角色描述前插入 (position: 0)
     if (positionGroups.beforeChar.length > 0 && firstSystemIndex !== -1) {
       messageList.splice(firstSystemIndex, 0, ...positionGroups.beforeChar)
-      console.log(`[LoreBook] 在角色描述前插入 ${positionGroups.beforeChar.length} 个条目`)
     }
 
     // 2. 在角色描述后插入 (position: 1)
     if (positionGroups.afterChar.length > 0 && firstSystemIndex !== -1) {
       const insertIndex = firstSystemIndex + 1 + positionGroups.beforeChar.length
       messageList.splice(insertIndex, 0, ...positionGroups.afterChar)
-      console.log(`[LoreBook] 在角色描述后插入 ${positionGroups.afterChar.length} 个条目`)
     }
 
     // 3. 在用户最后一条消息前插入 (position: 2, 3, 4 或其他)
     if (positionGroups.beforeUser.length > 0) {
       messageList.splice(-1, 0, ...positionGroups.beforeUser)
-      console.log(`[LoreBook] 在用户消息前插入 ${positionGroups.beforeUser.length} 个条目`)
     }
   }
   // 给ai将要回答预留位置

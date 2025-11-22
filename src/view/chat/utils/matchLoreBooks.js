@@ -34,19 +34,8 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
   } = options
 
   if (!Array.isArray(loreBooks) || loreBooks.length === 0) {
-    console.log('[MatchLoreBooks] 世界书为空或不是数组')
     return { loreBooksMessageList: [], messageKeys: [] }
   }
-
-  console.log('[MatchLoreBooks] 开始匹配，条目数:', loreBooks.length)
-  console.log('[MatchLoreBooks] 配置:', {
-    topK,
-    minScore,
-    respectPriority,
-    respectProbability,
-    includeConstant,
-  })
-
   const candidates = buildHistoryCandidates(messageList, {
     historyMode,
     windowSize,
@@ -54,10 +43,7 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     timeDecay,
   })
 
-  console.log('[MatchLoreBooks] 候选消息数:', candidates.length)
-
   if (!candidates.length) {
-    console.log('[MatchLoreBooks] 没有候选消息')
     return { loreBooksMessageList: [], messageKeys: [] }
   }
 
@@ -185,30 +171,21 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     }
 
     if (score > 0) {
-      console.log(
-        `[MatchLoreBooks] 条目 #${i} "${it.name || id}" 得分: ${score.toFixed(2)}, 命中: ${hitKeys.join(', ')}`,
-      )
       scored.push({ id, item: it, score, hitKeys, content })
     } else if (it.enabled !== false) {
-      console.log(`[MatchLoreBooks] 条目 #${i} "${it.name || id}" 得分为 0，未匹配`)
     }
   }
 
-  console.log('[MatchLoreBooks] 打分完成，有效条目数:', scored.length)
-
   // 概率过滤
   let filtered = scored.filter((x) => x.score >= minScore)
-  console.log('[MatchLoreBooks] 分数过滤后:', filtered.length)
   if (respectProbability) {
     const beforeProb = filtered.length
     filtered = applyProbability(filtered)
-    console.log('[MatchLoreBooks] 概率过滤:', beforeProb, '->', filtered.length)
   }
 
   // 排序、TopK
   filtered.sort((a, b) => b.score - a.score)
   const picked = filtered.slice(0, topK)
-  console.log('[MatchLoreBooks] TopK 选择:', picked.length, '个条目')
 
   // 预算裁剪（粗略token估计：字符/3）
   const loreBooksMessageList = []
@@ -229,9 +206,6 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     const prev = __loreUsageMap.get(usageKey) || { uses: 0, lastRound: -9999 }
     __loreUsageMap.set(usageKey, { uses: prev.uses + 1, lastRound: __loreSessionRound })
   }
-
-  console.log('[MatchLoreBooks] 最终选中:', loreBooksMessageList.length, '个条目')
-  console.log('[MatchLoreBooks] 命中关键词:', Array.from(seenKeys))
 
   return { loreBooksMessageList, messageKeys: Array.from(seenKeys) }
 }

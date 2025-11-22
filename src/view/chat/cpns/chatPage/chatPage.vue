@@ -40,7 +40,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import MessageShow from '@/components/messageShow/messageShow.vue'
+import MessageShow from '../messageShow/messageShow.vue'
 import { storeToRefs } from 'pinia'
 import useAgent from '@/sotre/module/agent'
 import { updateMessage } from '../../utils/pushMessage'
