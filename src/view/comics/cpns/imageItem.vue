@@ -1,7 +1,7 @@
 <template>
-  <div class="imageItem">
+  <div class="imageItem" @click="getDetail">
     <div class="item">
-      <div class="image" :style="{ aspectRatio: imgAspectRatio }" @click="getDetail">
+      <div class="image" :style="{ aspectRatio: imgAspectRatio }">
         <img :src="showImg" loading="lazy" @error="handleImgError" />
         <div v-if="pageLength" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
@@ -10,9 +10,9 @@
       </div>
       <div class="content">
         <div class="desc">
-          <div class="title" @click="getDetail">{{ itemData.title }}</div>
+          <div class="title" >{{ itemData.title }}</div>
         </div>
-        <div class="tagList">
+        <div class="tagList" @click.stop>
           <template v-for="tag in itemData.tags.slice(0, 3)">
             <Tag :tag="tag.name" @getTagEmit="getTag" />
           </template>
@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, stop } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Tag from '@/components/tag/tag.vue'
 import useVip from '@/sotre/module/vip'
@@ -100,6 +100,7 @@ const emit = defineEmits(['errorEmit'])
 <style lang="less" scoped>
 .imageItem {
   display: none;
+  cursor: pointer;
   .item {
     width: 100%;
     height: 100%;

@@ -42,8 +42,8 @@
           </div>
         </template>
         <template #other>
-          <div class="addUserCard" @click="openEditCard()">添加角色卡</div>
-          <div class="apiToken" @click="addAPICard(true)">API Token</div>
+          <div class="addUserCard" style="cursor: pointer" @click="openEditCard()">添加角色卡</div>
+          <div class="apiToken" style="cursor: pointer" @click="addAPICard(true)">API Token</div>
         </template>
         <template #switch>
           <div class="showTip">
@@ -892,6 +892,7 @@ onMounted(() => {
       border-bottom: 1px solid #999;
       margin-bottom: 5px;
       padding: 10px 0;
+      cursor: pointer;
       .text {
         margin-left: 5px;
       }

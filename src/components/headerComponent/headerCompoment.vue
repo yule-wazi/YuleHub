@@ -1,7 +1,12 @@
 <template>
   <div class="header">
     <div class="menu">
-      <el-icon :size="30" @click="drawer = true" color="var(--comics-headerIcon-color)">
+      <el-icon
+        :size="30"
+        @click="drawer = true"
+        style="cursor: pointer"
+        color="var(--comics-headerIcon-color)"
+      >
         <Expand />
       </el-icon>
     </div>
@@ -10,6 +15,7 @@
       <el-icon
         :size="30"
         @click="isCollapsed = !isCollapsed"
+        style="cursor: pointer"
         color="var(--comics-headerIcon-color)"
       >
         <template v-if="isCollapsed"><Search /></template>
@@ -272,6 +278,7 @@ const goVideo = () => {
     border-bottom: 1px solid #999;
     margin-bottom: 5px;
     padding: 10px 0;
+    cursor: pointer;
     .text {
       margin-left: 5px;
     }

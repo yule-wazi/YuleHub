@@ -31,7 +31,7 @@
 <script setup>
 import useNovel from '@/sotre/module/novel.js'
 import myCahce from '@/utils/cacheStorage'
-import { formatSpecialOutput } from '@/utils/formatOutput'
+import { formatSpecialOutput } from '../../utils/formatOutput'
 import { formatTime } from '@/utils/formatTime'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { Star, View } from '@element-plus/icons-vue'

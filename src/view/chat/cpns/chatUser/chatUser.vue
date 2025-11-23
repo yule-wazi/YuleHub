@@ -26,6 +26,7 @@ defineProps({
   align-items: center;
   transition: background-color 0.3s ease;
   padding: 12px 10px;
+  cursor: pointer;
   .image {
     height: 50px;
     width: 50px;

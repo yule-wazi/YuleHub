@@ -86,6 +86,7 @@ const logoutClick = () => {
       margin-top: 20px;
       padding-top: 20px;
       border-top: 1px solid #999;
+      cursor: pointer;
       .el-button {
         width: 100%;
       }

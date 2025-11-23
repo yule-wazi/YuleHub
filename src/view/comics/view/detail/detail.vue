@@ -139,7 +139,7 @@ const initDetailData = async () => {
     // 首次加载，滚动到顶部
     const scrollContainer = getScrollContainer()
     if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
+      // scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
     }
     // 首次拿到数据缓存
     saveToSession(pid)

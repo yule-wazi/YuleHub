@@ -1,11 +1,13 @@
 <template>
   <div class="App">
     <RouterView />
+    <Ava />
   </div>
 </template>
 
 <script setup>
 import { RouterView } from 'vue-router'
+import Ava from './components/Ava/Ava.vue'
 </script>
 
 <style scoped>
