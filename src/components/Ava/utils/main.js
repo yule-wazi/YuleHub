@@ -43,5 +43,5 @@ export async function startAgent() {
   const actions = mockObserve()
 
   // 2. Act: 执行计划
-  // await executor.runSequence(actions)
+  await executor.runSequence(actions)
 }

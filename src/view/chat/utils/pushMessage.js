@@ -111,7 +111,7 @@ export function updateMessage({
   return messageKeys
 }
 // 发出请求&流式输出
-async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser) {
+export async function chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser) {
   const requestBody = {
     model: 'nalang-turbo-v23',
     messages: messageList,

@@ -5,23 +5,35 @@
       <div v-if="isExpanded" class="ava-dialog">
         <div class="dialog-header">
           <span class="dialog-title">Ava AI 助理</span>
-          <button class="close-btn" @click="toggleDialog">×</button>
+          <div class="header-actions">
+            <button class="clear-btn" @click="clearHistory" title="清除历史">🗑️</button>
+            <button class="close-btn" @click="toggleDialog">×</button>
+          </div>
         </div>
-        <div class="dialog-content">
+        <div class="dialog-content" ref="messageListRef">
           <div class="message-list">
-            <div class="message assistant">
-              <div class="message-text">你好！我是 Ava，有什么可以帮助你的吗？</div>
+            <div
+              v-for="msg in messages"
+              :key="msg.id"
+              class="message"
+              :class="{ user: msg.isMe, assistant: !msg.isMe }"
+            >
+              <div class="message-text" v-html="msg.content"></div>
             </div>
           </div>
         </div>
         <div class="dialog-footer">
           <input
+            ref="inputRef"
             type="text"
             class="input-box"
             placeholder="输入消息..."
+            :disabled="isProcessing"
             @keyup.enter="sendMessage"
           />
-          <button class="send-btn">发送</button>
+          <button class="send-btn" :disabled="isProcessing" @click="handleSendClick">
+            {{ isProcessing ? '处理中...' : '发送' }}
+          </button>
         </div>
       </div>
     </transition>
@@ -44,32 +56,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-// import { testHandle } from './utils/aiHandle'
-// import { startAgent } from './utils/main'
-import { runAgentTask } from './utils/Agent'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { AgentController } from './utils/AgentController'
+import myCache from '@/utils/cacheStorage'
 
 const isExpanded = ref(false)
 const isDragging = ref(false)
 const dragStartTime = ref(0)
 const position = ref({ x: 0, y: 0 })
 const dragOffset = ref({ x: 0, y: 0 })
-// 初始化位置（右下角）
+
+// 对话相关状态
+const messages = ref([])
+const isProcessing = ref(false)
+const agentController = new AgentController()
+// 初始化位置（右下角）和恢复历史记录
 onMounted(() => {
   position.value = {
     x: window.innerWidth - 80,
     y: window.innerHeight - 80,
   }
+
+  // 恢复对话历史
+  const savedMessages = myCache.get('avaMessages')
+  if (savedMessages && Array.isArray(savedMessages)) {
+    messages.value = savedMessages
+  } else {
+    // 添加欢迎消息
+    messages.value = [
+      {
+        id: Date.now(),
+        type: 'assistant',
+        content: '你好！我是 Ava，有什么可以帮助你的吗？',
+        timestamp: Date.now(),
+        isMe: false,
+      },
+    ]
+  }
 })
+
+// 监听消息变化并保存
+watch(
+  messages,
+  (newMessages) => {
+    // 限制历史记录数量为 50 条
+    const messagesToSave = newMessages.slice(-50)
+    myCache.set('avaMessages', messagesToSave)
+  },
+  { deep: true },
+)
 const toggleDialog = () => {
   isExpanded.value = !isExpanded.value
 }
 const handleClick = () => {
   if (!isDragging.value) {
-    // testHandle()
-    // startAgent()
-    // toggleDialog()
-    runAgentTask()
+    toggleDialog()
   }
 }
 const startDrag = (e) => {
@@ -110,12 +151,100 @@ const stopDrag = () => {
     isDragging.value = false
   }, 100)
 }
+// 添加消息到列表
+const addMessage = (type, content) => {
+  messages.value.push({
+    id: Date.now() + Math.random(),
+    type: type,
+    content: content,
+    timestamp: Date.now(),
+    isMe: type === 'user',
+  })
+}
+
 // 发送消息
-const sendMessage = (e) => {
+const sendMessage = async (e) => {
   const message = e.target.value.trim()
-  if (message) {
-    console.log('发送消息:', message)
-    e.target.value = ''
+
+  // 验证输入不为空
+  if (!message) {
+    return
+  }
+
+  // 清空输入框
+  e.target.value = ''
+
+  // 添加用户消息
+  addMessage('user', message)
+
+  // 滚动到底部
+  await nextTick()
+  scrollToBottom()
+
+  // 设置处理状态
+  isProcessing.value = true
+
+  // 添加"正在思考..."消息
+  const thinkingMessageId = Date.now()
+  addMessage('assistant', '🤔 正在分析页面并思考...')
+
+  try {
+    // 调用 AgentController
+    const result = await agentController.runTask(message)
+
+    // 移除"正在思考..."消息
+    messages.value = messages.value.filter((m) => m.id !== thinkingMessageId)
+
+    // 添加 AI 回复
+    if (result.success) {
+      addMessage('assistant', result.message)
+    } else {
+      addMessage('assistant', `❌ ${result.message}`)
+    }
+  } catch (error) {
+    // 移除"正在思考..."消息
+    messages.value = messages.value.filter((m) => m.id !== thinkingMessageId)
+
+    // 添加错误消息
+    addMessage('assistant', `❌ 发生错误: ${error.message}`)
+  } finally {
+    isProcessing.value = false
+
+    // 滚动到底部
+    await nextTick()
+    scrollToBottom()
+  }
+}
+
+// 滚动到底部
+const messageListRef = ref(null)
+const inputRef = ref(null)
+const scrollToBottom = () => {
+  if (messageListRef.value) {
+    messageListRef.value.scrollTop = messageListRef.value.scrollHeight
+  }
+}
+
+// 处理发送按钮点击
+const handleSendClick = () => {
+  if (inputRef.value) {
+    sendMessage({ target: inputRef.value })
+  }
+}
+
+// 清除历史记录
+const clearHistory = () => {
+  if (confirm('确定要清除所有对话历史吗？')) {
+    messages.value = [
+      {
+        id: Date.now(),
+        type: 'assistant',
+        content: '你好！我是 Ava，有什么可以帮助你的吗？',
+        timestamp: Date.now(),
+        isMe: false,
+      },
+    ]
+    myCache.remove('avaMessages')
   }
 }
 
@@ -240,6 +369,30 @@ onUnmounted(() => {
       .dialog-title {
         font-size: 16px;
         font-weight: 600;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .clear-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.2s;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
       }
 
       .close-btn {

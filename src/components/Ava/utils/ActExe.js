@@ -74,10 +74,16 @@ export class ActionExecutor {
           break
 
         case 'navigate':
+          console.log('进入navigate', action)
           if (action.value === 'back') {
             window.history.back()
+            console.log('已经执行back')
             this.driver.destroy()
           }
+          break
+
+        case 'done':
+          this.driver.destroy()
           break
 
         default:
