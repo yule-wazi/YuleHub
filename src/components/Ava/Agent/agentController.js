@@ -1,10 +1,8 @@
-import { getInteractables } from './Observe'
-import { ActionExecutor } from './ActExe'
+import { getInteractables } from '../Observe/observe'
+import { ActionExecutor } from '../Act/actExe'
 import { buildAgentPrompt } from './prompts'
-import { postDZMMAgent } from '@/service/module/agents'
-import myCache from '@/utils/cacheStorage'
-import { ErrorHandler } from './ErrorHandler'
-import { chatWithDZMMAI } from '@/view/chat/utils/pushMessage'
+import { ErrorHandler } from '../utils/ErrorHandler'
+import { chatToAgent } from '../utils/chatToAgent'
 
 /**
  * AgentController - 协调 Agent 任务流程的核心控制器
@@ -14,7 +12,6 @@ export class AgentController {
   constructor() {
     this.executor = new ActionExecutor()
   }
-
   /**
    * 执行完整的 Agent 任务流程
    * @param {string} userPrompt - 用户输入的需求
@@ -24,7 +21,6 @@ export class AgentController {
     try {
       // 1. 观察页面元素
       const elements = await this.observePage()
-
       if (elements.length === 0) {
         return {
           success: false,
@@ -32,22 +28,16 @@ export class AgentController {
           elements: [],
         }
       }
-
       // 2. 构建 AI Prompt
       const prompt = this.buildPrompt(userPrompt, elements)
-
       // 3. 调用 AI 服务
-      const aiResponse = await this.callAI(prompt)
-
+      const tool_calls = await this.callAI(prompt)
       // 4. 解析 AI 响应
-      const instructions = this.parseAIResponse(aiResponse)
-
+      const instructions = this.parseAIResponse(tool_calls)
       // 5. 执行操作
       const results = await this.executeActions(instructions)
-
       // 6. 生成反馈消息
       const feedbackMessage = this.generateFeedbackMessage(results)
-
       return {
         success: true,
         message: feedbackMessage,
@@ -58,7 +48,6 @@ export class AgentController {
     } catch (error) {
       // 使用 ErrorHandler 处理错误
       const handledError = ErrorHandler.handle(error, 'AgentController.runTask')
-
       return {
         success: false,
         message: handledError.message,
@@ -75,12 +64,9 @@ export class AgentController {
   async observePage() {
     try {
       console.log('👀 正在扫描页面元素...')
-
       // 调用 Observe 模块扫描页面
       const elements = getInteractables()
-
       console.log(`✅ 扫描完成，找到 ${elements.length} 个可交互元素`)
-
       return elements
     } catch (error) {
       console.error('[AgentController] 页面扫描失败:', error)
@@ -106,17 +92,10 @@ export class AgentController {
   async callAI(prompt) {
     try {
       console.log('🤖 正在调用 AI 服务...')
-      const currentMessage = { message: '' }
-      const messageList = [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ]
-      await chatWithDZMMAI(currentMessage, messageList, null, false, null)
+      const messageList = { role: 'user', content: prompt }
+      const tool_calls = await chatToAgent(messageList)
       console.log('✅ AI 响应接收成功')
-
-      return currentMessage.message
+      return tool_calls
     } catch (error) {
       console.error('[AgentController] AI 服务调用失败:', error)
       throw new Error(`AI 服务调用失败: ${error.message}`)
@@ -128,45 +107,83 @@ export class AgentController {
    * @param {string} response - AI 响应文本
    * @returns {Array} 操作指令列表
    */
-  parseAIResponse(response) {
+  parseAIResponse(tool_calls) {
     try {
       console.log('📝 正在解析 AI 响应...')
-      console.log('原始响应:', response)
-
       const actions = []
-
-      // 按空行分割操作块
-      const blocks = response.split(/\n\s*\n/).filter((block) => block.trim())
-      for (const block of blocks) {
-        const lines = block.split('\n').map((line) => line.trim())
-        const action = {}
-        for (const line of lines) {
-          // 解析 key: value 格式
-          const match = line.match(/^(\w+):\s*(.+)$/)
-          if (match) {
-            const key = match[1].toLowerCase()
-            const value = match[2].trim()
-            if (key === 'type') {
-              action.type = value
-            } else if (key === 'id') {
-              action.id = parseInt(value, 10)
-            } else if (key === 'value') {
-              action.value = value
-            } else if (key === 'reason') {
-              action.reason = value
+      for (const toolCall of tool_calls) {
+        let argsString = toolCall.function.arguments
+        // ========== 数据清洗逻辑 ==========
+        // 1. 去除首尾空白
+        argsString = argsString.trim()
+        // 2. 如果字符串本身被引号包裹,先去除外层引号
+        if (
+          (argsString.startsWith('"') && argsString.endsWith('"')) ||
+          (argsString.startsWith("'") && argsString.endsWith("'"))
+        ) {
+          argsString = argsString.slice(1, -1)
+        }
+        // 3. 处理转义的引号
+        argsString = argsString.replace(/\\"/g, '"')
+        // 4. 移除可能存在的多余闭合括号
+        const firstBrace = argsString.indexOf('{')
+        if (firstBrace !== -1) {
+          let braceCount = 0
+          let lastValidBrace = -1
+          for (let i = firstBrace; i < argsString.length; i++) {
+            if (argsString[i] === '{') braceCount++
+            if (argsString[i] === '}') {
+              braceCount--
+              if (braceCount === 0) {
+                lastValidBrace = i
+                break
+              }
             }
           }
+          if (lastValidBrace !== -1) {
+            argsString = argsString.substring(firstBrace, lastValidBrace + 1)
+          }
         }
-        // 验证必需字段
-        if (action.type) {
-          actions.push(action)
+        // ========== 清洗逻辑结束 ==========
+
+        try {
+          const actionsObject = JSON.parse(argsString)
+          actions.push(actionsObject)
+        } catch (parseError) {
+          console.error('单个 action 解析失败:', argsString, parseError)
+          // ========== 尝试修复 JSON ==========
+          let fixedString = null
+          try {
+            // 尝试1: 移除末尾多余的括号和引号
+            let fixed = argsString.replace(/\}\s*\}\s*["']?\s*$/, '}')
+            JSON.parse(fixed)
+            fixedString = fixed
+          } catch (e1) {
+            try {
+              // 尝试2: 处理可能的数组格式
+              if (argsString.startsWith('[')) {
+                let fixed = argsString.replace(/\]\s*\]\s*["']?\s*$/, ']')
+                JSON.parse(fixed)
+                fixedString = fixed
+              }
+            } catch (e2) {
+              // 修复失败
+            }
+          }
+          // ========== 修复逻辑结束 ==========
+          if (fixedString) {
+            const actionsObject = JSON.parse(fixedString)
+            console.log('actionsObject (修复后)=', actionsObject)
+            actions.push(actionsObject)
+          } else {
+            throw parseError
+          }
         }
       }
       if (actions.length === 0) {
         throw new Error('AI 响应中未找到有效的操作指令')
       }
-
-      console.log(`✅ 解析成功，共 ${actions.length} 个操作指令:`, actions)
+      console.log(`✅ 解析成功,共 ${actions.length} 个操作指令:`, actions)
       return actions
     } catch (error) {
       console.error('[AgentController] AI 响应解析失败:', error)
@@ -191,11 +208,6 @@ export class AgentController {
       action.selector = `[data-agent-id="${instruction.id}"]`
     }
 
-    // // 如果是 input 类型，添加 value
-    // if (instruction.type === 'input' && instruction.value) {
-    //   action.value = instruction.value
-    // }
-
     return action
   }
 
@@ -206,21 +218,15 @@ export class AgentController {
    */
   async executeActions(instructions) {
     const results = []
-
     console.log(`⚡ 开始执行 ${instructions.length} 个操作...`)
-
     for (const instruction of instructions) {
       const startTime = Date.now()
-
       try {
         // 转换为 Action 对象
         const action = this.convertToAction(instruction)
-
         // 执行操作
         const result = await this.executor.perform(action)
-
         const duration = Date.now() - startTime
-
         results.push({
           instruction: instruction,
           success: result.success,
@@ -231,18 +237,15 @@ export class AgentController {
         console.log(`✅ 操作 ${instruction.type} 执行成功 (${duration}ms)`)
       } catch (error) {
         const duration = Date.now() - startTime
-
         results.push({
           instruction: instruction,
           success: false,
           duration: duration,
           error: error.message,
         })
-
         console.error(`❌ 操作 ${instruction.type} 执行失败:`, error)
       }
     }
-
     return results
   }
 

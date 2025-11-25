@@ -55,6 +55,7 @@ export class ActionExecutor {
       switch (action.type) {
         case 'click':
           el.click()
+          this.driver.destroy()
           break
 
         case 'input':
@@ -88,9 +89,6 @@ export class ActionExecutor {
 
         default:
           console.warn('Unknown action type:', action.type)
-      }
-      if (action.willNavigate) {
-        this.driver.destroy()
       }
       // 动作后等待 (给页面反应时间)
       await this.sleep(action.waitAfter || 500)

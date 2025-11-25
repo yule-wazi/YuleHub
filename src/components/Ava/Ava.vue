@@ -57,7 +57,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { AgentController } from './utils/AgentController'
+import { AgentController } from './Agent/agentController'
 import myCache from '@/utils/cacheStorage'
 
 const isExpanded = ref(false)

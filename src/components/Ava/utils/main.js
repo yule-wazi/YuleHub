@@ -1,5 +1,5 @@
-import { ActionExecutor } from './ActExe'
-import { getInteractables } from './Observe'
+import { ActionExecutor } from '../Act/actExe'
+import { getInteractables } from '../Observe/observe'
 import { visualizeElements } from './test'
 
 // 模拟 Observe 模块：目前写死，未来这里是 AI 的大脑
