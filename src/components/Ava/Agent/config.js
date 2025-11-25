@@ -30,12 +30,12 @@ const config = {
           properties: {
             type: {
               type: 'string',
-              enum: ['click', 'input', 'scroll', 'navigate', 'done'],
+              enum: ['click', 'input', 'navigate', 'done'],
               description: '动作类型',
             },
             id: {
               type: 'integer',
-              description: '要操作的元素 ID (用于 click/input/scroll)',
+              description: '要操作的元素 ID (用于 click/input)',
             },
             value: {
               type: 'string',

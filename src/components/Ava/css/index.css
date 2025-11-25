@@ -3,7 +3,7 @@
   display: none !important;
 }
 
-/* 2. 定义玫红色呼吸动画 */
+/* 2. 普通元素的动画 (基于伪元素 border) */
 @keyframes inner-glow-breathe-pink {
   0%,
   100% {
@@ -20,13 +20,30 @@
   }
 }
 
+/* 3. INPUT/IMG 专用动画 (全靠 box-shadow 模拟边框) */
+@keyframes input-breathe-pink {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgba(255, 0, 122, 0.4),
+      inset 0 0 5px rgba(255, 0, 122, 0.2),
+      0 0 8px rgba(255, 0, 122, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(255, 0, 122, 1),
+      inset 0 0 20px rgba(255, 0, 122, 0.6),
+      0 0 15px rgba(255, 0, 122, 0.7);
+  }
+}
+
+/* 4. 宿主元素通用设置 */
 .driver-active-element {
   position: relative !important;
   z-index: 999999 !important;
 }
 
-/* 4. 替身伪元素：承担所有视觉效果 */
-.driver-active-element::after {
+.driver-active-element:not(input):not(textarea):not(img)::after {
   content: '';
   position: absolute;
   z-index: 1000000;
@@ -35,11 +52,16 @@
   right: 0;
   bottom: 0;
   border: 4px solid rgba(255, 0, 122, 0.4);
-  border-radius: 4px;
-
+  border-radius: inherit; /* 继承父元素圆角 */
   box-sizing: border-box;
 
   animation: inner-glow-breathe-pink 2s ease-in-out infinite;
-
   pointer-events: none;
+}
+
+input.driver-active-element,
+textarea.driver-active-element,
+img.driver-active-element {
+  animation: input-breathe-pink 2s ease-in-out infinite !important;
+  outline: none !important;
 }

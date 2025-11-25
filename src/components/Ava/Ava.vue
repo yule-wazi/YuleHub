@@ -59,6 +59,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { AgentController } from './Agent/agentController'
 import myCache from '@/utils/cacheStorage'
+import { startAgent } from './utils/main'
 
 const isExpanded = ref(false)
 const isDragging = ref(false)
@@ -109,6 +110,7 @@ const toggleDialog = () => {
   isExpanded.value = !isExpanded.value
 }
 const handleClick = () => {
+  // startAgent()
   if (!isDragging.value) {
     toggleDialog()
   }
