@@ -23,19 +23,22 @@ const config = {
     {
       type: 'function',
       function: {
-        description: '执行浏览器操作，如点击、输入、滚动、导航和结束任务。',
         name: 'perform_browser_action',
+        description:
+          '执行浏览器操作。根据页面上下文 (TXT-元素) 分析，对可交互元素 (ACT-元素) 执行操作。',
         parameters: {
           type: 'object',
           properties: {
             type: {
               type: 'string',
-              enum: ['click', 'input', 'navigate', 'done'],
+              enum: ['click', 'input', 'scroll', 'navigate', 'done'],
               description: '动作类型',
             },
             id: {
-              type: 'integer',
-              description: '要操作的元素 ID (用于 click/input)',
+              type: 'string',
+              // 【最严格规范】
+              description:
+                "目标元素的 ID。对于 'click' 或 'input' 动作，ID 必须且只能使用 'ACT-' 开头的元素 ID (例如 'ACT-5')。'TXT-' 开头的 ID 仅用于上下文参考，绝不能用于任何交互操作。违反此规则将导致任务失败。",
             },
             value: {
               type: 'string',
@@ -43,10 +46,12 @@ const config = {
             },
             reason: {
               type: 'string',
-              description: '分析和决策过程',
+              description:
+                '思考过程。解释执行此操作的原因，如果依赖了页面信息，请提及相关的 TXT-ID (例如：需要点击 ACT-5，因为 TXT-2 提到了...)。',
             },
           },
           required: ['type', 'reason'],
+          additionalProperties: false,
         },
         strict: true,
       },

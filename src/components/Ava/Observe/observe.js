@@ -13,8 +13,14 @@ function isDeeplyVisible(el) {
   const cy = rect.top + rect.height / 2
   const topEl = document.elementFromPoint(cx, cy)
   // 如果最顶层元素不是当前元素，也不是当前元素的后代/祖先，说明被遮挡了
+  // 但是要排除 Ava 组件的遮挡（Ava 组件不应该影响可见性判断）
   if (topEl && !el.contains(topEl) && !topEl.contains(el)) {
-    return false
+    // 检查遮挡元素是否是 Ava 组件
+    const isAvaBlocking =
+      topEl.closest('.ava-container') || topEl.classList.contains('ava-container')
+    if (!isAvaBlocking) {
+      return false
+    }
   }
   return true
 }
@@ -127,6 +133,130 @@ function clearOldIdentifiers() {
     el.removeAttribute('data-agent-id')
   })
 }
+
+/**
+ * 查找页面中具有重要文本内容，但不可交互的元素 (TXT-ID)。
+ * 修复了包含 <br> 标签的纯文本 div 被错误跳过的问题。
+ */
+function getNonInteractiveContext(allElements) {
+  const contextElements = []
+  let contextCounter = 1
+
+  // 1. 强语义文本标签：只要可见且有字，通常就是我们要的上下文
+  const strongTextTags = [
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'p',
+    'li',
+    'blockquote',
+    'pre',
+    'code',
+    'th',
+    'label',
+    'legend',
+  ]
+
+  // 2. 通用容器标签：这些标签需要进行额外的“结构化子元素”检查
+  const containerTags = [
+    'div',
+    'span',
+    'article',
+    'section',
+    'td',
+    'strong',
+    'b',
+    'i',
+    'em',
+    'small',
+  ]
+
+  // 定义结构化的、块级的标签。如果容器包含这些子标签，则应被跳过。
+  const structuralBlockTags = new Set([
+    'DIV',
+    'P',
+    'UL',
+    'OL',
+    'H1',
+    'H2',
+    'H3',
+    'H4',
+    'H5',
+    'H6',
+    'TABLE',
+    'SECTION',
+    'ARTICLE',
+    'HEADER',
+    'FOOTER',
+  ])
+
+  const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'HEAD', 'META', 'SVG', 'PATH', 'IMG']
+
+  allElements.forEach((el) => {
+    const tagName = el.tagName.toLowerCase()
+
+    // --- 基础过滤 ---
+    if (skipTags.includes(el.tagName.toUpperCase())) return
+    if (el.closest('.ava-container') || el.classList.contains('ava-container')) return
+    if (!el.textContent || el.textContent.trim().length === 0) return
+
+    // 状态检查
+    if (el.hasAttribute('data-agent-id')) return
+    if (el.closest('[data-agent-id^="ACT-"]')) return
+
+    const text = el.innerText || ''
+    if (text.replace(/\s/g, '').length < 2) return
+
+    // --- 核心策略：决定是否标记为 TXT ---
+
+    let shouldMark = false
+
+    if (strongTextTags.includes(tagName)) {
+      // 策略 A：强语义标签直接标记
+      shouldMark = true
+    } else if (containerTags.includes(tagName)) {
+      // 策略 B：通用容器标签，检查其子元素结构
+      let hasStructuralChildren = false
+
+      // 遍历所有子元素，看是否有结构化的块级标签
+      for (const child of el.children) {
+        if (structuralBlockTags.has(child.tagName.toUpperCase())) {
+          hasStructuralChildren = true
+          break
+        }
+      }
+
+      // 只有当没有结构化子元素时（即只包含文本、<br>、<i> 等格式化内容），才标记
+      if (!hasStructuralChildren) {
+        shouldMark = true
+      }
+    }
+
+    if (!shouldMark) return
+
+    // --- 最后检查可见性 ---
+    if (!isDeeplyVisible(el)) return
+
+    // --- 标记 ---
+    const agentId = `TXT-${contextCounter++}`
+    el.setAttribute('data-agent-id', agentId)
+
+    contextElements.push({
+      id: agentId,
+      tagName: tagName,
+      className: el.className,
+      role: 'text-context',
+      type: null,
+      text: text.slice(0, 300).replace(/\s+/g, ' ').trim(),
+      rect: el.getBoundingClientRect(),
+    })
+  })
+
+  return contextElements
+}
 // 提取所有交互元素并赋予唯一ID
 export function getInteractables() {
   clearOldIdentifiers()
@@ -137,6 +267,10 @@ export function getInteractables() {
   allElements.forEach((el) => {
     const tagName = el.tagName.toLowerCase()
     if (skipTags.includes(tagName)) return
+
+    // 跳过 Ava 组件本身及其所有子元素
+    if (el.closest('.ava-container') || el.classList.contains('ava-container')) return
+
     if (!isInteractive(el) || !isDeeplyVisible(el)) return
     // 检查是否有祖先元素已经被我们标记了 ID
     const nearestMarkedAncestor = el.closest('[data-agent-id]')
@@ -148,7 +282,8 @@ export function getInteractables() {
       }
     }
     const label = findClosestLabel(el).slice(0, 20)
-    const agentId = counter++
+    // const agentId = counter++
+    const agentId = `ACT-${counter++}`
     el.setAttribute('data-agent-id', agentId)
     interactables.push({
       id: agentId,
@@ -184,5 +319,8 @@ export function getInteractables() {
     }
   })
 
+  const contextElements = getNonInteractiveContext(allElements)
+  // *** 合并结果 ***
+  interactables.push(...contextElements)
   return interactables
 }
