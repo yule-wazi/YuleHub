@@ -64,29 +64,61 @@ function isInteractive(el) {
 }
 // 查找交互元素的兄弟节点，提取最近的文本作为标签
 function findClosestLabel(interactiveElement) {
-  const parent = interactiveElement.parentElement
-  if (!parent) return ''
+  // 配置：最大向上查找层级，防止遍历整个 DOM 导致性能问题
+  const MAX_DEPTH = 5
+  let currentDepth = 0
 
-  const labelText = []
+  // 1. 优先获取自身的 aria-label (最高优先级)
+  const selfLabel = interactiveElement.getAttribute('aria-label')
 
-  // 遍历父级容器的所有子元素
-  for (const child of parent.children) {
-    // 跳过交互元素本身
-    if (child === interactiveElement) continue
+  // 当前正在检查的元素（初始为交互元素本身）
+  let currentElement = interactiveElement
+  // 当前父容器
+  let parent = interactiveElement.parentElement
 
-    // 查找兄弟元素中的文本块 (class="text" 或 纯文本 div/span)
-    const textContent = child.innerText || child.textContent
-    if (textContent && textContent.trim()) {
-      labelText.push(textContent.trim().replace(/\s+/g, ' '))
+  // 循环向上查找，直到 body 或 达到最大层级
+  while (parent && parent !== document.body && currentDepth < MAX_DEPTH) {
+    const labelTextParts = []
+    let hasFoundTextInThisLayer = false
+
+    // 遍历当前层级的所有子元素
+    for (const child of parent.children) {
+      // 核心逻辑：跳过包含目标元素的那个分支
+      // 原因：我们要找的是“旁边”的说明文字，而不是目标元素“里面”或“包裹它的容器”里的文字
+      if (child === currentElement || child.contains(interactiveElement)) {
+        continue
+      }
+
+      // 获取可见文本
+      const textContent = child.innerText || child.textContent
+
+      if (textContent && textContent.trim()) {
+        const cleanText = textContent.trim().replace(/\s+/g, ' ')
+        // 过滤掉纯符号或无意义文本（可选，视情况而定）
+        if (cleanText.length > 0) {
+          labelTextParts.push(cleanText)
+          hasFoundTextInThisLayer = true
+        }
+      }
     }
+
+    // 2. 如果在这一层找到了文本，说明这就是我们要找的“最近的标签层”
+    if (hasFoundTextInThisLayer) {
+      // 如果有自身 aria-label，加在最前面
+      if (selfLabel) {
+        labelTextParts.unshift(selfLabel)
+      }
+      return labelTextParts.join(' ')
+    }
+
+    // 3. 没找到，继续向上层进发
+    currentElement = parent // 记录当前父级，作为下一轮的“子节点”以便排除
+    parent = parent.parentElement
+    currentDepth++
   }
 
-  // 优先使用 el-switch 自身的 aria-label
-  if (interactiveElement.hasAttribute('aria-label')) {
-    labelText.unshift(interactiveElement.getAttribute('aria-label'))
-  }
-
-  return labelText.join(' ')
+  // 4. 如果遍历到底都没找到，仅返回自身的 aria-label 或空
+  return selfLabel || ''
 }
 // 清除旧标记
 function clearOldIdentifiers() {
@@ -115,8 +147,7 @@ export function getInteractables() {
         return
       }
     }
-
-
+    const label = findClosestLabel(el).slice(0, 20)
     const agentId = counter++
     el.setAttribute('data-agent-id', agentId)
     interactables.push({
@@ -124,12 +155,33 @@ export function getInteractables() {
       tagName: el.tagName.toLowerCase(),
       className: el.className,
       type: el.getAttribute('type') || null,
-      text: (el.innerText || el.value || el.getAttribute('aria-label') || el.placeholder || '')
+      text: (
+        el.innerText ||
+        el.value ||
+        el.getAttribute('aria-label') ||
+        el.placeholder ||
+        label ||
+        ''
+      )
         .slice(0, 50)
         .replace(/\s+/g, ' ')
         .trim(),
-      rect: el.getBoundingClientRect(), // 用来在截图中定位
+      label: label,
+      rect: el.getBoundingClientRect(),
     })
+  })
+
+  const textFrequency = new Map()
+  interactables.forEach((item) => {
+    const txt = item.text
+    textFrequency.set(txt, (textFrequency.get(txt) || 0) + 1)
+  })
+  // 2. 遍历并修正重复项
+  interactables.forEach((item) => {
+    if (textFrequency.get(item.text) > 1 && item.label) {
+      const newText = `${item.label} ${item.text}`
+      item.text = newText.replace(/\s+/g, ' ').trim() // 稍微放宽一点长度限制
+    }
   })
 
   return interactables

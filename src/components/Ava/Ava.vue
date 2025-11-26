@@ -110,7 +110,7 @@ const toggleDialog = () => {
   isExpanded.value = !isExpanded.value
 }
 const handleClick = () => {
-  // startAgent()
+  startAgent()
   if (!isDragging.value) {
     toggleDialog()
   }
