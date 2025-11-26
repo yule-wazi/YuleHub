@@ -68,6 +68,7 @@ const getDetail = () => {
 
 <style lang="less" scoped>
 .imageItem {
+  cursor: pointer;
   @media (min-width: 800px) {
     padding: 0px 10px;
   }

@@ -4,6 +4,7 @@
       <el-icon
         :size="30"
         @click="drawer = true"
+        aria-label="menu"
         style="cursor: pointer"
         color="var(--comics-headerIcon-color)"
       >
@@ -15,6 +16,7 @@
       <el-icon
         :size="30"
         @click="isCollapsed = !isCollapsed"
+        aria-label="search"
         style="cursor: pointer"
         color="var(--comics-headerIcon-color)"
       >

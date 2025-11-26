@@ -16,7 +16,7 @@ function mockObserve() {
 export async function startAgent() {
   const executor = new ActionExecutor()
   // console.log(getInteractables())
-  // console.log(formatElementList(getInteractables()))
+  console.log(formatElementList(getInteractables()))
   visualizeElements(getInteractables())
   // 1. Observe: 获取计划
   const actions = mockObserve()

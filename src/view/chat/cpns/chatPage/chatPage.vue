@@ -21,12 +21,12 @@
     <div class="inputArea" @click="inputAreaClick" @keydown.enter="btnClick()">
       <div class="question">
         <div class="showImg"></div>
-        <input ref="inputRef" type="text" />
-        <div class="mute" @click="isMute = !isMute">
+        <input ref="inputRef" aria-label="chatInput" type="text" />
+        <div class="mute" @click="isMute = !isMute" aria-label="mute">
           <img v-if="isMute" class="Img" src="@/assets/img/mute.png" />
           <img v-else class="Img" src="@/assets/img/sound.png" />
         </div>
-        <div class="stop" @click="isPlay = !isPlay">
+        <div class="stop" @click="isPlay = !isPlay" aria-label="stop">
           <img v-if="isPlay" class="Img" src="@/assets/img/暂停.png" />
           <img v-else class="Img" src="@/assets/img/播放.png" />
         </div>

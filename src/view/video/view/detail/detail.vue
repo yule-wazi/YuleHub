@@ -151,6 +151,7 @@ const getTag = (tag) => {
         right: 10px;
         font-size: 30px;
         color: var(--primary-pink-color);
+        cursor: pointer;
         .iconText {
           position: absolute;
           top: -13px;

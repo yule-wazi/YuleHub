@@ -54,6 +54,7 @@ window.addEventListener('resize', () => {
 .imageItem {
   transition: 0.3s;
   display: none;
+  cursor: pointer;
   .item {
     height: 280px;
     width: 100%;

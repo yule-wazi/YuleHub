@@ -190,6 +190,7 @@ const getDetail = () => {
           bottom: 20px;
           font-size: 30px;
           color: var(--primary-pink-color);
+          cursor: pointer;
           .iconText {
             position: absolute;
             top: -15px;
