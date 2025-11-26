@@ -1,19 +1,22 @@
 // 判断元素是否可见
-function isVisible(el) {
-  if (!el.getBoundingClientRect) return false
+function isDeeplyVisible(el) {
   const rect = el.getBoundingClientRect()
-  const style = window.getComputedStyle(el)
-
-  return (
-    style.display !== 'none' &&
-    style.visibility !== 'hidden' &&
-    style.opacity !== '0' &&
-    rect.width > 0 &&
-    rect.height > 0 &&
-    // 简单的视口检测，确保元素在屏幕内（可选，看你需要全页还是仅视口）
+  // 1. 基础视口检测 (只看当前屏幕)
+  const inViewport =
     rect.top < window.innerHeight &&
-    rect.bottom > 0
-  )
+    rect.bottom > 0 &&
+    rect.left < window.innerWidth &&
+    rect.right > 0
+  if (!inViewport) return false
+  // 2. 遮挡检测 (防止点击到被弹窗遮住的按钮)
+  const cx = rect.left + rect.width / 2
+  const cy = rect.top + rect.height / 2
+  const topEl = document.elementFromPoint(cx, cy)
+  // 如果最顶层元素不是当前元素，也不是当前元素的后代/祖先，说明被遮挡了
+  if (topEl && !el.contains(topEl) && !topEl.contains(el)) {
+    return false
+  }
+  return true
 }
 // 核心：判断元素是否可交互
 function isInteractive(el) {
@@ -59,7 +62,32 @@ function isInteractive(el) {
 
   return false
 }
+// 查找交互元素的兄弟节点，提取最近的文本作为标签
+function findClosestLabel(interactiveElement) {
+  const parent = interactiveElement.parentElement
+  if (!parent) return ''
 
+  const labelText = []
+
+  // 遍历父级容器的所有子元素
+  for (const child of parent.children) {
+    // 跳过交互元素本身
+    if (child === interactiveElement) continue
+
+    // 查找兄弟元素中的文本块 (class="text" 或 纯文本 div/span)
+    const textContent = child.innerText || child.textContent
+    if (textContent && textContent.trim()) {
+      labelText.push(textContent.trim().replace(/\s+/g, ' '))
+    }
+  }
+
+  // 优先使用 el-switch 自身的 aria-label
+  if (interactiveElement.hasAttribute('aria-label')) {
+    labelText.unshift(interactiveElement.getAttribute('aria-label'))
+  }
+
+  return labelText.join(' ')
+}
 // 清除旧标记
 function clearOldIdentifiers() {
   const oldElements = document.querySelectorAll('[data-agent-id]')
@@ -77,17 +105,17 @@ export function getInteractables() {
   allElements.forEach((el) => {
     const tagName = el.tagName.toLowerCase()
     if (skipTags.includes(tagName)) return
-    if (!isInteractive(el)) return
+    if (!isInteractive(el) || !isDeeplyVisible(el)) return
     // 检查是否有祖先元素已经被我们标记了 ID
     const nearestMarkedAncestor = el.closest('[data-agent-id]')
 
     if (nearestMarkedAncestor) {
-      // 为了稳定，我们采用最严格的去重方式：只要父级已标记，且当前元素不是输入/选择框，就忽略。
+      // 为了稳定，只要父级已标记，且当前元素不是输入/选择框，就忽略。
       if (tagName !== 'input' && tagName !== 'textarea' && tagName !== 'select') {
-        // 强行忽略所有按钮/链接内部的子元素，只保留最外层的按钮/链接
         return
       }
     }
+
 
     const agentId = counter++
     el.setAttribute('data-agent-id', agentId)
