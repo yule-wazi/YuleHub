@@ -90,7 +90,7 @@ function findClosestLabel(interactiveElement) {
     // 遍历当前层级的所有子元素
     for (const child of parent.children) {
       // 核心逻辑：跳过包含目标元素的那个分支
-      // 原因：我们要找的是“旁边”的说明文字，而不是目标元素“里面”或“包裹它的容器”里的文字
+      // 原因：我们要找的是"旁边"的说明文字，而不是目标元素"里面"或"包裹它的容器"里的文字
       if (child === currentElement || child.contains(interactiveElement)) {
         continue
       }
@@ -108,7 +108,7 @@ function findClosestLabel(interactiveElement) {
       }
     }
 
-    // 2. 如果在这一层找到了文本，说明这就是我们要找的“最近的标签层”
+    // 2. 如果在这一层找到了文本，说明这就是我们要找的"最近的标签层"
     if (hasFoundTextInThisLayer) {
       // 如果有自身 aria-label，加在最前面
       if (selfLabel) {
@@ -118,7 +118,7 @@ function findClosestLabel(interactiveElement) {
     }
 
     // 3. 没找到，继续向上层进发
-    currentElement = parent // 记录当前父级，作为下一轮的“子节点”以便排除
+    currentElement = parent // 记录当前父级，作为下一轮的"子节点"以便排除
     parent = parent.parentElement
     currentDepth++
   }
@@ -160,7 +160,7 @@ function getNonInteractiveContext(allElements) {
     'legend',
   ]
 
-  // 2. 通用容器标签：这些标签需要进行额外的“结构化子元素”检查
+  // 2. 通用容器标签：这些标签需要进行额外的"结构化子元素"检查
   const containerTags = [
     'div',
     'span',
@@ -257,8 +257,12 @@ function getNonInteractiveContext(allElements) {
 
   return contextElements
 }
-// 提取所有交互元素并赋予唯一ID
-export function getInteractables() {
+
+/**
+ * 观察页面并提取所有可交互元素
+ * @returns {Array} 可交互元素列表
+ */
+export function observePage() {
   clearOldIdentifiers()
   const allElements = document.querySelectorAll('*')
   const interactables = []
@@ -282,7 +286,6 @@ export function getInteractables() {
       }
     }
     const label = findClosestLabel(el).slice(0, 20)
-    // const agentId = counter++
     const agentId = `ACT-${counter++}`
     el.setAttribute('data-agent-id', agentId)
     interactables.push({
@@ -315,12 +318,12 @@ export function getInteractables() {
   interactables.forEach((item) => {
     if (textFrequency.get(item.text) > 1 && item.label) {
       const newText = `${item.label} ${item.text}`
-      item.text = newText.replace(/\s+/g, ' ').trim() // 稍微放宽一点长度限制
+      item.text = newText.replace(/\s+/g, ' ').trim()
     }
   })
 
   const contextElements = getNonInteractiveContext(allElements)
-  // *** 合并结果 ***
+  // 合并结果
   interactables.push(...contextElements)
   return interactables
 }

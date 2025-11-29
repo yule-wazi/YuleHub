@@ -47,17 +47,12 @@ export function formatElementList(elements) {
     .join('\n')
 }
 
-/**
- * 构建完整的 Agent Prompt
- * @param {string} userPrompt - 用户输入的需求
- * @param {Array} elements - 可交互元素列表
- * @returns {string} 完整的 Prompt
- */
-export function buildAgentPrompt(userPrompt, elements) {
+// 构建完整的 Agent Prompt
+export function buildPrompt(userPrompt, elements) {
   const elementList = formatElementList(elements)
-
-  return AGENT_PROMPT_TEMPLATE.replace('{user_prompt}', userPrompt).replace(
+  let prompt = AGENT_PROMPT_TEMPLATE.replace('{user_prompt}', userPrompt).replace(
     '{element_list}',
     elementList,
   )
+  return prompt
 }

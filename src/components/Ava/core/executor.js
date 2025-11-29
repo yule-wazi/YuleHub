@@ -22,8 +22,11 @@ function waitForElement(selector, timeout = 8000) {
   })
 }
 
-// 核心执行类
-export class ActionExecutor {
+/**
+ * Executor - 动作执行器
+ * 负责在页面上执行具体的操作（点击、输入、导航等）
+ */
+export class Executor {
   constructor() {
     this.driver = driver({
       animate: true,
@@ -37,7 +40,11 @@ export class ActionExecutor {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  // 执行单个动作
+  /**
+   * 执行单个动作
+   * @param {Object} action - 动作对象
+   * @returns {Promise<Object>} 执行结果
+   */
   async perform(action) {
     try {
       let el = null
@@ -55,7 +62,6 @@ export class ActionExecutor {
       switch (action.type) {
         case 'click':
           el.click()
-          this.driver.destroy()
           break
 
         case 'input':
@@ -79,17 +85,16 @@ export class ActionExecutor {
           if (action.value === 'back') {
             window.history.back()
             console.log('已经执行back')
-            this.driver.destroy()
           }
           break
 
         case 'done':
-          this.driver.destroy()
           break
 
         default:
           console.warn('Unknown action type:', action.type)
       }
+      this.driver.destroy()
       // 动作后等待 (给页面反应时间)
       await this.sleep(action.waitAfter || 500)
 
@@ -98,7 +103,7 @@ export class ActionExecutor {
         action: action.type,
       }
     } catch (error) {
-      console.error(`[Act] Failed to execute ${action.type}:`, error)
+      console.error(`[Executor] Failed to execute ${action.type}:`, error)
       this.driver.destroy()
       return {
         success: false,
@@ -108,13 +113,16 @@ export class ActionExecutor {
     }
   }
 
-  // 执行完整的任务链
+  /**
+   * 执行完整的任务链
+   * @param {Array} actions - 动作列表
+   */
   async runSequence(actions) {
     for (const act of actions) {
       await this.perform(act)
     }
     // 全部完成后清理
     this.driver.destroy()
-    console.log('[Act] All actions completed.')
+    console.log('[Executor] All actions completed.')
   }
 }

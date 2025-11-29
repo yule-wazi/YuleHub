@@ -57,9 +57,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { AgentController } from './Agent/agentController'
+import { TaskExecutor } from './services/TaskExecutor'
 import myCache from '@/utils/cacheStorage'
-import { startAgent } from './utils/main'
 
 const isExpanded = ref(false)
 const isDragging = ref(false)
@@ -70,7 +69,10 @@ const dragOffset = ref({ x: 0, y: 0 })
 // 对话相关状态
 const messages = ref([])
 const isProcessing = ref(false)
-const agentController = new AgentController()
+const taskExecutor = new TaskExecutor()
+
+// 任务链相关状态
+const taskChainProgress = ref({ current: 0, total: 0 })
 // 初始化位置（右下角）和恢复历史记录
 onMounted(() => {
   position.value = {
@@ -88,7 +90,7 @@ onMounted(() => {
       {
         id: Date.now(),
         type: 'assistant',
-        content: '你好！我是 Ava，有什么可以帮助你的吗？',
+        content: '你好！我是 Ava AI 助理，有什么可以帮助你的吗？',
         timestamp: Date.now(),
         isMe: false,
       },
@@ -110,7 +112,6 @@ const toggleDialog = () => {
   isExpanded.value = !isExpanded.value
 }
 const handleClick = () => {
-  startAgent()
   if (!isDragging.value) {
     toggleDialog()
   }
@@ -154,9 +155,9 @@ const stopDrag = () => {
   }, 100)
 }
 // 添加消息到列表
-const addMessage = (type, content) => {
+const addMessage = (type, content, messageId = Date.now() + Math.random()) => {
   messages.value.push({
-    id: Date.now() + Math.random(),
+    id: messageId,
     type: type,
     content: content,
     timestamp: Date.now(),
@@ -167,48 +168,77 @@ const addMessage = (type, content) => {
 // 发送消息
 const sendMessage = async (e) => {
   const message = e.target.value.trim()
-
   // 验证输入不为空
   if (!message) {
     return
   }
-
   // 清空输入框
   e.target.value = ''
-
   // 添加用户消息
   addMessage('user', message)
-
   // 滚动到底部
   await nextTick()
   scrollToBottom()
-
   // 设置处理状态
   isProcessing.value = true
+  // 执行任务链
+  await executeTaskChain(message)
+}
 
-  // 添加"正在思考..."消息
-  const thinkingMessageId = Date.now()
-  addMessage('assistant', '🤔 正在分析页面并思考...')
+// 执行任务链
+const executeTaskChain = async (message) => {
+  // 添加"正在分析..."消息
+  const planningMessageId = Date.now()
+  addMessage('assistant', '🤔 正在分析任务...', planningMessageId)
 
   try {
-    // 调用 AgentController
-    const result = await agentController.runTask(message)
+    // 执行任务链
+    const result = await taskExecutor.runTaskChain(message, {
+      // 任务计划就绪回调
+      onPlanReady: async (plan) => {
+        // 移除"正在分析..."消息
+        messages.value = messages.value.filter((m) => m.id !== planningMessageId)
+        // 显示任务计划
+        let planText = `📋 任务计划 (共 ${plan.tasks.length} 个任务):\n\n`
+        plan.tasks.forEach((task, index) => {
+          planText += `${index + 1}. ${task.description}\n`
+        })
+        planText += `\n开始执行...`
 
-    // 移除"正在思考..."消息
-    messages.value = messages.value.filter((m) => m.id !== thinkingMessageId)
+        addMessage('assistant', planText)
 
-    // 添加 AI 回复
+        await nextTick()
+        scrollToBottom()
+
+        // 自动确认执行
+        return true
+      },
+      // 进度回调
+      onProgress: async (current, total, taskResult) => {
+        // 更新进度
+        taskChainProgress.value = { current, total }
+
+        // 显示当前任务进度
+        const progressText = `⚡ [${current}/${total}] ${taskResult.success ? '✅' : '❌'}`
+        addMessage('assistant', progressText)
+
+        await nextTick()
+        scrollToBottom()
+      },
+    })
+
+    // 显示最终结果
     if (result.success) {
-      addMessage('assistant', result.message)
+      addMessage('assistant', `✅ ${result.message}`)
     } else {
       addMessage('assistant', `❌ ${result.message}`)
     }
   } catch (error) {
-    // 移除"正在思考..."消息
-    messages.value = messages.value.filter((m) => m.id !== thinkingMessageId)
+    // 移除"正在分析..."消息
+    messages.value = messages.value.filter((m) => m.id !== planningMessageId)
 
     // 添加错误消息
-    addMessage('assistant', `❌ 发生错误: ${error.message}`)
+    addMessage('assistant', `❌ 执行失败: ${error.message}`)
   } finally {
     isProcessing.value = false
 
@@ -241,7 +271,7 @@ const clearHistory = () => {
       {
         id: Date.now(),
         type: 'assistant',
-        content: '你好！我是 Ava，有什么可以帮助你的吗？',
+        content: '你好！我是 Ava AI 助理，有什么可以帮助你的吗？',
         timestamp: Date.now(),
         isMe: false,
       },
@@ -433,6 +463,9 @@ onUnmounted(() => {
 
           .message-text {
             padding: 12px 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
           }
 
           &.assistant {
