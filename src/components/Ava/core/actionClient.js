@@ -24,7 +24,7 @@ async function postAgent(requestBody) {
  * @returns {Promise<Array>} tool_calls
  */
 export async function callAI(prompt) {
-  const requestBody = { ...config }
+  const requestBody = { ...config, messages: [...config.messages] }
   requestBody.messages.push({
     role: 'user',
     content: prompt,
