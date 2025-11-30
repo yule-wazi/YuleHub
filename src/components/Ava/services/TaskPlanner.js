@@ -6,9 +6,10 @@ import { buildPlanningPrompt } from '../config/planningConfig.js'
  * 负责将用户的复杂需求分解为多个有序的子任务
  */
 export class TaskPlanner {
-  async planTasks(userPrompt) {
+  async planTasks(userPrompt, elements = []) {
     try {
-      const prompt = buildPlanningPrompt(userPrompt)
+      const prompt = buildPlanningPrompt(userPrompt, elements)
+      console.log('prompt=', prompt)
       const response = await callPlanningAI(prompt)
       const plan = this.parseAIPlanResponse(response)
       console.log('[TaskPlanner] 任务规划完成:', plan)
@@ -48,7 +49,7 @@ export class TaskPlanner {
       }))
 
       return {
-        tasks
+        tasks,
       }
     } catch (error) {
       console.error('[TaskPlanner] 解析 AI 响应失败:', error)

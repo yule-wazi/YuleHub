@@ -14,9 +14,13 @@ export class TaskChainController {
   async executeTaskChain(userPrompt, options = {}) {
     const { onProgress = null, onPlanReady = null } = options
     try {
-      // 1. 任务规划阶段
-      const plan = await this.planTasks(userPrompt)
-      // 2. 验证计划
+      // 1. 观察页面，获取可交互元素
+      const elements = await this.agentService.observePage()
+
+      // 2. 任务规划阶段（传入可交互元素）
+      const plan = await this.planTasks(userPrompt, elements)
+
+      // 3. 验证计划
       const validation = this.taskPlanner.validatePlan(plan)
       if (!validation.valid) {
         return {
@@ -25,11 +29,11 @@ export class TaskChainController {
           error: new Error('计划验证失败'),
         }
       }
-      // 3. 如果有计划就绪回调，调用它（用于显示预览）
+      // 4. 如果有计划就绪回调，调用它（用于显示预览）
       if (onPlanReady) {
         await onPlanReady(plan)
       }
-      // 4. 执行任务序列
+      // 5. 执行任务序列
       const sequenceResult = await this.executeSequence(plan.tasks, onProgress)
       console.log('[TaskChainController] 任务链执行完成:', sequenceResult)
       return {
@@ -50,8 +54,8 @@ export class TaskChainController {
   }
 
   // 规划任务
-  async planTasks(userPrompt) {
-    const plan = await this.taskPlanner.planTasks(userPrompt)
+  async planTasks(userPrompt, elements = []) {
+    const plan = await this.taskPlanner.planTasks(userPrompt, elements)
     return plan
   }
 
@@ -60,6 +64,9 @@ export class TaskChainController {
     const startTime = Date.now()
 
     try {
+      // 记录任务开始时的 URL
+      const initialUrl = window.location.href
+
       // 1. 重新扫描页面元素
       const elements = await this.agentService.observePage()
 
@@ -68,6 +75,7 @@ export class TaskChainController {
       prompt += `\n\n当前任务目标：${task.goal}`
 
       // 3. 调用 AI 服务获取操作指令
+      console.log('actionPrompt=', prompt)
       const tool_calls = await this.agentService.callAI(prompt)
 
       // 4. 解析 AI 响应
@@ -76,11 +84,21 @@ export class TaskChainController {
       // 5. 执行操作
       await this.agentService.executeActions(instructions)
 
+      // 等待一小段时间，确保路由变化能被捕获
+      await this.sleep(300)
+
+      // 检查 URL 是否变化
+      const finalUrl = window.location.href
+      if (finalUrl !== initialUrl) {
+        console.log(`[TaskChainController] 🔄 URL 发生变化: ${initialUrl} -> ${finalUrl}`)
+      }
+
       const duration = Date.now() - startTime
       return {
         taskId: task.id,
         success: true,
         duration,
+        urlChanged: finalUrl !== initialUrl,
         error: null,
       }
     } catch (error) {
