@@ -1,5 +1,38 @@
 import '../css/index.css'
-const driver = window.driver.js.driver
+
+// 动态加载 driver.js
+let driverLoaded = false
+let driverLoadPromise = null
+
+function loadDriver() {
+  if (driverLoaded) {
+    return Promise.resolve(window.driver.js.driver)
+  }
+
+  if (driverLoadPromise) {
+    return driverLoadPromise
+  }
+
+  driverLoadPromise = new Promise((resolve, reject) => {
+    // 加载 CSS
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.css'
+    document.head.appendChild(link)
+
+    // 加载 JS
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/driver.js@latest/dist/driver.js.iife.js'
+    script.onload = () => {
+      driverLoaded = true
+      resolve(window.driver.js.driver)
+    }
+    script.onerror = () => reject(new Error('Failed to load driver.js'))
+    document.head.appendChild(script)
+  })
+
+  return driverLoadPromise
+}
 
 function waitForElement(selector, timeout = 8000) {
   return new Promise((resolve, reject) => {
@@ -28,11 +61,14 @@ function waitForElement(selector, timeout = 8000) {
  */
 export class Executor {
   constructor() {
-    this.driver = driver({
-      animate: true,
-      smoothScroll: true,
-      allowKeyboardControl: false,
-      stagePadding: 0,
+    this.driver = null
+    this.driverReady = loadDriver().then((driverFn) => {
+      this.driver = driverFn({
+        animate: true,
+        smoothScroll: true,
+        allowKeyboardControl: false,
+        stagePadding: 0,
+      })
     })
   }
 
@@ -47,6 +83,9 @@ export class Executor {
    */
   async perform(action) {
     try {
+      // 确保 driver 已加载
+      await this.driverReady
+
       let el = null
       if (action.selector) {
         el = await waitForElement(action.selector)
