@@ -2,7 +2,7 @@ import { observePage } from '../core/observer.js'
 import { Executor } from '../core/executor.js'
 import { callAI } from '../core/actionClient.js'
 import { parseAIResponse, convertToAction } from '../core/parser.js'
-import { buildPrompt } from '../config/prompts.js'
+import { buildPrompt } from '../config/actionConfig.js'
 import { TaskChainController } from './TaskChainController.js'
 import { ErrorHandler } from '../utils/ErrorHandler.js'
 

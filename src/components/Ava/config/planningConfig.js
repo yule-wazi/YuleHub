@@ -111,7 +111,7 @@ export function buildPlanningPrompt(userPrompt, elements = [], history = []) {
  * 任务规划的 AI 配置
  */
 export const planningConfig = {
-  model: 'qwen-flash',
+  model: 'qwen3-max',
   messages: [
     {
       role: 'system',
