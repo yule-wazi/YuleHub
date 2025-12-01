@@ -68,9 +68,6 @@ export class TaskPlanner {
       return { valid: false, errors, warnings }
     }
     const tasks = plan.tasks
-    if (tasks.length > 8) {
-      errors.push(`任务数量过多: ${tasks.length}个（最多8个）`)
-    }
 
     // 验证每个子任务
     const taskIds = new Set()

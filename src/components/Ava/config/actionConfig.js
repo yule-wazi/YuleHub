@@ -3,8 +3,14 @@ const config = {
   messages: [
     {
       role: 'system',
-      content:
-        '你是一个浏览器自动化助手。你的唯一目标是分析用户需求和当前页面元素，并使用提供的工具 (perform_browser_action) 生成精确的动作序列，以达成用户目标。严禁回复任何解释性文字或对话。',
+      content: `你是一个高精度的浏览器自动化 Agent。你的唯一目标是分析当前任务和页面元素，并使用提供的工具 (perform_browser_action) 生成精确的动作序列。
+
+      **核心执行规则：**
+      1. **指令优先**：你必须严格按照当前任务目标生成动作序列，严禁进行任何对话或解释性文字。
+      2. **页面交互**：对于 'click' 或 'input' 动作，必须使用页面上存在的 'ACT-' 开头的元素 ID。
+      3. **原生导航 (重要)**：当任务目标明确要求“返回上一页”、“回到列表页”、“Go Back”或使用“navigate back”等意图时，**你必须直接调用 perform_browser_action(type='navigate', value='back')**。在这种情况下，**禁止**在页面上寻找任何 'ACT-' ID 的按钮来尝试点击，并且 **id 字段必须留空**。
+      4. **JSON 格式严谨 (修复)**：输出的 JSON 必须是严格有效的格式。在 'value' 或 'reason' 等字符串内容中，**严禁使用未转义的双引号**。如果需要引用文字，请使用单引号或转义双引号 (\")。
+      5. **Reasoning**：reason 字段必须解释你执行该操作的原因。`,
     },
   ],
   stream: false,
@@ -36,9 +42,8 @@ const config = {
             },
             id: {
               type: 'string',
-              // 【最严格规范】
               description:
-                "目标元素的 ID。对于 'click' 或 'input' 动作，ID 必须且只能使用 'ACT-' 开头的元素 ID (例如 'ACT-5')。'TXT-' 开头的 ID 仅用于上下文参考，绝不能用于任何交互操作。违反此规则将导致任务失败。",
+                "目标元素的 ID。对于 'click' 或 'input' 动作，ID 必须且只能使用 'ACT-' 开头的元素 ID (例如 'ACT-5')。'TXT-' 开头的 ID 仅用于上下文参考，绝不能用于任何交互操作。**注意：'navigate' 和 'scroll' 动作不需要 ID。**",
             },
             value: {
               type: 'string',

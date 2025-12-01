@@ -1,5 +1,5 @@
 import config from '../config/actionConfig.js'
-const token = import.meta.env.VITE_AVA_TOKEN || ''
+const token = import.meta.env.VITE_AVA_ACTION_TOKEN || ''
 /**
  * 调用 AI API
  * @param {Object} requestBody - 请求体

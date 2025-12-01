@@ -1,6 +1,6 @@
 import { planningConfig } from '../config/planningConfig.js'
 
-const token = import.meta.env.VITE_AVA_TOKEN || ''
+const token = import.meta.env.VITE_AVA_PLANNING_TOKEN || ''
 
 /**
  * 调用 AI API
@@ -8,7 +8,7 @@ const token = import.meta.env.VITE_AVA_TOKEN || ''
  * @returns {Promise<Object>} AI 响应
  */
 async function postAgent(requestBody) {
-  return fetch('https://api.siliconflow.cn/v1/chat/completions', {
+  return fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

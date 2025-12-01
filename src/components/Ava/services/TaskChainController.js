@@ -72,10 +72,8 @@ export class TaskChainController {
 
       // 2. 构建 Prompt（添加任务目标）
       let prompt = this.agentService.buildPrompt(task.description, elements)
-      prompt += `\n\n当前任务目标：${task.goal}`
 
       // 3. 调用 AI 服务获取操作指令
-      console.log('actionPrompt=', prompt)
       const tool_calls = await this.agentService.callAI(prompt)
 
       // 4. 解析 AI 响应
@@ -87,18 +85,11 @@ export class TaskChainController {
       // 等待一小段时间，确保路由变化能被捕获
       await this.sleep(300)
 
-      // 检查 URL 是否变化
-      const finalUrl = window.location.href
-      if (finalUrl !== initialUrl) {
-        console.log(`[TaskChainController] 🔄 URL 发生变化: ${initialUrl} -> ${finalUrl}`)
-      }
-
       const duration = Date.now() - startTime
       return {
         taskId: task.id,
         success: true,
         duration,
-        urlChanged: finalUrl !== initialUrl,
         error: null,
       }
     } catch (error) {
