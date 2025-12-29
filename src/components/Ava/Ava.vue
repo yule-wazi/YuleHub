@@ -1,5 +1,5 @@
 <template>
-  <div class="ava-container">
+  <div v-if="false" class="ava-container">
     <!-- 对话框 -->
     <transition name="dialog-fade">
       <div v-if="isExpanded" class="ava-dialog">
@@ -59,6 +59,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { TaskExecutor } from './services/TaskExecutor'
 import myCache from '@/utils/cacheStorage'
+import { startAgent } from './utils/main'
 
 const isExpanded = ref(false)
 const isDragging = ref(false)
@@ -109,6 +110,7 @@ watch(
   { deep: true },
 )
 const toggleDialog = () => {
+  // startAgent()
   isExpanded.value = !isExpanded.value
 }
 const handleClick = () => {

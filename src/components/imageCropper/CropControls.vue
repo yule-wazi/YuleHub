@@ -193,7 +193,10 @@ const applyCustomRatio = () => {
   height: 100%;
   padding: 20px;
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: hidden;
+  @media (max-width: 1000px) {
+    overflow-y: auto;
+  }
   display: flex;
   flex-direction: column;
   gap: 20px;

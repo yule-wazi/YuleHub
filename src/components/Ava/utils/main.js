@@ -1,7 +1,7 @@
-import { ActionExecutor } from '../Act/actExe'
-import { formatElementList } from '../Agent/prompts'
-import { getInteractables } from '../Observe/observe'
-import { visualizeElements } from './test'
+import { formatElementList } from "../config/actionConfig"
+import { observePage } from "../core/observer"
+import { visualizeElements } from "./test"
+
 
 // 模拟 Observe 模块：目前写死，未来这里是 AI 的大脑
 function mockObserve() {
@@ -14,13 +14,10 @@ function mockObserve() {
 
 // 主入口
 export async function startAgent() {
-  const executor = new ActionExecutor()
-  // console.log(getInteractables())
-  console.log(formatElementList(getInteractables()))
-  visualizeElements(getInteractables())
+  // console.log(observePage())
+  console.log(formatElementList(observePage()))
+  visualizeElements(observePage())
   // 1. Observe: 获取计划
   const actions = mockObserve()
 
-  // 2. Act: 执行计划
-  // await executor.runSequence(actions)
 }

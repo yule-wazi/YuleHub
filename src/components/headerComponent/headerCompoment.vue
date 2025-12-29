@@ -203,7 +203,8 @@ const goVideo = () => {
   justify-content: space-between;
   align-self: center;
   color: #333;
-  background-color: var(--comics-headerBg-color);
+  // background-color: var(--comics-headerBg-color);
+  background-color: var(--comics-cardBg-color);
   border-bottom: 1px solid #999;
   z-index: 999;
   padding: 0 10px;
@@ -258,6 +259,11 @@ const goVideo = () => {
       background-color: var(--comics-headerSearchBg-color);
       padding-left: 10px;
     }
+  }
+  --el-color-primary: #ff007a;
+  :deep(.el-input__wrapper) {
+    background-color: var(--comics-tagBg-color);
+    border: 1px var(--comics-border-color) solid;
   }
 }
 .menuDrawer {
