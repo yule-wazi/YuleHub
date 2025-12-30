@@ -51,12 +51,12 @@ const colors = [
   '#625772',
   '#b693fe',
   '#9df3c4',
-  '#fcefee',
+  '#FC9FEE',
 ]
 const tagRefs = useTemplateRef('tagRefs')
 onMounted(() => {
   tagRefs.value.forEach((item, index) => {
-    item.style.background = colors[index]
+    item.style.background = colors[index % colors.length]
   })
 })
 const picaStore = usePica()
@@ -94,6 +94,7 @@ const emit = defineEmits(['scrollTopEmit'])
       border-radius: 4px;
       color: #fff;
       font-weight: 500;
+      cursor: pointer;
     }
   }
 }

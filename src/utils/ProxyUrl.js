@@ -35,7 +35,16 @@ export function switchImgResolutionUrl(url, quality = 'low') {
 }
 // 拼接图片URL(pica)
 export function spliceImgUrl(path) {
-  const baseUrl = 'https://img.safedataplj.com/'
-  const newPath = path.replace('tobeimg', '')
+  // 对长图片特殊处理
+  let baseUrl = ''
+  let newPath = ''
+  if (path.startsWith('tobs/')) {
+    baseUrl = 'https://storage-b.picacomic.com/static/'
+    newPath = path.replace('tobs/', '')
+  } else {
+    baseUrl = 'https://img.safedataplj.com/'
+    newPath = path.replace('tobeimg', '')
+  }
+
   return baseUrl + newPath
 }
