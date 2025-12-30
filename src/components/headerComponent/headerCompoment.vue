@@ -1,5 +1,5 @@
 <template>
-  <div class="header">
+  <div class="header_Mobile">
     <div class="menu">
       <el-icon
         :size="30"
@@ -25,9 +25,57 @@
       </el-icon>
     </div>
   </div>
+  <div class="header_PC">
+    <div class="content">
+      <div class="left">
+        <div class="title">{{ title }}</div>
+        <div class="navBar">
+          <div
+            v-for="item in filteredNavList"
+            :key="item.text"
+            class="item"
+            :class="{ active: iconAction == item.action }"
+            @click="handleNavClick(item.action)"
+          >
+            <el-icon size="20px">
+              <component :is="item.icon" />
+            </el-icon>
+            <div class="text">{{ item.text }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="searchBox">
+        <div class="inputArea">
+          <el-input v-model="input" placeholder="搜点什么···" @change="searchClick" />
+        </div>
+        <div class="postBtn">
+          <el-button color="#ff007a" :icon="Search"></el-button>
+        </div>
+      </div>
+      <div class="otherOption">
+        <div class="switch">
+          <div v-if="userInfo.role === 999" class="item">
+            <div class="r18" @click="isNSFW = !isNSFW">
+              <template v-if="isNSFW"><Hide /></template>
+              <template v-else><View /></template>
+            </div>
+          </div>
+          <div class="item">
+            <div class="dark" @click="isDark = !isDark">
+              <template v-if="isDark"><Moon /></template>
+              <template v-else><Sunny /></template>
+            </div>
+          </div>
+        </div>
+        <div class="logout">
+          <el-button color="#ff007a" @click="logoutClick" size="large">登出</el-button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div ref="searchAreaRef" class="searchArea">
     <el-input
-      v-model="input1"
+      v-model="input"
       size="large"
       style="height: 60px"
       placeholder="搜索关键词"
@@ -64,25 +112,16 @@
         </div>
       </template>
       <template #menuDefault>
-        <div class="home" @click="goHome">
-          <el-icon size="20px"><HomeFilled /></el-icon>
-          <div class="text">首页</div>
-        </div>
-        <div class="comics" @click="goComics">
-          <el-icon size="20px"><PictureFilled /></el-icon>
-          <div class="text">插画</div>
-        </div>
-        <div v-if="userInfo.role === 999" class="pica" @click="goPica">
-          <el-icon size="20px"><Collection /></el-icon>
-          <div class="text">漫画</div>
-        </div>
-        <div class="novel" @click="goNovel">
-          <el-icon size="20px"><Management /></el-icon>
-          <div class="text">小说</div>
-        </div>
-        <div class="video" @click="goVideo">
-          <el-icon size="20px"><VideoCameraFilled /></el-icon>
-          <div class="text">动漫</div>
+        <div
+          v-for="item in filteredNavList"
+          :key="item.text"
+          class="item"
+          @click="handleNavClick(item.action)"
+        >
+          <el-icon size="20px">
+            <component :is="item.icon" />
+          </el-icon>
+          <div class="text">{{ item.text }}</div>
         </div>
       </template>
     </MenuDrawer>
@@ -90,25 +129,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import useVip from '@/sotre/module/vip'
-import myCache from '@/utils/cacheStorage'
-import {
-  Search,
-  Hide,
-  View,
-  Expand,
-  Close,
-  Sunny,
-  Moon,
-  HomeFilled,
-  PictureFilled,
-  Management,
-  Collection,
-  VideoCameraFilled,
-} from '@element-plus/icons-vue'
+import myCache, { sessionCache } from '@/utils/cacheStorage'
+import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
+import { useNavClick } from '@/utils/useNavClick'
 
 const props = defineProps({
   title: {
@@ -118,7 +145,7 @@ const props = defineProps({
 })
 const userInfo = myCache.get('userInfo')
 
-const input1 = ref('')
+const input = ref('')
 // 点击搜索
 const searchAreaRef = ref(null)
 const isCollapsed = ref(true)
@@ -137,10 +164,11 @@ const emit = defineEmits(['searchClickEmit'])
 const searchClick = (tag) => {
   isCollapsed.value = true
   // // 清空搜索内容
-  input1.value = ''
+  input.value = ''
   emit('searchClickEmit', tag)
 }
-
+// 记录当前所在分区
+const iconAction = ref(sessionCache.get('iconAction') ?? '')
 // 打开菜单
 const drawer = ref(false)
 // 切换NSFW
@@ -164,35 +192,143 @@ onMounted(() => {
     { immediate: true },
   )
 })
-
-// 回到首页
-const goHome = () => {
-  router.push('/')
+// 用户登出
+const logoutClick = () => {
+  myCache.remove('userInfo')
+  router.replace('/login')
 }
-// 转到插画
-const goComics = () => {
-  drawer.value = false
-  router.push('/comics')
-}
-// 转到漫画
-const goPica = () => {
-  drawer.value = false
-  router.push('/pica')
-}
-// 转到小说
-const goNovel = () => {
-  drawer.value = false
-  router.push('/novel')
-}
-// 转到动画
-const goVideo = () => {
-  drawer.value = false
-  router.push('/video')
-}
+const { filteredNavList, handleNavClick } = useNavClick(drawer, iconAction)
 </script>
 
 <style lang="less" scoped>
-.header {
+.header_PC {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  justify-content: space-between;
+  align-self: center;
+  color: var(--comics-cardText-color);
+  background-color: var(--comics-cardBg-color);
+  border-bottom: 1px solid #999;
+  z-index: 999;
+  padding: 0 10px;
+  .content {
+    display: flex;
+    justify-content: space-between;
+    height: 100%;
+    width: 90%;
+    min-width: 1000px;
+    line-height: 60px;
+    margin: auto;
+    .left {
+      display: flex;
+      .title {
+        text-wrap: nowrap;
+        text-align: center;
+        color: var(--primary-pink-color);
+        font-size: 30px;
+        font-weight: 700;
+        font-family:
+          Lucida Handwriting,
+          Georgia Pro,
+          Georgia,
+          Times New Roman,
+          serif;
+        margin-right: 20px;
+      }
+      .navBar {
+        display: flex;
+        margin-left: 10px;
+        .item {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 55px;
+          cursor: pointer;
+          margin-right: 15px;
+        }
+        .active {
+          color: var(--primary-pink-color);
+        }
+      }
+    }
+    .searchBox {
+      position: relative;
+      display: flex;
+      width: 100%;
+      max-width: 500px;
+      .inputArea {
+        flex: 1;
+        --el-color-primary: #ff007a;
+        :deep(.el-input__wrapper) {
+          height: 40px;
+          width: 70%;
+          background-color: var(--comics-tagBg-color);
+          border: 1px var(--comics-border-color) solid;
+          .el-input__inner {
+            color: var(--comics-cardText-color);
+          }
+        }
+      }
+      .postBtn {
+        position: absolute;
+        right: 5px;
+        :deep(.el-button) {
+          transition: 0.2s;
+          background-color: transparent;
+          border: 1px var(--comics-border-color) solid;
+          border: none;
+          color: var(--comics-cardText-color);
+          &:hover {
+            background-color: var(--primary-pink-color);
+            color: #edeef5;
+          }
+        }
+      }
+    }
+    .otherOption {
+      display: flex;
+      .switch {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        .item {
+          .r18,
+          .dark {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            width: 35px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            &:hover {
+              transition: 0.2s ease;
+              background-color: var(--primary-pink-color);
+              color: #fff !important;
+              cursor: pointer;
+            }
+            svg {
+              padding: 8px;
+            }
+          }
+        }
+      }
+      .logout {
+        margin-left: 15px;
+      }
+    }
+  }
+  @media (max-width: 1000px) {
+    display: none !important;
+  }
+  @media (min-width: 1000px) {
+    display: flex !important;
+  }
+}
+.header_Mobile {
   position: fixed;
   top: 0;
   left: 0;
@@ -203,11 +339,16 @@ const goVideo = () => {
   justify-content: space-between;
   align-self: center;
   color: #333;
-  // background-color: var(--comics-headerBg-color);
   background-color: var(--comics-cardBg-color);
   border-bottom: 1px solid #999;
   z-index: 999;
   padding: 0 10px;
+  @media (max-width: 1000px) {
+    display: flex !important;
+  }
+  @media (min-width: 1000px) {
+    display: none !important;
+  }
   .menu {
     display: flex;
     justify-content: center;
@@ -223,10 +364,16 @@ const goVideo = () => {
   .title {
     flex: 3;
     text-align: center;
-    color: var(--comics-headerTitle-color);
-    font-size: 28px;
+    text-wrap: nowrap;
+    color: var(--primary-pink-color);
+    font-size: 30px;
     font-weight: 700;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-family:
+      Lucida Handwriting,
+      Georgia Pro,
+      Georgia,
+      Times New Roman,
+      serif;
   }
   .search {
     display: flex;
@@ -276,11 +423,7 @@ const goVideo = () => {
     align-items: center;
     margin-bottom: 10px;
   }
-  .home,
-  .comics,
-  .pica,
-  .novel,
-  .video {
+  .item {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #999;

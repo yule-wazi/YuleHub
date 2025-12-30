@@ -24,21 +24,16 @@
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
         <template #menuHeader> AI Chat </template>
         <template #menuDefault>
-          <div class="comics" @click="goComics">
-            <el-icon size="20px"><PictureFilled /></el-icon>
-            <div class="text">插画</div>
-          </div>
-          <div v-if="userInfo.role === 999" class="comics" @click="goPica">
-            <el-icon size="20px"><Collection /></el-icon>
-            <div class="text">漫画</div>
-          </div>
-          <div class="novel" @click="goNovel">
-            <el-icon size="20px"><Management /></el-icon>
-            <div class="text">小说</div>
-          </div>
-          <div class="video" @click="goVideo">
-            <el-icon size="20px"><VideoCameraFilled /></el-icon>
-            <div class="text">动漫</div>
+          <div
+            v-for="item in filteredNavList"
+            :key="item.text"
+            class="item"
+            @click="handleNavClick(item.action)"
+          >
+            <el-icon size="20px">
+              <component :is="item.icon" />
+            </el-icon>
+            <div class="text">{{ item.text }}</div>
           </div>
         </template>
         <template #other>
@@ -405,21 +400,18 @@
 
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
 import useAgent from '@/sotre/module/agent'
 import useVip from '@/sotre/module/vip'
 import allUsers from '@/sotre/agentUsersConfig'
-import myCache from '@/utils/cacheStorage'
+import myCache, { sessionCache } from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
 import {
   Close,
   Sunny,
   Moon,
-  PictureFilled,
-  Management,
   Check,
   Key,
   Delete,
@@ -440,6 +432,7 @@ import { audioList } from '@/sotre/agentAudioConfig'
 import { parsePNGCharacterCard } from './utils/parseCharacterCard'
 import { mapToInternalFormat, validateCharacterCard } from './utils/mapCharacterCard'
 import { ElLoading, ElMessage } from 'element-plus'
+import { useNavClick } from '@/utils/useNavClick'
 // 初始化世界书
 const loreBooksOptions = [
   {
@@ -766,27 +759,10 @@ const selectAudio = (item, index) => {
   roleForm.voiceId = item.voiceId
   selectCurrentAudio.value = index
 }
-const router = useRouter()
-// 转到漫画
-const goComics = () => {
-  drawer.value = false
-  router.push('/comics')
-}
-// 转到漫画
-const goPica = () => {
-  drawer.value = false
-  router.push('/pica')
-}
-// 转到小说
-const goNovel = () => {
-  drawer.value = false
-  router.push('/novel')
-}
-// 转到动漫
-const goVideo = () => {
-  drawer.value = false
-  router.push('/video')
-}
+
+const iconAction = ref(sessionCache.get('iconAction') ?? '')
+const { filteredNavList, handleNavClick } = useNavClick(drawer, iconAction)
+
 // 对话高亮
 const { textLight } = storeToRefs(agentStore)
 // 显示提示
@@ -897,6 +873,19 @@ onMounted(() => {
         margin-left: 5px;
       }
     }
+
+    .item {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #999;
+      margin-bottom: 5px;
+      padding: 10px 0;
+      cursor: pointer;
+      .text {
+        margin-left: 5px;
+      }
+    }
+
     .showTip,
     .textLight,
     .memory,

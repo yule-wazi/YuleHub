@@ -1,6 +1,6 @@
 <template>
   <div class="pica">
-    <HeaderCompoment title="Yule漫画" @searchClickEmit="searchClick">
+    <HeaderCompoment title="YULE漫画" @searchClickEmit="searchClick">
       <template #switchOther>
         <div class="text">最多喜欢</div>
         <el-switch v-model="mostLike" size="large" change="mostLike = !mostLike" />

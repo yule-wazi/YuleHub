@@ -18,7 +18,7 @@
             <slot name="switch"></slot>
           </div>
           <div class="logout">
-            <el-button type="primary" size="large" @click="logoutClick">登出</el-button>
+            <el-button color="#ff007a" size="large" @click="logoutClick">登出</el-button>
           </div>
         </div>
       </template>
@@ -66,11 +66,16 @@ const logoutClick = () => {
   .menuTitle {
     flex: 3;
     text-align: start;
-    color: var(--comics-headerTitle-color);
     margin-left: 10px;
-    font-size: 28px;
     font-weight: 700;
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    color: var(--primary-pink-color);
+    font-size: 30px;
+    font-family:
+      Lucida Handwriting,
+      Georgia Pro,
+      Georgia,
+      Times New Roman,
+      serif;
   }
   .content {
     .menuDefault {
@@ -81,6 +86,11 @@ const logoutClick = () => {
     }
     .other {
       margin: 15px 0;
+    }
+    .switch {
+      :global(.el-switch__core) {
+        --el-switch-on-color: #ff007a !important;
+      }
     }
     .logout {
       margin-top: 20px;
