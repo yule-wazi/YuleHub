@@ -182,7 +182,7 @@ watch(isNSFW, () => {
 const isDark = ref(myCache.get('isDark') ?? false)
 let appElement = undefined
 onMounted(() => {
-  appElement = document.getElementById('app')
+  appElement = document.documentElement
   watch(
     isDark,
     () => {
