@@ -43,12 +43,13 @@ scrollRestore('home', videoStore)
   .list {
     width: 100%;
     margin-top: 10px;
-    position: relative;
-    @media (min-width: 800px) {
-      width: 80%;
-    }
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     @media (min-width: 1000px) {
-      width: 100%;
+      width: 90%;
     }
   }
   &::-webkit-scrollbar {

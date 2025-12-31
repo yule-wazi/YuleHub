@@ -18,7 +18,6 @@
 
 <script setup>
 import useVideo from '@/sotre/module/video'
-import { flowFlex, throttledFlowFlex } from '@/utils/waterflow'
 import { VideoPlay } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
@@ -35,26 +34,16 @@ const getDetail = () => {
   router.push('/video/detail')
   videoStore.videoDetail = props.itemData
 }
-
-// 封装获取图片宽度的函数
-const getImgWidth = () => (window.innerWidth < 800 ? 180 : 300)
-
-let imgWidth = getImgWidth()
-
-const handleImgLoad = () => {
-  flowFlex({ imgList: videoStore.videoList, imgWidth })
-}
-
-window.addEventListener('resize', () => {
-  throttledFlowFlex({ imgList: videoStore.videoList, imgWidth: getImgWidth() })
-})
 </script>
 
 <style lang="less" scoped>
 .imageItem {
-  transition: 0.3s;
-  display: none;
   cursor: pointer;
+  width: 350px;
+  @media (min-width: 1000px) {
+    width: 300px;
+  }
+
   .item {
     height: 280px;
     width: 100%;
