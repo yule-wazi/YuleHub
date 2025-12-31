@@ -98,11 +98,8 @@ const removeErrorData = (errorItem) => {
     width: 100%;
     margin-top: 10px;
     position: relative;
-    @media (min-width: 800px) {
-      width: 80%;
-    }
     @media (min-width: 1000px) {
-      width: 100%;
+      width: 90%;
     }
   }
   &::-webkit-scrollbar {

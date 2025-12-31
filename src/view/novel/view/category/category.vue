@@ -71,6 +71,7 @@ scrollRestore('category', novelStore)
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    width: 95%;
   }
   &::-webkit-scrollbar {
     display: none;

@@ -30,6 +30,7 @@ scrollRestore('home', novelStore)
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    width: 95%;
   }
   &::-webkit-scrollbar {
     display: none;
