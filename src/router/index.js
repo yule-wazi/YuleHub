@@ -20,6 +20,12 @@ const router = createRouter({
       meta: { keepAlive: false },
     },
     {
+      path: '/home',
+      name: 'home',
+      component: () => import('@/view/home/home.vue'),
+      meta: { keepAlive: true },
+    },
+    {
       path: '/comics',
       name: 'comics',
       meta: { keepAlive: true },

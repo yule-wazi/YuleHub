@@ -25,7 +25,7 @@
       </el-icon>
     </div>
   </div>
-  <div class="header_PC">
+  <div class="header_PC" v-bind="$attrs">
     <div class="content">
       <div class="left">
         <div class="title">{{ title }}</div>
@@ -411,6 +411,9 @@ const { filteredNavList, handleNavClick } = useNavClick(drawer, iconAction)
   :deep(.el-input__wrapper) {
     background-color: var(--comics-tagBg-color);
     border: 1px var(--comics-border-color) solid;
+  }
+  @media (min-width: 1000px) {
+    display: none;
   }
 }
 .menuDrawer {

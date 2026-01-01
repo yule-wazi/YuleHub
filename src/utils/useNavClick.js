@@ -20,7 +20,7 @@ export function useNavClick(drawer, iconAction) {
   const router = useRouter()
   // 回到首页
   const goHome = () => {
-    router.push('/')
+    router.push('/home')
   }
   // 转到插画
   const goComics = () => {

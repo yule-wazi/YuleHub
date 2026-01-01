@@ -22,3 +22,38 @@ input {
   border: none;
   background-color: transparent;
 }
+
+/* 全局滚动条样式 */
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #6a8a8a, #9e6b8c);
+}
+
+*::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #ff007a;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: #ff007a;
+  border-radius: 4px;
+}
+
+/* 移动端隐藏滚动条 */
+@media (max-width: 1000px) {
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
