@@ -36,7 +36,7 @@ const formClick = () => {
         role: item.role,
       }
       myCache.set('userInfo', userInfo)
-      router.push({ path: '/chat' })
+      router.push({ path: '/' })
     }
   })
 }

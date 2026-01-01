@@ -24,27 +24,19 @@ input {
 }
 
 /* 全局滚动条样式 */
-
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #6a8a8a, #9e6b8c);
-}
-
-*::-webkit-scrollbar {
-  display: block;
-  width: 8px;
-}
-*::-webkit-scrollbar-thumb {
-  background: #ff007a;
-  border-radius: 4px;
-}
-*::-webkit-scrollbar-track {
-  background: #ff007a;
-  border-radius: 4px;
+@media (min-width: 1000px) {
+  *::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #ff007a;
+    border-radius: 4px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--comics-headerBg-color);
+    border-radius: 4px;
+  }
 }
 
 /* 移动端隐藏滚动条 */
