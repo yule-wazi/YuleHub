@@ -12,55 +12,6 @@
     <div class="content">
       <Wrapper />
       <PartitionBanner />
-      <!-- <div class="contentShow">
-        <div class="recommendArea">
-          <div class="recommend">
-            <div class="recommendHeader">
-              <div class="title">Yule插画</div>
-              <div class="more">
-                <el-button style="width: 100%; margin-top: 12px" size="small">
-                  查看更多
-                  <el-icon><ArrowRightBold /></el-icon>
-                </el-button>
-              </div>
-            </div>
-            <div class="recommendList">
-              <template v-for="item in recommendList">
-                <div class="recommendItem">
-                  <img :src="item" alt="" />
-                </div>
-              </template>
-            </div>
-          </div>
-        </div>
-        <div class="latestArea">
-          <div class="latest">
-            <div class="title">最新插画</div>
-            <div class="latestList">
-              <template v-for="(item, index) of latestList">
-                <template v-if="index <= 2">
-                  <div class="top3Item">
-                    <div class="left">
-                      <img :src="item.img" alt="" />
-                      <div class="index">{{ index + 1 }}</div>
-                    </div>
-                    <div class="right">{{ item.title }}</div>
-                  </div>
-                </template>
-                <template v-else>
-                  <div class="latestItem">
-                    <div class="index">{{ index + 1 }}</div>
-                    <div class="text">{{ item.title }}</div>
-                  </div>
-                </template>
-              </template>
-            </div>
-            <div class="viewMore">
-              <el-button color="#ff007a" style="width: 100%">查看更多</el-button>
-            </div>
-          </div>
-        </div>
-      </div> -->
       <ContentShow />
     </div>
   </div>
@@ -96,8 +47,6 @@ onUnmounted(() => {
     homeRef.value.removeEventListener('scroll', handleScroll)
   }
 })
-
-
 </script>
 
 <style lang="less" scoped>

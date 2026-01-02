@@ -69,10 +69,11 @@ import Tag from '@/components/tag/tag.vue'
 import { Calendar, Picture, View } from '@element-plus/icons-vue'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { preLoadImg } from '@/utils/preLoadImg'
-import { onMounted, ref, useTemplateRef, watch } from 'vue'
+import { onMounted, ref, useTemplateRef, watch, computed } from 'vue'
 import { formatTime } from '@/utils/formatTime'
 import useVip from '@/sotre/module/vip'
 import { useRouter } from 'vue-router'
+import myLocalCache from '@/utils/cacheStorage'
 
 const props = defineProps({
   coverImg: {
@@ -124,12 +125,21 @@ const vipStore = useVip()
 const router = useRouter()
 
 const showImg = ref('')
+const isNSFW = vipStore.detailData.x_restrict ? 'nsfw' : 'sfw'
+const collectionKey = `${isNSFW}_collectionList`
+const collectionList = myLocalCache.get(collectionKey) ?? []
 const isFollow = ref(false)
 const followBtnRes = useTemplateRef('followBtn')
 
 // 点击收藏
 const followClick = () => {
-  console.log('点击')
+  if (isFollow.value) {
+    collectionList.splice(collectionList.indexOf(props.pid), 1)
+  } else {
+    collectionList.push(props.pid)
+  }
+
+  myLocalCache.set(collectionKey, collectionList)
   isFollow.value = !isFollow.value
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
 }
@@ -151,6 +161,9 @@ const getTag = (tag) => {
 watch(
   () => vipStore.detailDataAll,
   () => {
+    // 判断是否收藏过
+    isFollow.value = collectionList.includes(props.pid)
+    followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
     if (vipStore.detailDataAll.imgDetail?.coverImg?.large) {
       const origin = switchImgResolutionUrl(
         vipStore.detailDataAll.imgDetail?.coverImg?.large,

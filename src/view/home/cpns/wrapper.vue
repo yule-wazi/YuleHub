@@ -22,16 +22,16 @@
       <div class="header">
         <div class="title">猜你喜欢</div>
         <div class="changeList">
-          <el-button style="width: 100%; margin-top: 12px">
+          <el-button style="width: 100%; margin-top: 12px" @click="changeList">
             换一批
             <el-icon size="16"><Refresh /></el-icon>
           </el-button>
         </div>
       </div>
       <div class="likeList">
-        <template v-for="item in yourLike">
+        <template v-for="item in yourLike.slice(0, 6)" :key="item.title">
           <div class="likeItem">
-            <img :src="item" alt="" />
+            <MyImg :imgUrl="item.img" />
           </div>
         </template>
       </div>
@@ -47,6 +47,9 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
+import { getPixivRelatedImg, getPixivsionSpotlights } from '@/service/module/vip'
+import myLocalCache from '@/utils/cacheStorage'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const modules = [Navigation, Pagination, Autoplay]
 const pagination = {
@@ -80,14 +83,92 @@ const bannerList = ref([
     description: '更多惊喜等你来',
   },
 ])
-const yourLike = ref([
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/29/00/02/20/139196775_p0_master1200.jpg',
-])
+const yourLike = ref([])
+
+const isNSFW = myLocalCache.get('isNSFW') ? 'nsfw' : 'sfw'
+const collectionKey = `${isNSFW}_collectionList`
+const likeList = myLocalCache.get(collectionKey) ?? []
+
+// 智能推荐算法
+const randomYourLike = async () => {
+  if (!likeList.length) {
+    try {
+      const res = await getPixivsionSpotlights()
+      yourLike.value = res.data.spotlight_articles.map((item) => ({
+        img: item.thumbnail,
+        title: item.title,
+        pid: item.id,
+      }))
+    } catch (err) {
+      console.error('获取随机推荐失败:', err)
+    }
+    return
+  }
+  const SEED_LIMIT = 6 // 最多使用6个种子作品
+
+  // 从用户收藏中随机选择种子作品
+  const seeds = [...likeList]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.min(SEED_LIMIT, likeList.length))
+  try {
+    // 并发请求所有种子作品的相关推荐
+    const responses = await Promise.all(
+      seeds.map((pid) =>
+        getPixivRelatedImg(pid).catch((err) => {
+          console.warn(`获取 pid:${pid} 的推荐失败:`, err)
+          return { data: { illusts: [] } }
+        }),
+      ),
+    )
+
+    // 提取所有推荐结果
+    const lists = responses.map(
+      (res) => [...res.data?.illusts].sort(() => Math.random() - 0.5) || [],
+    )
+
+    const result = []
+    const seen = new Set()
+    likeList.forEach((id) => seen.add(id))
+    const maxLen = Math.max(...lists.map((list) => list.length))
+    for (let i = 0; i < maxLen; i++) {
+      for (let j = 0; j < lists.length; j++) {
+        const currentList = lists[j]
+        const item = currentList[i]
+        if (item && item.id && !seen.has(item.id)) {
+          result.push({
+            img: item.image_urls.large,
+            title: item.title,
+            pid: item.id,
+          })
+          seen.add(item.id)
+        }
+      }
+    }
+
+    yourLike.value = result
+  } catch (err) {
+    console.error('个性化推荐获取失败:', err)
+    // 降级方案：使用随机推荐
+    try {
+      const res = await getPixivsionSpotlights()
+      yourLike.value = res.data.spotlight_articles.map((item) => ({
+        img: item.thumbnail,
+        title: item.title,
+        pid: item.id,
+      }))
+    } catch (fallbackErr) {
+      console.error('降级推荐也失败了:', fallbackErr)
+    }
+  }
+}
+
+// 发起猜你喜欢请求
+randomYourLike()
+
+// 换一批：重新打乱当前推荐列表
+const changeList = () => {
+  yourLike.value = [...yourLike.value].sort(() => Math.random() - 0.5)
+}
 </script>
 
 <style lang="less" scoped>
@@ -142,7 +223,7 @@ const yourLike = ref([
       height: 35px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: start;
       .title {
         height: 100%;
         display: flex;
@@ -170,18 +251,13 @@ const yourLike = ref([
       width: 100%;
       height: calc(100% - 35px);
       display: grid;
-      grid-template-columns: repeat(3, minmax(max-content, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-template-rows: repeat(2, calc(50% - 5px));
       gap: 10px;
       .likeItem {
         height: 100%;
         border-radius: 5px;
         overflow: hidden;
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
       }
     }
   }
