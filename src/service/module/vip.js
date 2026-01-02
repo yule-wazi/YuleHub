@@ -66,6 +66,6 @@ export function getPixivUgoiraMetadata(pid) {
 }
 // 获取pixivsion特辑
 export function getPixivsionSpotlights() {
-  MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/spotlights?category=all&page=1&size=20`)
+  MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/spotlights?category=all&page=1&size=21`)
   return MyRequest.get()
 }

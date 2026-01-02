@@ -49,13 +49,104 @@ import RelatedImgCard from './cpns/relatedImgCard.vue'
 
 const vipStore = useVip()
 const route = useRoute()
+
 // SessionStorage key 前缀
 const STORAGE_PREFIX = 'COMICS_DETAIL_CACHE:'
+
 // 获取缓存 key（基于 pid）
 const getStorageKey = (pid) => {
   if (!pid) return ''
   return `${STORAGE_PREFIX}${pid}`
 }
+
+// 清理最旧的缓存数据（一次性删除多条）
+const clearOldestCache = (count = 20) => {
+  try {
+    const keys = Object.keys(sessionStorage)
+    const cacheKeys = keys.filter((key) => key.startsWith(STORAGE_PREFIX))
+
+    if (cacheKeys.length === 0) {
+      console.warn('没有可清理的缓存')
+      return 0
+    }
+
+    // 按时间戳排序，找到最旧的缓存
+    const cacheData = cacheKeys
+      .map((key) => {
+        try {
+          const data = JSON.parse(sessionStorage.getItem(key))
+          return { key, timestamp: data.timestamp || 0 }
+        } catch {
+          return { key, timestamp: 0 }
+        }
+      })
+      .sort((a, b) => a.timestamp - b.timestamp)
+
+    // 删除最旧的 N 条缓存（最多删除现有缓存的一半）
+    const deleteCount = Math.min(count, Math.ceil(cacheData.length / 2))
+    const toDelete = cacheData.slice(0, deleteCount)
+
+    let deletedCount = 0
+    toDelete.forEach((item) => {
+      try {
+        sessionStorage.removeItem(item.key)
+        deletedCount++
+      } catch (err) {
+        console.error(`删除缓存失败: ${item.key}`, err)
+      }
+    })
+
+    console.log(`✅ 清理了 ${deletedCount} 条最旧的缓存`)
+    return deletedCount
+  } catch (error) {
+    console.error('清理缓存失败:', error)
+    return 0
+  }
+}
+
+// 设置 sessionCache 的配额超出回调
+sessionCache.onQuotaExceeded = (key, value, error) => {
+  console.warn('⚠️ SessionStorage 配额超出，开始清理最旧的 20 条缓存...')
+
+  // 一次性清理 20 条最旧的缓存
+  const deletedCount = clearOldestCache(20)
+
+  if (deletedCount === 0) {
+    console.error('❌ 没有可清理的缓存了')
+    return false
+  }
+
+  // 清理后尝试重新保存
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value))
+    console.log(`✅ 清理 ${deletedCount} 条缓存后保存成功`)
+    return true
+  } catch (retryError) {
+    if (retryError.name === 'QuotaExceededError') {
+      console.error('❌ 清理 20 条后仍然空间不足，尝试清理更多...')
+      // 再清理 20 条
+      const secondDeleteCount = clearOldestCache(20)
+      if (secondDeleteCount === 0) {
+        console.error('❌ 没有更多缓存可清理了')
+        return false
+      }
+
+      // 再次尝试保存
+      try {
+        sessionStorage.setItem(key, JSON.stringify(value))
+        console.log(`✅ 清理 ${deletedCount + secondDeleteCount} 条缓存后保存成功`)
+        return true
+      } catch (finalError) {
+        console.error('❌ 清理 40 条缓存后仍然失败，放弃保存')
+        return false
+      }
+    } else {
+      console.error('❌ 重试时发生其他错误:', retryError)
+      return false
+    }
+  }
+}
+
 // 获取滚动容器
 const getScrollContainer = () => {
   // 查找 .comics 滚动容器
@@ -71,58 +162,32 @@ const getScrollContainer = () => {
   return null
 }
 
-// 保存数据到 sessionStorage（只保存必要数据，减少存储空间）
+// 保存数据到 sessionStorage
 const saveToSession = (pid) => {
   if (!pid || !vipStore.detailDataAll || Object.keys(vipStore.detailDataAll).length === 0) {
     return
   }
 
+  // 获取当前滚动位置
+  const scrollContainer = getScrollContainer()
+  const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0
+  const storageKey = getStorageKey(pid)
+  const cacheData = {
+    detailData: { ...vipStore.detailData },
+    detailDataAll: {
+      ...vipStore.detailDataAll,
+      scrollTop: scrollTop, // 保存滚动位置
+    },
+    currentDetailShowImg: vipStore.currentDetailShowImg,
+    timestamp: Date.now(), // 更新时间戳
+  }
+
+  // 直接保存，错误处理由 sessionCache.onQuotaExceeded 回调处理
   try {
-    // 获取当前滚动位置
-    const scrollContainer = getScrollContainer()
-    const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0
-    const storageKey = getStorageKey(pid)
-
-    // 只缓存关键数据，不缓存大量图片列表
-    const cacheData = {
-      scrollTop: scrollTop,
-      pid: pid,
-      timestamp: Date.now(),
-    }
-
     sessionCache.set(storageKey, cacheData)
   } catch (error) {
-    console.warn('保存缓存失败:', error)
-    // 如果存储失败，尝试清理旧缓存
-    clearOldCache()
-  }
-}
-
-// 清理旧的缓存数据
-const clearOldCache = () => {
-  try {
-    const keys = Object.keys(sessionStorage)
-    const cacheKeys = keys.filter((key) => key.startsWith(STORAGE_PREFIX))
-
-    // 按时间戳排序，删除最旧的缓存
-    const cacheData = cacheKeys
-      .map((key) => {
-        try {
-          const data = JSON.parse(sessionStorage.getItem(key))
-          return { key, timestamp: data.timestamp || 0 }
-        } catch {
-          return { key, timestamp: 0 }
-        }
-      })
-      .sort((a, b) => a.timestamp - b.timestamp)
-
-    // 删除最旧的一半缓存
-    const toDelete = cacheData.slice(0, Math.ceil(cacheData.length / 2))
-    toDelete.forEach((item) => sessionStorage.removeItem(item.key))
-
-    console.log(`清理了 ${toDelete.length} 个旧缓存`)
-  } catch (error) {
-    console.error('清理缓存失败:', error)
+    // 如果回调处理后仍然失败，这里只记录日志
+    console.error('保存缓存最终失败:', error)
   }
 }
 // 从 sessionStorage 恢复数据
@@ -130,13 +195,11 @@ const restoreFromSession = (pid) => {
   if (!pid) return null
   const storageKey = getStorageKey(pid)
   const cached = sessionCache.get(storageKey)
-
-  // 现在只缓存滚动位置，不缓存完整数据
-  if (cached && cached.scrollTop !== undefined) {
-    return {
-      scrollTop: cached.scrollTop,
-      pid: cached.pid,
-    }
+  if (cached && cached.detailDataAll) {
+    vipStore.detailDataAll = cached.detailDataAll
+    vipStore.detailData = cached.detailData
+    vipStore.currentDetailShowImg = cached.currentDetailShowImg
+    return cached
   }
   return null
 }
@@ -162,27 +225,24 @@ const initDetailData = async () => {
   if (!pid) {
     return
   }
-
   const cached = restoreFromSession(pid)
-
-  // 总是重新请求数据，只恢复滚动位置
-  await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
-  detailDataAll.value = vipStore.detailDataAll
-  vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
-
-  // 恢复滚动位置
-  if (cached && cached.scrollTop) {
-    restoreScrollPosition(cached.scrollTop)
+  if (cached) {
+    detailDataAll.value = cached.detailDataAll
+    // 恢复滚动位置
+    const scrollTop = cached.detailDataAll?.scrollTop || 0
+    restoreScrollPosition(scrollTop)
   } else {
+    await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
+    detailDataAll.value = vipStore.detailDataAll
+    vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
     // 首次加载，滚动到顶部
     const scrollContainer = getScrollContainer()
     if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
+      // scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
     }
+    // 首次拿到数据缓存
+    saveToSession(pid)
   }
-
-  // 保存当前页面的滚动位置记录
-  saveToSession(pid)
 }
 // p站获取高清图片
 const showImg = ref('')

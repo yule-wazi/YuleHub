@@ -10,7 +10,7 @@
       </div>
       <div class="content">
         <div class="desc">
-          <div class="title" >{{ itemData.title }}</div>
+          <div class="title">{{ itemData.title }}</div>
         </div>
         <div class="tagList" @click.stop>
           <template v-for="tag in itemData.tags.slice(0, 3)">
@@ -82,6 +82,7 @@ const getDetail = async () => {
     query: { pid },
   })
   vipStore.detailData = props.itemData
+  console.log('props.itemData=', props.itemData)
   vipStore.currentDetailShowImg = props.itemData.coverImg.large
 }
 // 搜索tag

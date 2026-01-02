@@ -2,6 +2,7 @@ class myCache {
   constructor(storageType = 'localStorage') {
     // 默认使用 localStorage，也可以传入 'sessionStorage'
     this.cache = storageType === 'sessionStorage' ? sessionStorage : localStorage
+    this.onQuotaExceeded = null // 配额超出时的回调函数
   }
 
   set(key, value) {
@@ -9,6 +10,20 @@ class myCache {
       this.cache.setItem(key, JSON.stringify(value))
     } catch (error) {
       console.error(`Cache set error for key "${key}":`, error)
+
+      // 如果是配额超出错误，调用回调函数
+      if (error.name === 'QuotaExceededError' && this.onQuotaExceeded) {
+        console.warn('存储空间不足，尝试清理...')
+        const handled = this.onQuotaExceeded(key, value, error)
+
+        // 如果回调返回 true，表示已经处理成功，不再抛出错误
+        if (handled) {
+          return
+        }
+      }
+
+      // 重新抛出错误，让外部知道保存失败
+      throw error
     }
   }
 

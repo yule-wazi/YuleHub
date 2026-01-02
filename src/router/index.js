@@ -138,7 +138,7 @@ const router = createRouter({
 })
 router.beforeEach((to) => {
   const userInfo = myCache.get('userInfo')
-  if (to.path === '/chat' && !userInfo) {
+  if (to.path === '/home' && !userInfo) {
     return '/login'
   }
   if (to.path === '/comics' && userInfo.role !== 1) {
