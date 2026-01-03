@@ -143,7 +143,6 @@ const randomYourLike = async () => {
       }
     }
     yourLike.value = result
-    console.log('yourLike.value=', yourLike.value)
   } catch (err) {
     console.error('个性化推荐获取失败:', err)
     // 降级方案：使用随机推荐
@@ -188,6 +187,7 @@ const getDetail = async (item) => {
     height: 100%;
     border-radius: 8px;
     overflow: hidden;
+    background-color: var(--comics-headerIcon-color);
     .slide-content {
       width: 100%;
       height: 100%;
@@ -261,6 +261,7 @@ const getDetail = async (item) => {
             left: 0;
             width: 0;
             height: 2px;
+            border-radius: 1px;
             background: linear-gradient(90deg, var(--primary-pink-color), transparent);
             transition: width 0.3s ease;
           }
