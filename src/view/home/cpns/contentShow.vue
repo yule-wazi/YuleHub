@@ -1,26 +1,9 @@
 <template>
   <div class="contentShow">
-    <div class="recommendArea">
-      <div class="recommend">
-        <div class="recommendHeader">
-          <div class="title">Yule插画</div>
-          <div class="more">
-            <el-button style="width: 100%; margin-top: 12px" size="small">
-              查看更多
-              <el-icon><ArrowRightBold /></el-icon>
-            </el-button>
-          </div>
-        </div>
-        <div class="recommendList">
-          <template v-for="item in recommendList">
-            <div class="recommendItem">
-              <img :src="item" alt="" />
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
     <div class="latestArea">
+      <Recommend />
+    </div>
+    <div class="recommendArea">
       <div class="latest">
         <div class="title">最新插画</div>
         <div class="latestList">
@@ -52,20 +35,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ArrowRightBold } from '@element-plus/icons-vue'
+import Recommend from './latest.vue'
+import useVip from '@/sotre/module/vip'
 
-const recommendList = ref([
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/31/00/00/22/139282898_p0_master1200.jpg',
-  'https://i.pximg.org/img-master/img/2025/12/30/19/36/37/139270353_p0_master1200.jpg',
-])
 const latestList = ref([
   {
     title: 'adadasdaa',
@@ -108,6 +80,12 @@ const latestList = ref([
     img: 'https://i.pximg.org/img-master/img/2025/12/30/00/00/21/139239132_p0_master1200.jpg',
   },
 ])
+const vipStore = useVip()
+// 获取每日插画数据
+const getComics = async () => {
+  await vipStore.fetchGroupImgList({ isRefresh: true })
+}
+getComics()
 </script>
 
 <style lang="less" scoped>
@@ -115,56 +93,10 @@ const latestList = ref([
   display: flex;
   align-items: start;
   gap: 20px;
-  .recommendArea {
-    .recommend {
-      .recommendHeader {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 10px;
-        border-bottom: 1px solid var(--comics-border-color);
-        :deep(.el-button) {
-          transition: 0.2s;
-          background-color: transparent;
-          border: 1px var(--comics-border-color) solid;
-          border: none;
-          color: var(--comics-cardText-color);
-          margin: 0 !important;
-          &:hover {
-            background-color: var(--primary-pink-color);
-            color: #edeef5;
-          }
-        }
-        .title {
-          font-size: 18px;
-          font-weight: 500;
-          color: var(--comics-cardText-color);
-        }
-      }
-      .recommendList {
-        display: grid;
-        margin-top: 10px;
-        grid-template-rows: repeat(2, auto);
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-        @media (max-width: 1000px) {
-          grid-template-rows: repeat(5, auto);
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .recommendItem {
-          width: 100%;
-          min-width: 0;
-          aspect-ratio: 3/4;
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-        }
-      }
-    }
-  }
   .latestArea {
+    flex: 1;
+  }
+  .recommendArea {
     width: 300px;
     flex-shrink: 0;
     background-color: var(--comics-cardBg-color);

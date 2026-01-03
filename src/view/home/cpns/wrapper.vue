@@ -86,7 +86,7 @@ const autoplay = {
   pauseOnMouseEnter: true,
 }
 const bannerList = ref([])
-const yourLike = ref([...Array(6)])
+const yourLike = ref(new Array(6))
 // bannerList
 const getBannerList = async () => {
   const res = await getPixivsionSpotlights()

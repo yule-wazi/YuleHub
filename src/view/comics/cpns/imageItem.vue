@@ -82,7 +82,6 @@ const getDetail = async () => {
     query: { pid },
   })
   vipStore.detailData = props.itemData
-  console.log('props.itemData=', props.itemData)
   vipStore.currentDetailShowImg = props.itemData.coverImg.large
 }
 // 搜索tag
