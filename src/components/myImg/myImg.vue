@@ -32,6 +32,7 @@ preLoadImg(originImg)
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
   }
 }
 </style>

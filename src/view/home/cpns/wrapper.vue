@@ -11,9 +11,12 @@
         class="mySwiper"
         style="height: 100%"
       >
-        <SwiperSlide v-for="(slide, index) in bannerList" :key="index">
+        <SwiperSlide v-for="(item, index) in bannerList" :key="index">
           <div class="slide-content">
-            <img :src="slide.image" :alt="slide.title" class="slide-image" />
+            <MyImg :imgUrl="item.thumbnail" />
+            <div class="item-overlay">
+              <div class="item-title">{{ item.title }}</div>
+            </div>
           </div>
         </SwiperSlide>
       </Swiper>
@@ -37,6 +40,16 @@
               <MyImg :imgUrl="item?.img" />
               <div class="item-overlay">
                 <div class="item-title">{{ item.title }}</div>
+                <div class="item-info">
+                  <div class="total_view">
+                    <el-icon><View /></el-icon>
+                    {{ item.total_view }}
+                  </div>
+                  <div class="total_bookmarks">
+                    <el-icon><Star /></el-icon>
+                    {{ item.total_bookmarks }}
+                  </div>
+                </div>
               </div>
             </template>
           </div>
@@ -49,7 +62,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Refresh } from '@element-plus/icons-vue'
+import { Refresh, Star, View } from '@element-plus/icons-vue'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -60,40 +73,28 @@ import MyImg from '@/components/myImg/myImg.vue'
 import { useRouter } from 'vue-router'
 import useVip from '@/sotre/module/vip'
 
+const router = useRouter()
+const vipStore = useVip()
 const modules = [Navigation, Pagination, Autoplay]
 const pagination = {
   clickable: true,
   dynamicBullets: true,
 }
 const autoplay = {
-  delay: 3000,
+  delay: 5000,
   disableOnInteraction: false,
   pauseOnMouseEnter: true,
 }
-const bannerList = ref([
-  {
-    image: 'https://picsum.photos/800/350?random=1',
-    title: '精彩内容 1',
-    description: '探索更多精彩内容',
-  },
-  {
-    image: 'https://picsum.photos/800/350?random=2',
-    title: '精彩内容 2',
-    description: '发现新的世界',
-  },
-  {
-    image: 'https://picsum.photos/800/350?random=3',
-    title: '精彩内容 3',
-    description: '享受视觉盛宴',
-  },
-  {
-    image: 'https://picsum.photos/800/350?random=4',
-    title: '精彩内容 4',
-    description: '更多惊喜等你来',
-  },
-])
+const bannerList = ref([])
 const yourLike = ref([...Array(6)])
+// bannerList
+const getBannerList = async () => {
+  const res = await getPixivsionSpotlights()
+  bannerList.value = res.data.spotlight_articles
+}
+getBannerList()
 
+// 猜你喜欢
 const isNSFW = myLocalCache.get('isNSFW') ? 'nsfw' : 'sfw'
 const collectionKey = `${isNSFW}_collectionList`
 const likeList = myLocalCache.get(collectionKey) ?? [139397638, 106403528, 138959428]
@@ -142,6 +143,7 @@ const randomYourLike = async () => {
       }
     }
     yourLike.value = result
+    console.log('yourLike.value=', yourLike.value)
   } catch (err) {
     console.error('个性化推荐获取失败:', err)
     // 降级方案：使用随机推荐
@@ -157,16 +159,13 @@ const randomYourLike = async () => {
     }
   }
 }
-
 // 发起猜你喜欢请求
 randomYourLike()
-
 // 换一批：重新打乱当前推荐列表
 const changeList = () => {
   yourLike.value = [...yourLike.value].sort(() => Math.random() - 0.5)
 }
-const router = useRouter()
-const vipStore = useVip()
+
 // 进入详情页
 const getDetail = async (item) => {
   const pid = item.pid
@@ -193,10 +192,23 @@ const getDetail = async (item) => {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+      .item-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        transition: transform 0.3s ease;
+        z-index: 2;
+        .item-title {
+          color: white;
+          font-size: 20px;
+          font-weight: 700;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       }
     }
     :deep(.swiper-button-prev),
@@ -312,7 +324,6 @@ const getDetail = async (item) => {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transition: transform 0.4s ease;
           display: block;
         }
         .item-overlay {
@@ -334,18 +345,28 @@ const getDetail = async (item) => {
             text-overflow: ellipsis;
             white-space: nowrap;
           }
+          .item-info {
+            display: flex;
+            gap: 10px;
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 4px;
+            .total_view,
+            .total_bookmarks {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+          }
         }
-
         &:hover {
           :deep(img) {
             transform: scale(1.1);
           }
-
           .item-overlay {
             transform: translateY(0);
           }
         }
-
         &::before {
           content: '';
           position: absolute;
