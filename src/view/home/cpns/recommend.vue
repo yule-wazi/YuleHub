@@ -85,10 +85,13 @@ const { handleNavClick } = useNavClick(null, iconAction)
   .recommendList {
     font-size: 16px;
     color: var(--comics-cardSubTitle-color);
+    box-sizing: border-box;
     .top3Item {
       display: flex;
       height: 60px;
-      padding: 5px 10px;
+      padding: 5px;
+      margin: 5px 10px;
+      border-radius: 5px;
       .left {
         position: relative;
         height: 100%;
@@ -122,11 +125,16 @@ const { handleNavClick } = useNavClick(null, iconAction)
         font-size: 20px;
         font-weight: 500;
         color: var(--comics-cardText-color);
+        height: 100%;
       }
     }
     .recommendItem {
       display: flex;
-      padding: 5px 10px;
+      padding: 5px;
+      margin: 0px 10px;
+      border-radius: 5px;
+      width: auto;
+
       .index {
         width: 16px;
         height: 16px;
@@ -138,6 +146,21 @@ const { handleNavClick } = useNavClick(null, iconAction)
         color: #fff;
         border-radius: 4px;
         margin-right: 10px;
+      }
+      .text {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    .top3Item,
+    .recommendItem {
+      transition: 0.3s ease;
+      cursor: pointer;
+      &:hover {
+        background-color: #ff4d9475;
       }
     }
   }
