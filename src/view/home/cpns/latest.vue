@@ -13,7 +13,7 @@
       <template v-if="partition === 'Yule插画'">
         <template v-for="item of latestComics">
           <div class="latestItem">
-            <ImageItem v-if="item" :itemData="item" :dataList="vipStore.vipImgData" />
+            <ImageItemComics v-if="item" :itemData="item" :dataList="vipStore.vipImgData" />
           </div>
         </template>
       </template>
@@ -21,6 +21,13 @@
         <template v-for="item of latestPica">
           <div class="latestItem">
             <ImageItemPica v-if="item" :itemData="item" :dataList="picaStore.categoryList" />
+          </div>
+        </template>
+      </template>
+      <template v-else-if="partition === 'Yule小说'">
+        <template v-for="item in latestNovel">
+          <div class="latestItem">
+            <ImageItemNovel v-if="item" :itemData="item" />
           </div>
         </template>
       </template>
@@ -39,12 +46,14 @@
 import { computed, ref } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
 import useVip from '@/sotre/module/vip'
-import ImageItem from '@/view/comics/cpns/imageItem.vue'
+import ImageItemComics from '@/view/comics/cpns/imageItem.vue'
 import { useRouter } from 'vue-router'
 import { useNavClick } from '@/utils/useNavClick'
 import { sessionCache } from '@/utils/cacheStorage'
 import usePica from '@/sotre/module/pica'
 import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
+import ImageItemNovel from '@/view/novel/cpns/imageItem.vue'
+import useNovel from '@/sotre/module/novel'
 
 const props = defineProps({
   partition: {
@@ -54,14 +63,19 @@ const props = defineProps({
 })
 const vipStore = useVip()
 const picaStore = usePica()
+const novelStore = useNovel()
+const iconAction = ref(sessionCache.get('iconAction') ?? '')
+const { handleNavClick } = useNavClick(null, iconAction)
+
 const latestComics = computed(() => {
   return vipStore.vipImgData.length ? vipStore.vipImgData.slice(0, 10) : new Array(10)
 })
 const latestPica = computed(() => {
   return picaStore.categoryList.length ? picaStore.categoryList.slice(0, 10) : new Array(10)
 })
-const iconAction = ref(sessionCache.get('iconAction') ?? '')
-const { handleNavClick } = useNavClick(null, iconAction)
+const latestNovel = computed(() => {
+  return novelStore.novelList.length ? novelStore.novelList.slice(0, 10) : new Array(10)
+})
 </script>
 
 <style lang="less" scoped>
@@ -129,6 +143,7 @@ const { handleNavClick } = useNavClick(null, iconAction)
       :deep(.imageItem) {
         width: 100%;
         height: 100%;
+        padding: 0;
         display: block;
         .image {
           width: 100%;
@@ -141,6 +156,8 @@ const { handleNavClick } = useNavClick(null, iconAction)
         }
         .item {
           height: 100%;
+          width: 100%;
+          margin: 0;
         }
         .content {
           transform: translateY(-95%);
@@ -152,6 +169,11 @@ const { handleNavClick } = useNavClick(null, iconAction)
           .tagList {
             flex-wrap: nowrap;
           }
+        }
+        .novelContent {
+          position: absolute;
+          // background: rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(5px);
         }
       }
     }

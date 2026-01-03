@@ -4,7 +4,7 @@
       <div class="image">
         <img :src="showImg" alt="" @error="handleImgError" />
       </div>
-      <div class="content">
+      <div class="novelContent">
         <div class="title">{{ itemData.title }}</div>
         <div class="desc" v-html="itemData.caption"></div>
         <div class="tagList">
@@ -76,6 +76,7 @@ const getDetail = () => {
     padding: 0px 10px;
   }
   .item {
+    position: relative;
     @media (min-width: 800px) {
       width: 300px;
     }
@@ -98,7 +99,7 @@ const getDetail = () => {
         object-fit: cover;
       }
     }
-    .content {
+    .novelContent {
       position: relative;
       height: 100%;
       width: 100%;

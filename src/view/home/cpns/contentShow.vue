@@ -3,6 +3,7 @@
     <div class="latestArea">
       <Latest partition="Yule插画" />
       <Latest v-if="showPica" partition="Yule漫画" />
+      <Latest partition="Yule小说" />
     </div>
     <div class="recommendArea">
       <div class="latest">
@@ -40,6 +41,7 @@ import useVip from '@/sotre/module/vip'
 import { useNavClick } from '@/utils/useNavClick'
 import usePica from '@/sotre/module/pica'
 import Latest from './latest.vue'
+import useNovel from '@/sotre/module/novel'
 
 const latestList = ref([
   {
@@ -85,6 +87,7 @@ const latestList = ref([
 ])
 const vipStore = useVip()
 const picaStore = usePica()
+const novelStore = useNovel()
 const { filteredNavList } = useNavClick()
 // 获取每日插画数据
 const getComics = async () => {
@@ -101,8 +104,9 @@ if (showPica) {
 }
 // 获取每日小说数据
 const getNovel = async () => {
-  
+  novelStore.getHomeNovel()
 }
+getNovel()
 </script>
 
 <style lang="less" scoped>
