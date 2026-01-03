@@ -3,7 +3,7 @@
     <div class="latestHeader">
       <div class="title">{{ partition }}</div>
       <div class="more">
-        <el-button style="width: 100%; margin-top: 12px" @click="getMore">
+        <el-button style="width: 100%; margin-top: 12px" @click="handleNavClick(partition)">
           查看更多
           <el-icon><ArrowRightBold /></el-icon>
         </el-button>
@@ -11,9 +11,16 @@
     </div>
     <div class="latestList">
       <template v-if="partition === 'Yule插画'">
-        <template v-for="item of latest">
+        <template v-for="item of latestComics">
           <div class="latestItem">
             <ImageItem v-if="item" :itemData="item" :dataList="vipStore.vipImgData" />
+          </div>
+        </template>
+      </template>
+      <template v-else-if="partition === 'Yule漫画'">
+        <template v-for="item of latestPica">
+          <div class="latestItem">
+            <ImageItemPica v-if="item" :itemData="item" :dataList="picaStore.categoryList" />
           </div>
         </template>
       </template>
@@ -34,6 +41,10 @@ import { ArrowRightBold } from '@element-plus/icons-vue'
 import useVip from '@/sotre/module/vip'
 import ImageItem from '@/view/comics/cpns/imageItem.vue'
 import { useRouter } from 'vue-router'
+import { useNavClick } from '@/utils/useNavClick'
+import { sessionCache } from '@/utils/cacheStorage'
+import usePica from '@/sotre/module/pica'
+import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
 
 const props = defineProps({
   partition: {
@@ -42,20 +53,20 @@ const props = defineProps({
   },
 })
 const vipStore = useVip()
-const router = useRouter()
-const latest = computed(() => {
+const picaStore = usePica()
+const latestComics = computed(() => {
   return vipStore.vipImgData.length ? vipStore.vipImgData.slice(0, 10) : new Array(10)
 })
-const getMore = () => {
-  const partition = props.partition
-  if (partition === 'Yule插画') {
-    router.push('/comics')
-  }
-}
+const latestPica = computed(() => {
+  return picaStore.categoryList.length ? picaStore.categoryList.slice(0, 10) : new Array(10)
+})
+const iconAction = ref(sessionCache.get('iconAction') ?? '')
+const { handleNavClick } = useNavClick(null, iconAction)
 </script>
 
 <style lang="less" scoped>
 .latest {
+  margin-bottom: 20px;
   .latestHeader {
     display: flex;
     justify-content: space-between;
@@ -128,9 +139,19 @@ const getMore = () => {
             object-fit: cover;
           }
         }
+        .item {
+          height: 100%;
+        }
         .content {
           transform: translateY(-95%);
           background-color: var(--comics-cardBg-color);
+          height: auto;
+          .title {
+            font-size: clamp(10px, 1vw, 16px);
+          }
+          .tagList {
+            flex-wrap: nowrap;
+          }
         }
       }
     }

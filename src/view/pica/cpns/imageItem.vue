@@ -107,6 +107,7 @@ window.addEventListener('resize', function () {
 <style lang="less" scoped>
 .imageItem {
   display: none;
+  cursor: pointer;
   .item {
     width: 100%;
     background-color: var(--comics-cardBg-color);
@@ -144,7 +145,7 @@ window.addEventListener('resize', function () {
         display: flex;
         flex-wrap: wrap;
         .tag {
-          font-size: 12px;
+          font-size: clamp(9px, 1vw, 12px);
           margin: 5px 10px 0 0;
         }
       }

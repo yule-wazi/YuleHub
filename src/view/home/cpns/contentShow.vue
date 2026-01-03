@@ -1,7 +1,8 @@
 <template>
   <div class="contentShow">
     <div class="latestArea">
-      <Recommend />
+      <Latest partition="Yule插画" />
+      <Latest v-if="showPica" partition="Yule漫画" />
     </div>
     <div class="recommendArea">
       <div class="latest">
@@ -35,8 +36,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import Recommend from './latest.vue'
 import useVip from '@/sotre/module/vip'
+import { useNavClick } from '@/utils/useNavClick'
+import usePica from '@/sotre/module/pica'
+import Latest from './latest.vue'
 
 const latestList = ref([
   {
@@ -81,11 +84,25 @@ const latestList = ref([
   },
 ])
 const vipStore = useVip()
+const picaStore = usePica()
+const { filteredNavList } = useNavClick()
 // 获取每日插画数据
 const getComics = async () => {
   await vipStore.fetchGroupImgList({ isRefresh: true })
 }
 getComics()
+// 获取每日漫画数据
+const showPica = filteredNavList.value.find((item) => item.text === '漫画')
+if (showPica) {
+  const getPica = async () => {
+    await picaStore.fetchCategoryDetail({ isRefresh: true })
+  }
+  getPica()
+}
+// 获取每日小说数据
+const getNovel = async () => {
+  
+}
 </script>
 
 <style lang="less" scoped>
