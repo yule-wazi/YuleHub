@@ -6,7 +6,7 @@
         :pagination="pagination"
         :modules="modules"
         :autoplay="autoplay"
-        :loop="true"
+        :loop="bannerList.length > 2"
         :spaceBetween="0"
         class="mySwiper"
         style="height: 100%"

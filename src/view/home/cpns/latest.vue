@@ -59,7 +59,7 @@ import useVideo from '@/sotre/module/video'
 const props = defineProps({
   partition: {
     type: String,
-    default: 'Yule插画',
+    default: '',
   },
 })
 const vipStore = useVip()

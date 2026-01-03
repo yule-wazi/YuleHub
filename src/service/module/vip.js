@@ -1,18 +1,23 @@
 import myCache from '@/utils/cacheStorage'
 import MyRequest from '../request/index'
 // const baseURL = 'api.cocomi.eu.org'
-// const baseURL = 'hibiapi.getloli.com'
-const baseURL = 'hi.yyaan.com'
+const baseURL = 'hibiapi.getloli.com'
+// const baseURL = 'hi.yyaan.com'
 // pixivRank
-export function getPixivRankList(options, date = null) {
+export function getPixivRankList(options, date = null, mode = 'day') {
   let isR18 = myCache.get('isNSFW') ?? false
   // 如果未提供日期，使用当前时间减去1天的日期
-  let queryString = `&date=${date}`
-  for (const k in options) {
-    queryString += `&${k}=${options[k]}`
+  let queryString = ''
+  if (date) {
+    queryString = `&date=${date}`
+  }
+  if (options) {
+    for (const k in options) {
+      queryString += `&${k}=${options[k]}`
+    }
   }
   MyRequest.setBaseUrl(
-    `https://${baseURL}/api/pixiv/rank?mode=${isR18 ? 'day_r18' : 'day'}${queryString}`,
+    `https://${baseURL}/api/pixiv/rank?mode=${isR18 ? `${mode}_r18` : `${mode}`}${queryString}`,
   )
   return MyRequest.get()
 }
