@@ -3,6 +3,7 @@
     <HeaderCompoment
       :style="{
         backgroundColor: isScrolled ? 'var(--comics-headerBg-color)' : 'transparent',
+        color: isScrolled? 'var(--comics-cardText-color)' : '#fff',
         borderBottom: isScrolled ? '1px solid var(--comics-border-color)' : 'none',
         transition: 'all 0.3s ease',
       }"
@@ -62,6 +63,9 @@ onUnmounted(() => {
     flex-shrink: 0;
     background-image: url('https://cc-img.townimg.com/uploads/2024/06/20240602000420192.gif');
     background-size: cover;
+    @media (max-width: 1000px) {
+      display: none;
+    }
   }
   .content {
     display: flex;
@@ -73,6 +77,10 @@ onUnmounted(() => {
     @media (min-width: 1000px) {
       width: 85%;
       min-width: 1000px;
+    }
+    @media (max-width: 1000px) {
+      margin-top: 60px;
+      padding-top: 20px;
     }
   }
 }

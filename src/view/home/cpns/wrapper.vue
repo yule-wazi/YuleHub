@@ -182,12 +182,20 @@ const getDetail = async (item) => {
   height: 400px;
   display: flex;
   gap: 20px;
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    height: auto;
+  }
   .left {
     flex: 1;
     height: 100%;
+    max-height: 400px;
     border-radius: 8px;
     overflow: hidden;
     background-color: var(--comics-headerIcon-color);
+    @media (max-width: 1000px) {
+      max-height: 200px;
+    }
     .slide-content {
       width: 100%;
       height: 100%;
@@ -238,6 +246,7 @@ const getDetail = async (item) => {
   .right {
     height: 100%;
     flex: 1.5;
+
     .header {
       height: 35px;
       display: flex;
@@ -310,6 +319,9 @@ const getDetail = async (item) => {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-template-rows: repeat(2, calc(50% - 5px));
       gap: 10px;
+      @media (max-width: 1000px) {
+        height: 400px;
+      }
       .likeItem {
         height: 100%;
         border-radius: 8px;

@@ -87,6 +87,9 @@ getHotMonthComics()
     width: 300px;
     flex-shrink: 0;
     background-color: var(--comics-cardBg-color);
+    @media (max-width: 1000px) {
+      display: none;
+    }
   }
 }
 </style>
