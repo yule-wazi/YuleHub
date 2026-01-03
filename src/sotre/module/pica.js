@@ -76,14 +76,6 @@ const usePica = defineStore('pica', {
     } = {}) {
       const res = await getCategoryDetail(category, page)
       let list = res.data.data.comics.docs
-      const isNSFW = myCache.get('isNSFW')
-      if (category === 'Cosplay' && isNSFW) {
-        list = list.filter((item) => {
-          if (!item.tags.includes('無H內容')) {
-            return item
-          }
-        })
-      }
       if (isRefresh) {
         this.categoryList = list
       } else {

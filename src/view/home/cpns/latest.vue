@@ -31,10 +31,10 @@
           </div>
         </template>
       </template>
-      <template v-else>
-        <template v-for="item in recommendList">
+      <template v-else-if="partition === 'Yule动漫'">
+        <template v-for="item in latestVideo">
           <div class="latestItem">
-            <img :src="item" alt="" />
+            <ImageItemVideo v-if="item" :itemData="item" />
           </div>
         </template>
       </template>
@@ -45,15 +45,16 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
-import useVip from '@/sotre/module/vip'
 import ImageItemComics from '@/view/comics/cpns/imageItem.vue'
-import { useRouter } from 'vue-router'
+import ImageItemNovel from '@/view/novel/cpns/imageItem.vue'
+import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
+import ImageItemVideo from '@/view/video/cpns/imageItem.vue'
 import { useNavClick } from '@/utils/useNavClick'
 import { sessionCache } from '@/utils/cacheStorage'
 import usePica from '@/sotre/module/pica'
-import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
-import ImageItemNovel from '@/view/novel/cpns/imageItem.vue'
 import useNovel from '@/sotre/module/novel'
+import useVip from '@/sotre/module/vip'
+import useVideo from '@/sotre/module/video'
 
 const props = defineProps({
   partition: {
@@ -64,6 +65,7 @@ const props = defineProps({
 const vipStore = useVip()
 const picaStore = usePica()
 const novelStore = useNovel()
+const videoStore = useVideo()
 const iconAction = ref(sessionCache.get('iconAction') ?? '')
 const { handleNavClick } = useNavClick(null, iconAction)
 
@@ -75,6 +77,9 @@ const latestPica = computed(() => {
 })
 const latestNovel = computed(() => {
   return novelStore.novelList.length ? novelStore.novelList.slice(0, 10) : new Array(10)
+})
+const latestVideo = computed(() => {
+  return videoStore.videoList.length ? videoStore.videoList.slice(0, 10) : new Array(10)
 })
 </script>
 
