@@ -8,8 +8,8 @@ export function formatTime(time) {
 }
 
 // 获取当前时间减去1天的日期，格式为YYYY-MM-DD
-export function getYesterdayDate() {
-  return dayjs().subtract(1, 'day').format('YYYY-MM-DD')
+export function getYesterdayDate(subDays = 1) {
+  return dayjs().subtract(subDays, 'day').format('YYYY-MM-DD')
 }
 
 // 获取指定日期减去N天的日期，格式为YYYY-MM-DD

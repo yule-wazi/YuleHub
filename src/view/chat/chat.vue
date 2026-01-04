@@ -760,8 +760,7 @@ const selectAudio = (item, index) => {
   selectCurrentAudio.value = index
 }
 
-const iconAction = ref(sessionCache.get('iconAction') ?? '')
-const { filteredNavList, handleNavClick } = useNavClick(drawer, iconAction)
+const { filteredNavList, handleNavClick } = useNavClick(drawer)
 
 // 对话高亮
 const { textLight } = storeToRefs(agentStore)

@@ -114,32 +114,39 @@ const props = defineProps({
   },
   pid: {
     type: Number,
-    default: 0,
+    default: -1,
   },
   uid: {
+    type: Number,
+    default: 0,
+  },
+  x_restrict: {
     type: Number,
     default: 0,
   },
 })
 const vipStore = useVip()
 const router = useRouter()
-
 const showImg = ref('')
-const isNSFW = vipStore.detailData.x_restrict ? 'nsfw' : 'sfw'
-const collectionKey = `${isNSFW}_collectionList`
-const collectionList = myLocalCache.get(collectionKey) ?? []
+const collectionKey = computed(() => {
+  const isNSFW = props.x_restrict ? 'nsfw' : 'sfw'
+  return `${isNSFW}_collectionList`
+})
+const collectionList = computed(() => {
+  return myLocalCache.get(collectionKey.value) ?? []
+})
 const isFollow = ref(false)
 const followBtnRes = useTemplateRef('followBtn')
 
 // 点击收藏
 const followClick = () => {
   if (isFollow.value) {
-    collectionList.splice(collectionList.indexOf(props.pid), 1)
+    collectionList.value.splice(collectionList.value.indexOf(props.pid), 1)
   } else {
-    collectionList.push(props.pid)
+    collectionList.value.push(props.pid)
   }
 
-  myLocalCache.set(collectionKey, collectionList)
+  myLocalCache.set(collectionKey.value, collectionList.value)
   isFollow.value = !isFollow.value
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
 }
@@ -161,9 +168,6 @@ const getTag = (tag) => {
 watch(
   () => vipStore.detailDataAll,
   () => {
-    // 判断是否收藏过
-    isFollow.value = collectionList.includes(props.pid)
-    followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
     if (vipStore.detailDataAll.imgDetail?.coverImg?.large) {
       const origin = switchImgResolutionUrl(
         vipStore.detailDataAll.imgDetail?.coverImg?.large,
@@ -173,6 +177,14 @@ watch(
     }
   },
   { deep: true },
+)
+watch(
+  () => props.pid,
+  () => {
+    // 判断是否收藏过
+    isFollow.value = collectionList.value.includes(props.pid)
+    followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+  },
 )
 onMounted(() => {
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)

@@ -1,6 +1,6 @@
 <template>
   <div class="recommend">
-    <div class="title">本月最火插画</div>
+    <div class="title">本周最火插画</div>
     <div class="recommendList">
       <template v-for="(item, index) of list">
         <template v-if="index <= 2">
@@ -31,7 +31,6 @@
 <script setup>
 import MyImg from '@/components/myImg/myImg.vue'
 import useVip from '@/sotre/module/vip'
-import { sessionCache } from '@/utils/cacheStorage'
 import { useNavClick } from '@/utils/useNavClick'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -61,8 +60,7 @@ const getDetail = (item) => {
   vipStore.detailData = item
   vipStore.currentDetailShowImg = item.coverImg.large
 }
-const iconAction = ref(sessionCache.get('iconAction') ?? '')
-const { handleNavClick } = useNavClick(null, iconAction)
+const { handleNavClick } = useNavClick()
 </script>
 
 <style lang="less" scoped>
@@ -126,6 +124,10 @@ const { handleNavClick } = useNavClick(null, iconAction)
         font-weight: 500;
         color: var(--comics-cardText-color);
         height: 100%;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
     }
     .recommendItem {
@@ -161,6 +163,12 @@ const { handleNavClick } = useNavClick(null, iconAction)
       cursor: pointer;
       &:hover {
         background-color: #ff4d9475;
+      }
+      .text {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
     }
   }

@@ -50,7 +50,6 @@ import ImageItemNovel from '@/view/novel/cpns/imageItem.vue'
 import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
 import ImageItemVideo from '@/view/video/cpns/imageItem.vue'
 import { useNavClick } from '@/utils/useNavClick'
-import { sessionCache } from '@/utils/cacheStorage'
 import usePica from '@/sotre/module/pica'
 import useNovel from '@/sotre/module/novel'
 import useVip from '@/sotre/module/vip'
@@ -66,8 +65,7 @@ const vipStore = useVip()
 const picaStore = usePica()
 const novelStore = useNovel()
 const videoStore = useVideo()
-const iconAction = ref(sessionCache.get('iconAction') ?? '')
-const { handleNavClick } = useNavClick(null, iconAction)
+const { handleNavClick } = useNavClick()
 
 const latestComics = computed(() => {
   return vipStore.vipImgData.length ? vipStore.vipImgData.slice(0, 10) : new Array(10)

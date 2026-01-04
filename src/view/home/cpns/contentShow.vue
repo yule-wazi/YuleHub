@@ -22,6 +22,7 @@ import useVideo from '@/sotre/module/video'
 import Recommend from './recommend.vue'
 import { ref } from 'vue'
 import { getPixivRankList } from '@/service/module/vip'
+import { getYesterdayDate } from '@/utils/formatTime'
 
 const vipStore = useVip()
 const picaStore = usePica()
@@ -51,7 +52,8 @@ const getVideo = async () => {
 // 获取本月最火插画
 const hotMonthComics = ref(null)
 const getHotMonthComics = async () => {
-  const res = await getPixivRankList(null, null, 'month')
+  let currentDate = getYesterdayDate(7)
+  const res = await getPixivRankList(null, currentDate, 'week')
   const formatList = res.data.illusts.map((item) => {
     return {
       pid: item.id,

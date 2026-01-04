@@ -1,6 +1,9 @@
 <template>
   <div class="partitionBanner">
-    <template v-for="(item, index) in filteredNavList.filter((item) => item.text !== '首页')" :key="index">
+    <template
+      v-for="(item, index) in filteredNavList.filter((item) => item.text !== '首页')"
+      :key="index"
+    >
       <div class="PartitionItem" @click="handleNavClick(item.action)">
         <div class="imageWrapper">
           <img :src="item.img" :alt="item.text" />
@@ -15,13 +18,10 @@
 </template>
 
 <script setup>
-import { sessionCache } from '@/utils/cacheStorage'
 import { useNavClick } from '@/utils/useNavClick'
-import { ref } from 'vue'
 
 // 记录当前所在分区
-const iconAction = ref(sessionCache.get('iconAction') ?? '')
-const { filteredNavList, handleNavClick } = useNavClick(null, iconAction)
+const { filteredNavList, handleNavClick } = useNavClick()
 </script>
 
 <style lang="less" scoped>

@@ -97,15 +97,19 @@ getBannerList()
 // 猜你喜欢
 const isNSFW = myLocalCache.get('isNSFW') ? 'nsfw' : 'sfw'
 const collectionKey = `${isNSFW}_collectionList`
-const likeList = myLocalCache.get(collectionKey) ?? [139397638, 106403528, 138959428]
+const likeList = myLocalCache.get(collectionKey) ?? []
 
 // 智能推荐算法
 const randomYourLike = async () => {
   const SEED_LIMIT = 6 // 最多使用6个种子作品
   // 从用户收藏中随机选择种子作品
-  const seeds = [...likeList]
+  let seeds = [...likeList]
     .sort(() => Math.random() - 0.5)
     .slice(0, Math.min(SEED_LIMIT, likeList.length))
+
+  if (!seeds.length) {
+    seeds = [139397638, 106403528, 138959428]
+  }
   try {
     // 并发请求所有种子作品的相关推荐
     const responses = await Promise.all(

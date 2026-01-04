@@ -130,7 +130,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import useVip from '@/sotre/module/vip'
 import myCache, { sessionCache } from '@/utils/cacheStorage'
 import { Search, Hide, View, Expand, Close, Sunny, Moon } from '@element-plus/icons-vue'
@@ -160,6 +160,7 @@ watch(isCollapsed, () => {
 // 搜索
 const vipStore = useVip()
 const router = useRouter()
+const route = useRoute()
 const emit = defineEmits(['searchClickEmit'])
 const searchClick = (tag) => {
   isCollapsed.value = true
@@ -167,8 +168,39 @@ const searchClick = (tag) => {
   input.value = ''
   emit('searchClickEmit', tag)
 }
-// 记录当前所在分区
+
+// 路由路径到 action 的映射
+const routeToActionMap = {
+  '/home': 'goHome',
+  '/comics': 'goComics',
+  '/pica': 'goPica',
+  '/novel': 'goNovel',
+  '/video': 'goVideo',
+}
+
+// 记录当前所在分区 - 根据路由动态设置
 const iconAction = ref(sessionCache.get('iconAction') ?? '')
+const getActionFromPath = (path) => {
+  for (const [routePath, action] of Object.entries(routeToActionMap)) {
+    if (path === routePath || path.startsWith(routePath + '/')) {
+      return action
+    }
+  }
+  return null
+}
+// 监听路由变化，自动更新 iconAction
+watch(
+  () => route.path,
+  (newPath) => {
+    const action = getActionFromPath(newPath)
+    if (action) {
+      iconAction.value = action
+      sessionCache.set('iconAction', action)
+    }
+  },
+  { immediate: true },
+)
+
 // 打开菜单
 const drawer = ref(false)
 // 切换NSFW
@@ -197,7 +229,7 @@ const logoutClick = () => {
   myCache.remove('userInfo')
   router.replace('/login')
 }
-const { filteredNavList, handleNavClick } = useNavClick(drawer, iconAction)
+const { filteredNavList, handleNavClick } = useNavClick(drawer)
 </script>
 
 <style lang="less" scoped>
