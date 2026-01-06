@@ -2,7 +2,7 @@
   <div class="imageItem" @click="getDetail">
     <div class="item">
       <div class="image" :style="{ aspectRatio: imgAspectRatio }">
-        <img :src="showImg" loading="lazy" @error="handleImgError" />
+        <MyImg :imgUrl="itemData.coverImg?.large" @error="handleImgError" />
         <div v-if="pageLength" class="pageIcon">
           <el-icon><CopyDocument /></el-icon>
           <span class="pageCount">{{ pageLength }}</span>
@@ -31,6 +31,7 @@ import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { throttledFlowFlex } from '@/utils/waterflow'
 import { CopyDocument } from '@element-plus/icons-vue'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const props = defineProps({
   itemData: {
@@ -53,9 +54,6 @@ const handleImgError = (e) => {
 }
 const imgUrl = props.itemData.coverImg?.large
 const pageLength = props.itemData.pageList?.length
-const LQIPImg = switchImgResolutionUrl(imgUrl)
-const originImg = switchImgResolutionUrl(imgUrl, 'origin')
-let showImg = ref(LQIPImg)
 // 直接使用 API 返回的宽高比，避免通过图片加载获取导致的偏移
 const imgAspectRatio = computed(() => {
   if (props.itemData.width && props.itemData.height) {
@@ -63,10 +61,6 @@ const imgAspectRatio = computed(() => {
   }
   return '3 / 4'
 })
-// 加载高清图并替换显示
-preLoadImg(originImg)
-  .then(({ src }) => (showImg.value = src))
-  .catch(() => {})
 
 // 监听窗口 resize：列数变化时需要重新计算
 window.addEventListener('resize', function () {

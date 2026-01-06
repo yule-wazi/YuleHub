@@ -1,6 +1,6 @@
 <template>
   <div class="myImg">
-    <img :src="showImg" />
+    <img :src="showImg" @error="triggerEmit"/>
   </div>
 </template>
 
@@ -14,23 +14,28 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  isOriginal: {
+  showOriginal: {
     type: Boolean,
     default: false,
   },
 })
 let showImg = ref(null)
-
 const loadImg = async () => {
+  if (!props.imgUrl) {
+    return
+  }
   const LQIPImg = switchImgResolutionUrl(props.imgUrl)
   showImg.value = LQIPImg
-  const { src } = await preLoadImg(switchImgResolutionUrl(props.imgUrl, 'origin'))
+  const master = switchImgResolutionUrl(props.imgUrl, 'origin')
+  const { src } = await preLoadImg(master)
   showImg.value = src
-  if (props.isOriginal) {
+  if (props.showOriginal) {
     const { src } = await preLoadImg(switchImgResolutionUrl(props.imgUrl, 'original'))
     showImg.value = src
-    console.log('请求原图', showImg.value)
   }
+}
+const triggerEmit = () => {
+  emit(e)
 }
 watch(
   () => props.imgUrl,
@@ -39,6 +44,8 @@ watch(
   },
   { immediate: true },
 )
+
+const emit = defineEmits(['error'])
 </script>
 
 <style lang="less" scoped>

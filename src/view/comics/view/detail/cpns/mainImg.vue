@@ -14,7 +14,7 @@
         >
           <template v-for="item in pageList" :key="item.id || item.image_urls?.large">
             <swiper-slide>
-              <img :src="switchImgResolutionUrl(item.image_urls.large, 'origin')" alt="" />
+              <MyImg :imgUrl="item.image_urls.large" />
             </swiper-slide>
           </template>
         </swiper>
@@ -36,7 +36,7 @@
         </div>
       </template>
       <template v-else>
-        <img :src="showImg" />
+        <MyImg :imgUrl="showImg" :showOriginal="true" />
       </template>
     </div>
   </div>
@@ -44,7 +44,6 @@
 
 <script setup>
 import useVip from '@/sotre/module/vip'
-import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { onMounted, ref, watch, computed, onBeforeUnmount } from 'vue'
 import { getPixivUgoiraMetadata } from '@/service/module/vip'
@@ -56,6 +55,7 @@ import { Navigation, Pagination } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const showImg = ref('')
 const vipStore = useVip()
@@ -193,15 +193,8 @@ watch(
     swiperInstance.value?.slideTo(0, 0)
     currentIndex.value = 1
     if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
-      const origin = switchImgResolutionUrl(
-        vipStore.detailDataAll.imgDetail.coverImg.large,
-        'original',
-      )
-      preLoadImg(origin).then(({ src }) => {
-        showImg.value = src
-      })
+      showImg.value = vipStore.detailDataAll.imgDetail.coverImg.large
     }
-
     // 如果是动图，自动加载并播放
     if (isUgoira.value) {
       await loadUgoira()
@@ -218,8 +211,7 @@ onMounted(() => {
   pageList.value = vipStore.detailData?.pageList ?? []
   currentIndex.value = 1
   if (vipStore.detailData?.coverImg?.large) {
-    const origin = switchImgResolutionUrl(vipStore.detailData.coverImg.large, 'origin')
-    preLoadImg(origin).then(({ src }) => (showImg.value = src))
+    showImg.value = vipStore.detailData.coverImg.large
   }
 })
 
@@ -297,14 +289,17 @@ const onSlideChange = (swiperInstance) => {
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.95);
     }
-    img {
-      width: 100%;
-      height: 100%;
-      margin: auto;
-      display: block;
-      object-fit: contain;
-      border-radius: 10px;
+    :deep(.myImg) {
+      img {
+        width: 100%;
+        height: 100%;
+        margin: auto;
+        display: block;
+        object-fit: contain;
+        border-radius: 10px;
+      }
     }
+
     .ugoira-canvas {
       width: 100%;
       height: 100%;
