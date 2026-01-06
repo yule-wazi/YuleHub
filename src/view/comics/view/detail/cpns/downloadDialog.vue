@@ -12,12 +12,12 @@
         <div class="canvas">
           <div class="cropper">
             <ImageCropper
-              :image-url="switchImgResolutionUrl(vipStore.currentDetailShowImg, 'origin')"
+              :image-url="downLoadImg"
             />
           </div>
           <div class="preview">
             <CropPreview
-              :image-url="switchImgResolutionUrl(vipStore.currentDetailShowImg, 'origin')"
+              :image-url="downLoadImg"
             />
           </div>
         </div>
@@ -30,15 +30,24 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import useVip from '@/sotre/module/vip'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { CircleCloseFilled } from '@element-plus/icons-vue'
 import ImageCropper from '@/components/imageCropper/ImageCropper.vue'
 import CropPreview from '@/components/imageCropper/CropPreview.vue'
 import CropControls from '@/components/imageCropper/CropControls.vue'
+import { preLoadImg } from '@/utils/preLoadImg'
 
 const showDialog = defineModel()
 const vipStore = useVip()
+
+const downLoadImg = ref('')
+
+const origin = switchImgResolutionUrl(vipStore.currentDetailShowImg, 'original')
+preLoadImg(origin).then(({ src }) => {
+  downLoadImg.value = src
+})
 </script>
 
 <style lang="less" scoped>

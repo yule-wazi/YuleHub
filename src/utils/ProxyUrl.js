@@ -17,6 +17,11 @@ export function switchImgResolutionUrl(url, quality = 'low') {
   let newUrl = ''
   const reg = /c[^/]*\/[^/]*\//
   switch (quality) {
+    case 'original':
+      newUrl = url.replace(reg, '')
+      newUrl = newUrl.replace(/\/img-master\//, '/img-original/')
+      newUrl = newUrl.replace(/_master1200(\.\w+)$/, '$1')
+      break
     case 'origin':
       newUrl = url.replace(reg, '')
       break

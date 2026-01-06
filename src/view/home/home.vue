@@ -3,7 +3,7 @@
     <HeaderCompoment
       :style="{
         backgroundColor: isScrolled ? 'var(--comics-headerBg-color)' : 'transparent',
-        color: isScrolled? 'var(--comics-cardText-color)' : '#fff',
+        color: isScrolled ? 'var(--comics-cardText-color)' : '#fff',
         borderBottom: isScrolled ? '1px solid var(--comics-border-color)' : 'none',
         transition: 'all 0.3s ease',
       }"
@@ -61,7 +61,11 @@ onUnmounted(() => {
   .headerBanner {
     height: 155px;
     flex-shrink: 0;
-    background-image: url('https://cc-img.townimg.com/uploads/2024/06/20240602000420192.gif');
+    background-image: url(https://i.pximg.org/img-original/img/2025/01/30/22/31/38/126727491_p0.jpg);
+    background-image: url(https://i.pximg.org/img-original/img/2025/10/16/18/14/05/136342601_p0.jpg);
+    background-image: url(https://i.pximg.org/img-original/img/2025/07/25/20/03/31/133100525_p0.jpg);
+    background-image: url(https://i.pximg.org/img-original/img/2025/07/25/20/01/48/133100429_p0.jpg);
+    background-position: center;
     background-size: cover;
     @media (max-width: 1000px) {
       display: none;

@@ -195,14 +195,15 @@ watch(
     if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
       const origin = switchImgResolutionUrl(
         vipStore.detailDataAll.imgDetail.coverImg.large,
-        'origin',
+        'original',
       )
-      preLoadImg(origin).then(({ src }) => (showImg.value = src))
+      preLoadImg(origin).then(({ src }) => {
+        showImg.value = src
+      })
     }
 
     // 如果是动图，自动加载并播放
     if (isUgoira.value) {
-      console.log('检测到动图，自动加载并播放')
       await loadUgoira()
       if (ugoiraFrames.value.length > 0) {
         isPlaying.value = true

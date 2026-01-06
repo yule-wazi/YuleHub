@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { preLoadImg } from '@/utils/preLoadImg'
 
@@ -14,14 +14,31 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isOriginal: {
+    type: Boolean,
+    default: false,
+  },
 })
-const LQIPImg = switchImgResolutionUrl(props.imgUrl)
-const originImg = switchImgResolutionUrl(props.imgUrl, 'origin')
-let showImg = ref(LQIPImg)
-// 加载高清图并替换显示
-preLoadImg(originImg)
-  .then(({ src }) => (showImg.value = src))
-  .catch(() => {})
+let showImg = ref(null)
+
+const loadImg = async () => {
+  const LQIPImg = switchImgResolutionUrl(props.imgUrl)
+  showImg.value = LQIPImg
+  const { src } = await preLoadImg(switchImgResolutionUrl(props.imgUrl, 'origin'))
+  showImg.value = src
+  if (props.isOriginal) {
+    const { src } = await preLoadImg(switchImgResolutionUrl(props.imgUrl, 'original'))
+    showImg.value = src
+    console.log('请求原图', showImg.value)
+  }
+}
+watch(
+  () => props.imgUrl,
+  () => {
+    loadImg()
+  },
+  { immediate: true },
+)
 </script>
 
 <style lang="less" scoped>
