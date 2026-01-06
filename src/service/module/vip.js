@@ -70,7 +70,28 @@ export function getPixivUgoiraMetadata(pid) {
   return MyRequest.get()
 }
 // 获取pixivsion特辑
-export function getPixivsionSpotlights() {
-  MyRequest.setBaseUrl(`https://${baseURL}/api/pixiv/spotlights?category=all&page=1&size=21`)
-  return MyRequest.get()
+export async function getPixivsionSpotlights(size = 20, maxRetries = 5) {
+  let currentSize = size
+  let retries = 0
+
+  while (retries < maxRetries) {
+    MyRequest.setBaseUrl(
+      `https://${baseURL}/api/pixiv/spotlights?category=all&page=1&size=${currentSize}`,
+    )
+    const res = await MyRequest.get()
+
+    // 检查是否返回错误信息
+    if (res.data && res.data.error) {
+      console.log(`请求失败 (size=${currentSize}):`, res.data.error.message)
+      // 递增size并重试
+      currentSize += 1
+      retries++
+      continue
+    }
+    if (res.data && res.data.spotlight_articles) {
+      return res
+    }
+  }
+
+  throw new Error(`获取pixivsion特辑失败，已达到最大重试次数`)
 }

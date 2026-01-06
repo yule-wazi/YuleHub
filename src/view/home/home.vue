@@ -9,7 +9,7 @@
       }"
       title="YuLeHub"
     />
-    <div class="headerBanner"></div>
+    <HeaderBanner />
     <div class="content">
       <Wrapper />
       <PartitionBanner />
@@ -24,6 +24,7 @@ import HeaderCompoment from '@/components/headerComponent/headerCompoment.vue'
 import Wrapper from './cpns/wrapper.vue'
 import PartitionBanner from './cpns/partitionBanner.vue'
 import ContentShow from './cpns/contentShow.vue'
+import HeaderBanner from './cpns/headerBanner.vue'
 
 // 滚动状态
 const homeRef = ref(null)
@@ -58,19 +59,7 @@ onUnmounted(() => {
   overflow: auto;
   flex-direction: column;
   background-color: var(--comics-bg-color);
-  .headerBanner {
-    height: 155px;
-    flex-shrink: 0;
-    background-image: url(https://i.pximg.org/img-original/img/2025/01/30/22/31/38/126727491_p0.jpg);
-    background-image: url(https://i.pximg.org/img-original/img/2025/10/16/18/14/05/136342601_p0.jpg);
-    background-image: url(https://i.pximg.org/img-original/img/2025/07/25/20/03/31/133100525_p0.jpg);
-    background-image: url(https://i.pximg.org/img-original/img/2025/07/25/20/01/48/133100429_p0.jpg);
-    background-position: center;
-    background-size: cover;
-    @media (max-width: 1000px) {
-      display: none;
-    }
-  }
+
   .content {
     display: flex;
     flex-direction: column;
