@@ -1,5 +1,10 @@
 <template>
-  <div class="home" ref="homeRef">
+  <div
+    class="home"
+    ref="homeRef"
+    @mousemove="handleHeaderMouseMove"
+    @mouseleave="handleHeaderMouseLeave"
+  >
     <HeaderCompoment
       :style="{
         backgroundColor: isScrolled ? 'var(--comics-headerBg-color)' : 'transparent',
@@ -9,7 +14,7 @@
       }"
       title="YuLeHub"
     />
-    <HeaderBanner />
+    <HeaderBanner ref="headerBannerRef" />
     <div class="content">
       <Wrapper />
       <PartitionBanner />
@@ -29,12 +34,29 @@ import HeaderBanner from './cpns/headerBanner.vue'
 // 滚动状态
 const homeRef = ref(null)
 const isScrolled = ref(false)
+const headerBannerRef = ref(null)
 
 // 监听滚动事件
 const handleScroll = () => {
   if (homeRef.value) {
     const scrollTop = homeRef.value.scrollTop
     isScrolled.value = scrollTop > 155
+  }
+}
+
+// 处理鼠标移动事件，传递给HeaderBanner
+const handleHeaderMouseMove = (e) => {
+  // 只在header区域（顶部155px）内触发
+  if (e.clientY <= 155 && headerBannerRef.value) {
+    // 调用HeaderBanner的handleMouseMove方法
+    headerBannerRef.value.handleMouseMove(e)
+  }
+}
+
+// 处理鼠标离开事件
+const handleHeaderMouseLeave = (e) => {
+  if (headerBannerRef.value) {
+    headerBannerRef.value.handleMouseLeave()
   }
 }
 

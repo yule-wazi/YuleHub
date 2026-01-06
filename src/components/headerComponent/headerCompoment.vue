@@ -246,6 +246,7 @@ const { filteredNavList, handleNavClick } = useNavClick(drawer)
   border-bottom: 1px solid #999;
   z-index: 999;
   padding: 0 10px;
+  pointer-events: none; /* 让整个header穿透 */
   .content {
     display: flex;
     justify-content: space-between;
@@ -254,6 +255,7 @@ const { filteredNavList, handleNavClick } = useNavClick(drawer)
     min-width: 1000px;
     line-height: 60px;
     margin: auto;
+    pointer-events: auto; /* 恢复content区域的交互 */
     .left {
       display: flex;
       .title {
