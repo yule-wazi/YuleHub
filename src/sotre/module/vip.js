@@ -155,7 +155,7 @@ const useVip = defineStore('vip', {
       } = imgRes.data.illust
       const { illusts } = moreRelatedImgRes.data
 
-      this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(1, 7)
+      this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(0, 6)
       this.detailDataAll.artistDetail = {
         id: uid,
         name,

@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智能化、个性化的聊天体验。支持 **用户 与 AI** 进行角色扮演进行聊天，并提供了 _PC 端_ 和 _移动端_ 的响应式界面及功能模块。同时，已新增YULE插画、YULE小说和YULE动漫。
+YuleHub 是一个基于现代 Web 技术构建的综合性娱乐平台，集成了 **AI 智能对话**、**精美插画**、**小说阅读** 和 **动漫视频** 四大核心功能模块。项目采用响应式设计，完美适配 _PC 端_ 和 _移动端_，为用户提供流畅的浏览体验和丰富的娱乐内容。
 
 ### 首页
 
@@ -17,7 +17,7 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 
 <table>
   <tr>
-    <td><img src="public/readMe/chat-pc1.png"/></td>
+    <td><img src="public/readMe/chat_pc.png"/></td>
     <td><img src="public/readMe/chat-mobile.png" width="670px"/></td>
   </tr>
 </table>
@@ -36,7 +36,6 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
     <td><img src="public/readMe/comics_download.png"  width="1200px"/></td>
   </tr>
 </table>
-
 
 ### 小说页面
 
@@ -96,29 +95,23 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
    git clone https://github.com/yule-wazi/YuleHub.git
    ```
 
-2. **进入项目目录**
-
-   ```bash
-   cd AI聊天室
-   ```
-
-3. **安装依赖**
+2. **安装依赖**
 
    ```bash
    npm install
    ```
 
-4. **运行项目**
+3. **运行项目**
 
    ```bash
    npm run dev
    ```
 
-5. **访问项目**
+4. **访问项目**
 
    - 在浏览器中打开 [http://localhost:5173](http://localhost:5173) 查看项目。
 
-6. **登录账号**
+5. **登录账号**
    - 账号：`vip` 密码：`vip`
 
 ## 技术栈
@@ -139,7 +132,6 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 - GitHub仓库 [点击进入](https://github.com/yule-wazi/aiChat.git)
 - Gitee仓库 [点击进入](https://gitee.com/yule-wazi/ai-chat-room.git)
 
-
 ## 免责声明
 
-本项目所有接口均来自网络公开资源，仅供个人学习和技术研究使用。请勿用于任何商业用途或非法用途。使用本项目所产生的一切后果由使用者自行承担，项目作者不承担任何法律责任。
+本项目所有接口均来自网络公开资源，仅供个人学习和技术研究使用。请勿用于任何商业用途或非法用途。使用本项目所产生的一切后果由使用者自行承担，项目作者不承担任何责任。
