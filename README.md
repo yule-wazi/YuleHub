@@ -36,8 +36,6 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
     <td><img src="public/readMe/comics_download.png"  width="1200px"/></td>
   </tr>
 </table>
-  
-
 
 
 ### 小说页面
@@ -140,3 +138,8 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 
 - GitHub仓库 [点击进入](https://github.com/yule-wazi/aiChat.git)
 - Gitee仓库 [点击进入](https://gitee.com/yule-wazi/ai-chat-room.git)
+
+
+## 免责声明
+
+本项目所有接口均来自网络公开资源，仅供个人学习和技术研究使用。请勿用于任何商业用途或非法用途。使用本项目所产生的一切后果由使用者自行承担，项目作者不承担任何法律责任。
