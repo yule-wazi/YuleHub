@@ -77,11 +77,8 @@ const getDetail = () => {
   }
   .item {
     position: relative;
-    @media (min-width: 800px) {
-      width: 300px;
-    }
     @media (min-width: 1000px) {
-      width: 400px;
+      width: 300px;
     }
     width: 92vw;
     height: 250px;

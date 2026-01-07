@@ -75,10 +75,12 @@ const { handleNavClick } = useNavClick()
     height: 35px;
     line-height: 35px;
     background-color: var(--comics-cardSubTitle-color);
+    background-color: var(--comics-headerBg-color);
     font-size: 18px;
     font-weight: 500;
     text-align: center;
     color: #fff;
+    color: var(--comics-cardText-color);
   }
   .recommendList {
     font-size: 16px;

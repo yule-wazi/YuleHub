@@ -2,7 +2,16 @@
 
 ## 项目简介
 
-YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智能化、个性化的聊天体验。支持 **用户 与 AI** 进行角色扮演进行**无限制**聊天，并提供了 _PC 端_ 和 _移动端_ 的响应式界面及功能模块。同时，已新增YULE插画、YULE小说和YULE动漫。
+YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智能化、个性化的聊天体验。支持 **用户 与 AI** 进行角色扮演进行聊天，并提供了 _PC 端_ 和 _移动端_ 的响应式界面及功能模块。同时，已新增YULE插画、YULE小说和YULE动漫。
+
+### 首页
+
+<table>
+  <tr>
+    <td><img src="public/readMe/home_pc_light.png"/></td>
+    <td><img src="public/readMe/home_phone_dark.png" width="790px"/></td>
+  </tr>
+</table>
 
 ### AI聊天页面
 
@@ -17,25 +26,26 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 
 <table>
   <tr>
-    <td><img src="public/readMe/comics_pc_category_light.png"/></td>
-    <td><img src="public/readMe/comics_phone_category_light.png" width="800px"/></td>
-  </tr>
-  <tr>
-    <td><img src="public/readMe/comics_pc_category_dark.png" /></td>
-    <td><img src="public/readMe/comics_phone_detail_dark.png" width="800px"/></td>
+    <td><img src="public/readMe/comics_pc_light.png"/></td>
+    <td><img src="public/readMe/comics_phone_light.png" width="800px"/></td>
   </tr>
 </table>
+<table>
+<tr>
+    <td><img src="public/readMe/comics_pc_detail_dark.png" /></td>
+    <td><img src="public/readMe/comics_download.png"  width="1200px"/></td>
+  </tr>
+</table>
+  
+
+
 
 ### 小说页面
 
 <table>
   <tr>
     <td><img src="public/readMe/novel_pc_light_home.png"/></td>
-    <td><img src="public/readMe/novel_phone_light_detail.png" width="800px"/></td>
-  </tr>
-  <tr>
-    <td><img src="public/readMe/novel_pc_dark_home.png" /></td>
-    <td><img src="public/readMe/novel_phone_dark_category.png" width="800px"/></td>
+    <td><img src="public/readMe/novel_phone_dark_detail.png" width="800px"/></td>
   </tr>
 </table>
 
@@ -69,7 +79,7 @@ YuleHub是一个基于现代 Web 技术构建的实时聊天应用，提供智�
 3. **YULE插画**：
 
    - [https://hibiapi.getloli.com](https://hibiapi.getloli.com/docs)API提供
-   - 展示Pixiv精选图片(可选择是否开启NSFW)
+   - 展示Pixiv精选图片
 
 4. **YULE小说**
 

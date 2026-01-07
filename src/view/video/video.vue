@@ -1,6 +1,6 @@
 <template>
   <div class="video">
-    <HeaderCompoment title="YULE动漫" @searchClickEmit="searchClick" />
+    <HeaderCompoment title="YuLe动漫" @searchClickEmit="searchClick" />
     <RouterView v-slot="{ Component }">
       <KeepAlive :include="['home', 'category']">
         <component :is="Component" />

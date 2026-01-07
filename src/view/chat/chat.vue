@@ -22,7 +22,7 @@
     </div>
     <div class="menuDrawer">
       <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
-        <template #menuHeader> AI Chat </template>
+        <template #menuHeader> YuLe畅聊 </template>
         <template #menuDefault>
           <div
             v-for="item in filteredNavList"

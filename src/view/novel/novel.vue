@@ -1,6 +1,6 @@
 <template>
   <div class="novel">
-    <headerCompoment title="YULE小说" @searchClickEmit="searchClick" />
+    <headerCompoment title="YuLe小说" @searchClickEmit="searchClick" />
     <RouterView />
   </div>
 </template>

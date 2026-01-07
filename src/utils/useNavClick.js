@@ -6,6 +6,8 @@ import {
   Management,
   Collection,
   VideoCameraFilled,
+  ChatDotRound,
+  ChatDotSquare,
 } from '@element-plus/icons-vue'
 import myLocalCache, { sessionCache } from './cacheStorage'
 
@@ -14,6 +16,13 @@ export function useNavClick(drawer = null, iconAction = null) {
   // 回到首页
   const goHome = () => {
     router.push('/home')
+  }
+  // 转到AI
+  const goChat = () => {
+    if (drawer) {
+      drawer.value = false
+    }
+    router.push('/chat')
   }
   // 转到插画
   const goComics = () => {
@@ -53,17 +62,24 @@ export function useNavClick(drawer = null, iconAction = null) {
       action: 'goHome',
     },
     {
+      text: '畅聊',
+      fullName: 'YuleChat',
+      icon: ChatDotSquare,
+      img: 'https://i.pximg.org/img-original/img/2022/11/20/11/59/06/102944326_p0.jpg',
+      action: 'goChat'
+    },
+    {
       text: '插画',
       fullName: 'Yule插画',
       icon: PictureFilled,
-      img: 'https://i.pximg.org/img-master/img/2025/07/31/15/17/02/133318656_p0_master1200.jpg',
+      img: 'https://i.pximg.org/img-original/img/2025/07/31/15/17/02/133318656_p0.jpg',
       action: 'goComics',
     },
     {
       text: '漫画',
       fullName: 'Yule漫画',
       icon: Collection,
-      img: 'https://i.pximg.org/img-master/img/2025/04/27/18/00/27/129760572_p0_master1200.jpg',
+      img: 'https://i.pximg.org/img-original/img/2025/04/27/18/00/27/129760572_p0.jpg',
       action: 'goPica',
       role: 999,
     },
@@ -78,12 +94,12 @@ export function useNavClick(drawer = null, iconAction = null) {
       text: '动漫',
       fullName: 'Yule动漫',
       icon: VideoCameraFilled,
-      img: 'https://i.pximg.org/img-master/img/2025/09/07/00/13/43/134795768_p0_master1200.jpg',
+      img: 'https://i.pximg.org/img-original/img/2025/09/07/00/13/43/134795768_p0.jpg',
       action: 'goVideo',
     },
   ]
   // 映射表：将字符串映射到具体函数
-  const actionMethods = { goHome, goComics, goPica, goNovel, goVideo }
+  const actionMethods = { goHome, goChat, goComics, goPica, goNovel, goVideo }
 
   // 如果有权限过滤逻辑，可以使用
   const userInfo = myLocalCache.get('userInfo')

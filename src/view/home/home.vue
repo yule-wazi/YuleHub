@@ -1,20 +1,15 @@
 <template>
-  <div
-    class="home"
-    ref="homeRef"
-    @mousemove="handleHeaderMouseMove"
-    @mouseleave="handleHeaderMouseLeave"
-  >
+  <div class="home" ref="homeRef" @mousemove="handleHeaderMouseMove">
     <HeaderCompoment
       :style="{
-        backgroundColor: isScrolled ? 'var(--comics-headerBg-color)' : 'transparent',
+        backgroundColor: isScrolled ? 'var(--comics-cardBg-color)' : 'transparent',
         color: isScrolled ? 'var(--comics-cardText-color)' : '#fff',
         borderBottom: isScrolled ? '1px solid var(--comics-border-color)' : 'none',
         transition: 'all 0.3s ease',
       }"
       title="YuLeHub"
     />
-    <HeaderBanner ref="headerBannerRef" />
+    <HeaderBanner ref="headerBannerRef" @mouseleave="handleHeaderMouseLeave" />
     <div class="content">
       <Wrapper />
       <PartitionBanner />
@@ -55,7 +50,7 @@ const handleHeaderMouseMove = (e) => {
 
 // 处理鼠标离开事件
 const handleHeaderMouseLeave = (e) => {
-  if (headerBannerRef.value) {
+  if (e.clientY > 155 && headerBannerRef.value) {
     headerBannerRef.value.handleMouseLeave()
   }
 }

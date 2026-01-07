@@ -5,8 +5,6 @@
       backgroundImage: `url(${currentBgImage})`,
       backgroundPosition: `${bgPosition}% center`,
     }"
-    @mousemove="handleMouseMove"
-    @mouseleave="handleMouseLeave"
   ></div>
 </template>
 
