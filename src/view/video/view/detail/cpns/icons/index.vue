@@ -21,6 +21,13 @@
     />
   </svg>
 
+  <!-- 低音量 -->
+  <svg v-else-if="name === 'volume-low'" viewBox="0 0 24 24" fill="currentColor">
+    <path
+      d="M7 9v6h4l5 5V4l-5 5H7zm9.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
+    />
+  </svg>
+
   <!-- 静音 -->
   <svg v-else-if="name === 'mute'" viewBox="0 0 24 24" fill="currentColor">
     <path
