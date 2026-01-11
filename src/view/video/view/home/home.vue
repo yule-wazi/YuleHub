@@ -1,7 +1,7 @@
 <template>
   <div ref="home" class="home">
     <div class="list">
-      <template v-for="item in videoStore.videoList">
+      <template v-for="item in videoStore.animeList" :key="item.vod_name">
         <ImageItem :itemData="item" />
       </template>
     </div>
@@ -16,19 +16,19 @@ import { scrollRestore } from '@/utils/scrollRestore'
 import Loading from '@/components/loading/loading.vue'
 
 const videoStore = useVideo()
-videoStore.fetchVideoList()
+videoStore.fetchAnimeList('cj.lziapi.com')
 const loadingFetch = () => {
   videoStore.currentPage++
-  videoStore.fetchVideoList({ page: videoStore.currentPage })
-  console.log(videoStore.videoList)
+  // videoStore.fetchVideoList({ page: videoStore.currentPage })
 }
 
 // 发起图片组请求
 if (!videoStore.videoList.length) {
   videoStore.currentPage = 1
   console.log('重新请求数据')
-  videoStore.fetchVideoList({ isRefresh: true, keyword: videoStore.tagName })
+  // videoStore.fetchVideoList({ isRefresh: true, keyword: videoStore.tagName })
 }
+
 scrollRestore('home', videoStore)
 </script>
 

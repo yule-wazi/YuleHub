@@ -2,15 +2,10 @@
   <div class="imageItem" @click="getDetail">
     <div class="item">
       <div class="image">
-        <img :src="itemData.videoImg" @load="handleImgLoad" />
-        <div v-if="itemData.viewCount > 0" class="viewCount">
-          <el-icon class="icon" size="16"><VideoPlay /></el-icon>
-          <span class="countText">{{ itemData.viewCount }}</span>
-        </div>
-        <div class="duration">{{ itemData.duration }}</div>
+        <img :src="itemData.vod_pic" @load="handleImgLoad"  @error="removeErrorData(itemData)"/>
       </div>
       <div class="content">
-        <div class="title">{{ itemData.title }}</div>
+        <div class="title">{{ itemData.vod_name }}</div>
       </div>
     </div>
   </div>
@@ -33,6 +28,11 @@ const router = useRouter()
 const getDetail = () => {
   router.push('/video/detail')
   videoStore.videoDetail = props.itemData
+}
+
+const removeErrorData = (errorItem) => {
+  console.log('异常数据', errorItem)
+  videoStore.animeList = videoStore.animeList.filter((item) => errorItem !== item)
 }
 </script>
 

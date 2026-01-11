@@ -28,3 +28,18 @@ export function getProxyVideoInfo(url) {
   )
   return MyRequest.get()
 }
+
+// 请求动漫类型
+export function getAnimeType(baseUrl, params = '') {
+  const queryParams = params ? `&params=${encodeURIComponent(params)}` : ''
+  MyRequest.setBaseUrl(`http://${HOST}:${PORT}/video/type?baseUrl=${baseUrl}${queryParams}`)
+  return MyRequest.get()
+}
+
+// 请求动漫数据
+export function getAnimeList(baseUrl, params) {
+  MyRequest.setBaseUrl(
+    `http://${HOST}:${PORT}/video/type?baseUrl=${baseUrl}&params=${encodeURIComponent(params)}`,
+  )
+  return MyRequest.get()
+}
