@@ -117,7 +117,7 @@ const stripHtml = (html) => {
       gap: 10px;
 
       .play-btn {
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         border: none;
       }
 
@@ -164,7 +164,7 @@ const stripHtml = (html) => {
       align-items: center;
       gap: 3px;
       font-size: 13px;
-      color: #00d4aa;
+      color: var(--primary-pink-color);
       cursor: pointer;
       margin-bottom: 10px;
     }

@@ -87,7 +87,7 @@ const formatCount = (count) => {
     cursor: pointer;
 
     &:hover .title {
-      color: #00d4aa;
+      color: var(--primary-pink-color);
     }
 
     .cover {

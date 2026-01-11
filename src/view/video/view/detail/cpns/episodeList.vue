@@ -154,7 +154,7 @@ defineExpose({
         cursor: pointer;
 
         &.active {
-          color: #00d4aa;
+          color: var(--primary-pink-color);
         }
       }
     }
@@ -175,12 +175,12 @@ defineExpose({
       color: #888;
 
       &.active {
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         color: #fff;
       }
 
       &:hover:not(.active) {
-        background: rgba(0, 212, 170, 0.2);
+        background: rgba(255, 0, 122, 0.2);
       }
     }
   }
@@ -227,12 +227,12 @@ defineExpose({
       color: #888;
 
       &.active {
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         color: #fff;
       }
 
       &:hover:not(.active) {
-        background: rgba(0, 212, 170, 0.2);
+        background: rgba(255, 0, 122, 0.2);
       }
     }
   }

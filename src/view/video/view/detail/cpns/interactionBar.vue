@@ -105,7 +105,7 @@ const danmuInput = ref('')
       }
 
       .send-btn {
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         border: none;
       }
     }
@@ -133,7 +133,7 @@ const danmuInput = ref('')
       cursor: pointer;
 
       &:hover {
-        color: #00d4aa;
+        color: var(--primary-pink-color);
       }
     }
   }

@@ -640,8 +640,8 @@ defineExpose({ loadVideo, play, videoRef })
       .play-icon {
         width: 68px;
         height: 68px;
-        color: #00d4aa;
-        filter: drop-shadow(0 2px 8px rgba(0, 212, 170, 0.4));
+        color: var(--primary-pink-color);
+        filter: drop-shadow(0 2px 8px rgba(255, 0, 122, 0.4));
         transition: transform 0.2s;
 
         &:hover {
@@ -665,7 +665,7 @@ defineExpose({ loadVideo, play, videoRef })
       .loading-icon {
         width: 40px;
         height: 40px;
-        color: #00d4aa;
+        color: var(--primary-pink-color);
         animation: spin 1s linear infinite;
       }
 
@@ -730,7 +730,7 @@ defineExpose({ loadVideo, play, videoRef })
       }
 
       &:hover {
-        color: #00d4aa;
+        color: var(--primary-pink-color);
         transform: scale(1.1);
       }
 
@@ -792,7 +792,7 @@ defineExpose({ loadVideo, play, videoRef })
             position: absolute;
             bottom: 0;
             width: 100%;
-            background: #00d4aa;
+            background: var(--primary-pink-color);
             border-radius: 3px;
           }
 
@@ -801,7 +801,7 @@ defineExpose({ loadVideo, play, videoRef })
             left: 50%;
             width: 12px;
             height: 12px;
-            background: #00d4aa;
+            background: var(--primary-pink-color);
             border-radius: 50%;
             transform: translate(-50%, 50%);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -851,7 +851,7 @@ defineExpose({ loadVideo, play, videoRef })
       .progress-fill {
         position: absolute;
         height: 100%;
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         border-radius: 3px;
       }
 
@@ -860,7 +860,7 @@ defineExpose({ loadVideo, play, videoRef })
         top: 50%;
         width: 14px;
         height: 14px;
-        background: #00d4aa;
+        background: var(--primary-pink-color);
         border-radius: 50%;
         transform: translate(-50%, -50%) scale(0);
         transition: transform 0.2s;

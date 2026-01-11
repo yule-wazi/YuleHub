@@ -95,7 +95,7 @@ watch(
     width: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #ff007a;
+    background: var(--primary-pink-color);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-track {
