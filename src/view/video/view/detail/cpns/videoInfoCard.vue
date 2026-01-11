@@ -18,9 +18,9 @@
         </div>
       </div>
       <div class="video-tags">
-        <el-tag size="small" type="info">{{ videoDetail.vod_year }}</el-tag>
-        <el-tag size="small" type="info">{{ videoDetail.vod_area }}</el-tag>
-        <el-tag size="small" type="info">{{ videoDetail.type_name }}</el-tag>
+        <el-tag v-show="videoDetail.vod_year" size="small" type="info">{{ videoDetail.vod_year }}</el-tag>
+        <el-tag v-show="videoDetail.vod_area" size="small" type="info">{{ videoDetail.vod_area }}</el-tag>
+        <el-tag v-show="videoDetail.type_name" size="small" type="info">{{ videoDetail.type_name }}</el-tag>
       </div>
       <p class="video-desc" :class="{ expanded: isDescExpanded }">
         {{ videoDetail.vod_blurb || stripHtml(videoDetail.vod_content) }}
@@ -34,12 +34,6 @@
         <p><span class="label">主演：</span>{{ videoDetail.vod_actor || '未知' }}</p>
         <p><span class="label">更新：</span>{{ videoDetail.vod_time }}</p>
         <p><span class="label">状态：</span>{{ videoDetail.vod_remarks }}</p>
-        <p>
-          <span class="label">评分：</span
-          ><span class="score">{{
-            videoDetail.vod_score || videoDetail.vod_douban_score || '0.0'
-          }}</span>
-        </p>
       </div>
     </div>
   </div>

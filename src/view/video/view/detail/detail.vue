@@ -22,7 +22,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { onBeforeRouteLeave } from 'vue-router'
 import useVideo from '@/sotre/module/video'
+import { sessionCache } from '@/utils/cacheStorage'
 import VideoPlayer from './cpns/videoPlayer.vue'
 import VideoInfoCard from './cpns/videoInfoCard.vue'
 import EpisodeList from './cpns/episodeList.vue'
@@ -30,7 +33,56 @@ import RecommendList from './cpns/recommendList.vue'
 import InteractionBar from './cpns/interactionBar.vue'
 
 const videoStore = useVideo()
-const videoDetail = computed(() => videoStore.videoDetail)
+const { videoDetail } = storeToRefs(videoStore)
+
+// SessionStorage 缓存相关
+const STORAGE_KEY = 'VIDEO_DETAIL_CACHE'
+
+// 从 sessionStorage 恢复数据
+const restoreFromSession = () => {
+  const cached = sessionCache.get(STORAGE_KEY)
+  if (cached) {
+    // 恢复 videoDetail
+    if (cached.videoDetail && Object.keys(cached.videoDetail).length > 0) {
+      if (!videoStore.videoDetail || Object.keys(videoStore.videoDetail).length === 0) {
+        videoStore.videoDetail = cached.videoDetail
+      }
+    }
+    // 恢复 recommendList（仅缓存的推荐数据）
+    if (cached.recommendList && cached.recommendList.length > 0) {
+      if (!videoStore.animeList || videoStore.animeList.length === 0) {
+        videoStore.animeList = cached.recommendList
+      }
+    }
+    return true
+  }
+  return false
+}
+
+// 保存数据到 sessionStorage
+const saveToSession = () => {
+  if (!videoStore.videoDetail || Object.keys(videoStore.videoDetail).length === 0) {
+    return
+  }
+  // 只缓存推荐列表显示的条数（排除当前视频，取前5条）
+  const recommendList = videoStore.animeList
+    .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
+    .slice(0, 5)
+
+  const cacheData = {
+    videoDetail: { ...videoStore.videoDetail },
+    recommendList,
+    timestamp: Date.now(),
+  }
+  try {
+    sessionCache.set(STORAGE_KEY, cacheData)
+  } catch (error) {
+    console.error('保存视频详情缓存失败:', error)
+  }
+}
+
+// 初始化时尝试恢复缓存
+restoreFromSession()
 
 const videoPlayerRef = ref(null)
 const episodeListRef = ref(null)
@@ -75,13 +127,23 @@ onMounted(() => {
 // 监听视频详情变化（切换视频时）
 watch(
   () => videoStore.videoDetail,
-  () => {
-    if (episodeListRef.value) {
+  (newVal, oldVal) => {
+    if (episodeListRef.value && newVal?.vod_id !== oldVal?.vod_id) {
       episodeListRef.value.selectEpisode(0)
     }
+    // 数据变化时保存到缓存
+    if (newVal && Object.keys(newVal).length > 0) {
+      console.log('进行缓存')
+      saveToSession()
+    }
   },
-  { deep: true },
+  { immediate: true },
 )
+
+// 路由离开前保存数据
+onBeforeRouteLeave(() => {
+  saveToSession()
+})
 </script>
 
 <style lang="less" scoped>

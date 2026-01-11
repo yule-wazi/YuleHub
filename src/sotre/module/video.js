@@ -85,7 +85,6 @@ const useVideo = defineStore('videoStore', {
         const params = `t=${item.type_id}&ac=detail&h=${h}`
         const res = await getAnimeList(baseUrl, params)
         this.animeList.push(...res.data.data.list)
-        console.log(this.animeList)
       })
     },
   },

@@ -13,7 +13,6 @@
 
 <script setup>
 import useVideo from '@/sotre/module/video'
-import { VideoPlay } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -26,8 +25,8 @@ const videoStore = useVideo()
 
 const router = useRouter()
 const getDetail = () => {
-  router.push('/video/detail')
   videoStore.videoDetail = props.itemData
+  router.push('/video/detail')
 }
 
 const removeErrorData = (errorItem) => {

@@ -21,6 +21,7 @@
         x5-playsinline
         x5-video-player-type="h5"
         x5-video-player-fullscreen="true"
+        autoplay="true"
         @play="onVideoPlay"
         @pause="isPlay = false"
         @timeupdate="updateCurrentTime"
@@ -416,28 +417,53 @@ const showVolumeSliderTemporarily = () => {
 const handleKeydown = (e) => {
   if (!videoRef.value) return
 
+  // 全屏模式下显示控制栏
+  const showControlsInFullscreen = () => {
+    if (isFullscreen.value) {
+      showControls.value = true
+      resetHideTimer()
+    }
+  }
+
   switch (e.code) {
     case 'Space':
       e.preventDefault()
       togglePlay()
+      showControlsInFullscreen()
       break
     case 'ArrowLeft':
       e.preventDefault()
-      videoRef.value.currentTime = Math.max(0, videoRef.value.currentTime - 5)
+      {
+        const newTime = Math.max(0, videoRef.value.currentTime - 5)
+        const percent = (newTime / duration.value) * 100
+        seekingPercent.value = percent
+        videoRef.value.currentTime = newTime
+        currentTime.value = newTime
+        showControlsInFullscreen()
+      }
       break
     case 'ArrowRight':
       e.preventDefault()
-      videoRef.value.currentTime = Math.min(duration.value, videoRef.value.currentTime + 5)
+      {
+        const newTime = Math.min(duration.value, videoRef.value.currentTime + 5)
+        const percent = (newTime / duration.value) * 100
+        seekingPercent.value = percent
+        videoRef.value.currentTime = newTime
+        currentTime.value = newTime
+        showControlsInFullscreen()
+      }
       break
     case 'ArrowUp':
       e.preventDefault()
       setVolume(volume.value + 0.1)
       showVolumeSliderTemporarily()
+      showControlsInFullscreen()
       break
     case 'ArrowDown':
       e.preventDefault()
       setVolume(volume.value - 0.1)
       showVolumeSliderTemporarily()
+      showControlsInFullscreen()
       break
     case 'KeyF':
       e.preventDefault()

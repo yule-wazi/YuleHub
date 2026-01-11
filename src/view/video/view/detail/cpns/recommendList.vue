@@ -78,7 +78,7 @@ const formatCount = (count) => {
   .list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    // gap: 15px;
   }
 
   .recommend-item {
@@ -86,10 +86,16 @@ const formatCount = (count) => {
     gap: 12px;
     cursor: pointer;
 
+    padding: 5px;
+    // margin: 0px 10px;
+    border-radius: 5px;
+
     &:hover .title {
       color: var(--primary-pink-color);
     }
-
+    &:hover {
+      background: rgba(255, 0, 122, 0.2);
+    }
     .cover {
       width: 120px;
       height: 70px;

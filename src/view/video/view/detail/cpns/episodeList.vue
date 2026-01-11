@@ -2,16 +2,16 @@
   <div class="episodeList">
     <div class="section-header">
       <span class="section-title">选集播放</span>
-      <span class="episode-count"
-        >({{ currentEpisodeIndex + 1 }}/{{ currentEpisodes.length }})</span
-      >
+      <span class="episode-count">
+        ({{ currentEpisodeIndex + 1 }}/{{ currentEpisodes.length }})
+      </span>
       <div class="display-toggle">
-        <el-icon :class="{ active: displayMode === 'grid' }" @click="displayMode = 'grid'"
-          ><Grid
-        /></el-icon>
-        <el-icon :class="{ active: displayMode === 'list' }" @click="displayMode = 'list'"
-          ><List
-        /></el-icon>
+        <el-icon :class="{ active: displayMode === 'grid' }" @click="displayMode = 'grid'">
+          <Grid />
+        </el-icon>
+        <el-icon :class="{ active: displayMode === 'list' }" @click="displayMode = 'list'">
+          <List />
+        </el-icon>
       </div>
     </div>
     <!-- 播放源切换 -->
@@ -61,17 +61,22 @@ const playSources = computed(() => {
   return videoDetail.value.vod_play_from.split('$$$')
 })
 
-// 解析选集列表
+// 解析选集列表（只保留 .m3u8 格式）
 const episodeList = computed(() => {
   if (!videoDetail.value.vod_play_url) return []
   const urlGroups = videoDetail.value.vod_play_url.split('$$$')
-  return urlGroups.map((group, index) => {
-    const episodes = group.split('#').map((ep) => {
-      const [name, url] = ep.split('$')
-      return { name, url }
+  return urlGroups
+    .map((group, index) => {
+      const episodes = group
+        .split('#')
+        .map((ep) => {
+          const [name, url] = ep.split('$')
+          return { name, url }
+        })
+        .filter((ep) => ep.url && ep.url.includes('.m3u8'))
+      return { source: playSources.value[index] || `源${index + 1}`, episodes }
     })
-    return { source: playSources.value[index] || `源${index + 1}`, episodes }
-  })
+    .filter((source) => source.episodes.length > 0)
 })
 
 // 当前源的选集
@@ -191,15 +196,6 @@ defineExpose({
     gap: 10px;
     max-height: 200px;
     overflow-y: auto;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #444;
-      border-radius: 2px;
-    }
-
     &.grid {
       .episode-item {
         width: 40px;
@@ -211,8 +207,6 @@ defineExpose({
     }
 
     &.list {
-      flex-direction: column;
-
       .episode-item {
         width: 100%;
         padding: 8px 12px;

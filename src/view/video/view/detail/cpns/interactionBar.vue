@@ -99,8 +99,10 @@ const danmuInput = ref('')
 
       .danmu-input {
         flex: 1;
+        --el-color-primary: #ff007a;
         :deep(.el-input__wrapper) {
-          background: var(--comics-bg-color);
+          background-color: var(--comics-tagBg-color);
+          border: 1px var(--comics-border-color) solid;
         }
       }
 
