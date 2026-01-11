@@ -7,6 +7,7 @@
           :poster="videoDetail.vod_pic"
           :currentEpisodeName="currentEpisodeName"
           :videoUrl="currentVideoUrl"
+          @nextEpisode="playNextEpisode"
         />
         <InteractionBar />
         <VideoInfoCard @play="playCurrentEpisode" />
@@ -53,6 +54,16 @@ const playCurrentEpisode = () => {
   }
 }
 
+// 播放下一集
+const playNextEpisode = () => {
+  if (!episodeListRef.value) return
+  const currentIndex = episodeListRef.value.currentEpisodeIndex
+  const episodes = episodeListRef.value.currentEpisodes
+  if (currentIndex < episodes.length - 1) {
+    episodeListRef.value.selectEpisode(currentIndex + 1)
+  }
+}
+
 // 初始化
 onMounted(() => {
   if (episodeListRef.value) {
@@ -96,24 +107,34 @@ watch(
     margin: 20px auto;
     display: grid;
     gap: 20px;
-
     @media (min-width: 1000px) {
       grid-template-columns: minmax(0, 1fr) 350px;
     }
-
     @media (max-width: 1000px) {
-      max-width: 100vw;
-      padding: 0 15px;
+      max-width: 100%;
+      margin: 0;
+      box-sizing: border-box;
+      .main {
+        .videoPlayer {
+          border-radius: 0;
+        }
+      }
+      .videoPlayer {
+        padding: 0;
+      }
     }
-
     .main {
       min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .sideBar {
       display: flex;
       flex-direction: column;
       gap: 15px;
+      max-width: 100%;
+      overflow: hidden;
     }
   }
 }
