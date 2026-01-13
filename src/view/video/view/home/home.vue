@@ -107,10 +107,6 @@ const scheduleList = computed(() => {
     return new Date(item.vod_time).getDay() === targetDay
   })
 })
-
-const loadingFetch = () => {
-  videoStore.currentPage++
-}
 </script>
 
 <style lang="less" scoped>

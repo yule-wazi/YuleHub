@@ -33,8 +33,17 @@
       </template>
       <template v-else-if="partition === 'Yule动漫'">
         <template v-for="item in latestVideo">
-          <div class="latestItem">
-            <ImageItemVideo v-if="item" :itemData="item" />
+          <div class="latestItem latestItem-video" v-if="item" @click="goVideoDetail(item)">
+            <div class="video-cover">
+              <img :src="item.vod_pic" :alt="item.vod_name" />
+              <div class="video-score" v-if="item.vod_douban_score > 0">
+                {{ item.vod_douban_score }}
+              </div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">{{ item.vod_name }}</div>
+              <div class="video-remarks">{{ item.vod_remarks }}</div>
+            </div>
           </div>
         </template>
       </template>
@@ -44,11 +53,11 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ArrowRightBold } from '@element-plus/icons-vue'
 import ImageItemComics from '@/view/comics/cpns/imageItem.vue'
 import ImageItemNovel from '@/view/novel/cpns/imageItem.vue'
 import ImageItemPica from '@/view/pica/cpns/imageItem.vue'
-import ImageItemVideo from '@/view/video/cpns/imageItem.vue'
 import { useNavClick } from '@/utils/useNavClick'
 import usePica from '@/sotre/module/pica'
 import useNovel from '@/sotre/module/novel'
@@ -61,11 +70,18 @@ const props = defineProps({
     default: '',
   },
 })
+const router = useRouter()
 const vipStore = useVip()
 const picaStore = usePica()
 const novelStore = useNovel()
 const videoStore = useVideo()
 const { handleNavClick } = useNavClick()
+
+// 动漫详情跳转
+const goVideoDetail = (item) => {
+  videoStore.videoDetail = item
+  router.push('/video/detail')
+}
 
 const latestComics = computed(() => {
   return vipStore.vipImgData.length ? vipStore.vipImgData.slice(0, 10) : new Array(10)
@@ -77,7 +93,7 @@ const latestNovel = computed(() => {
   return novelStore.novelList.length ? novelStore.novelList.slice(0, 10) : new Array(10)
 })
 const latestVideo = computed(() => {
-  return videoStore.videoList.length ? videoStore.videoList.slice(0, 10) : new Array(10)
+  return videoStore.animeList.length ? videoStore.animeList.slice(0, 10) : new Array(10)
 })
 </script>
 
@@ -177,6 +193,68 @@ const latestVideo = computed(() => {
           position: absolute;
           // background: rgba(255, 255, 255, 0.6);
           backdrop-filter: blur(5px);
+        }
+      }
+      :deep(.card-cover) {
+        height: 100% !important;
+      }
+    }
+    // 动漫卡片独立样式
+    .latestItem-video {
+      display: flex;
+      flex-direction: column;
+      aspect-ratio: unset !important;
+      background: transparent !important;
+      overflow: visible !important;
+      cursor: pointer;
+
+      .video-cover {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3/4;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #1a1a2e;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s;
+        }
+        &:hover img {
+          transform: scale(1.05);
+        }
+
+        .video-score {
+          position: absolute;
+          bottom: 6px;
+          left: 6px;
+          background: rgba(255, 0, 122, 0.9);
+          color: #fff;
+          font-size: 11px;
+          font-weight: bold;
+          padding: 2px 6px;
+          border-radius: 3px;
+        }
+      }
+
+      .video-info {
+        padding-top: 8px;
+
+        .video-title {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--comics-cardTitle-color);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .video-remarks {
+          font-size: 12px;
+          color: var(--comics-cardSubTitle-color);
+          margin-top: 4px;
         }
       }
     }

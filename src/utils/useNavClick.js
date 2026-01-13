@@ -75,6 +75,13 @@ export function useNavClick(drawer = null, iconAction = null) {
       img: 'https://i.pximg.org/img-original/img/2025/07/31/15/17/02/133318656_p0.jpg',
       action: 'goComics',
     },
+     {
+      text: '动漫',
+      fullName: 'Yule动漫',
+      icon: VideoCameraFilled,
+      img: 'https://i.pximg.org/img-original/img/2025/09/07/00/13/43/134795768_p0.jpg',
+      action: 'goVideo',
+    },
     {
       text: '漫画',
       fullName: 'Yule漫画',
@@ -90,13 +97,7 @@ export function useNavClick(drawer = null, iconAction = null) {
       img: 'https://i.pximg.org/novel-cover-master/img/2026/01/01/00/49/54/sci15170940_ee5a5a92e96bf0d4ce9f84bf74d2814c_master1200.jpg',
       action: 'goNovel',
     },
-    {
-      text: '动漫',
-      fullName: 'Yule动漫',
-      icon: VideoCameraFilled,
-      img: 'https://i.pximg.org/img-original/img/2025/09/07/00/13/43/134795768_p0.jpg',
-      action: 'goVideo',
-    },
+   
   ]
   // 映射表：将字符串映射到具体函数
   const actionMethods = { goHome, goChat, goComics, goPica, goNovel, goVideo }

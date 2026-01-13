@@ -2,9 +2,9 @@
   <div class="contentShow">
     <div class="latestArea">
       <Latest partition="Yule插画" />
+      <latest partition="Yule动漫" />
       <Latest v-if="showPica" partition="Yule漫画" />
       <Latest partition="Yule小说" />
-      <latest partition="Yule动漫" />
     </div>
     <div class="recommendArea">
       <Recommend :dataList="hotMonthComics" partition="Yule插画" />
@@ -47,7 +47,7 @@ const getNovel = async () => {
 }
 // 获取每日动漫数据
 const getVideo = async () => {
-  videoStore.fetchVideoList()
+  videoStore.fetchAnimeList('cj.lziapi.com')
 }
 // 获取本月最火插画
 const hotMonthComics = ref(null)
