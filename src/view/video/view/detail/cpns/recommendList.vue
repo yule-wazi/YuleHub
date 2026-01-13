@@ -3,7 +3,7 @@
     <div class="section-header">
       <span class="section-title">相关推荐</span>
     </div>
-    <div class="list">
+    <div class="other-list">
       <div
         v-for="item in recommendData"
         :key="item.vod_id"
@@ -67,27 +67,21 @@ const formatCount = (count) => {
 
   .section-header {
     margin-bottom: 15px;
-
     .section-title {
       font-size: 16px;
       font-weight: 500;
       color: var(--comics-cardTitle-color);
     }
   }
-
-  .list {
+  .other-list {
     display: flex;
     flex-direction: column;
-    // gap: 15px;
   }
-
   .recommend-item {
     display: flex;
     gap: 12px;
     cursor: pointer;
-
     padding: 5px;
-    // margin: 0px 10px;
     border-radius: 5px;
 
     &:hover .title {

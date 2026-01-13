@@ -16,7 +16,7 @@
 <script setup>
 import useVideo from '@/sotre/module/video'
 import { useRoute } from 'vue-router'
-import ImageItem from '../../cpns/imageItem.vue'
+import ImageItem from '../../cpns/scheduleCard.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
 import { ref, watchEffect } from 'vue'
 
@@ -92,7 +92,6 @@ watchEffect(() => {
     @media (min-width: 1000px) {
       width: 90%;
     }
-    
   }
   &::-webkit-scrollbar {
     display: none;
