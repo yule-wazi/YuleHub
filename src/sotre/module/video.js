@@ -87,7 +87,9 @@ const useVideo = defineStore('videoStore', {
       try {
         const params = `ac=detail&wd=${encodeURIComponent(keyword)}&pg=${page}`
         const res = await getAnimeList(this.baseUrl, params)
-        const list = res.data.data.list || []
+        let list = res.data.data.list || []
+        // 筛选出非动漫视频
+        list = list.filter((item) => item.type_name.indexOf('动漫') !== -1)
         if (isRefresh) {
           this.categoryList = list
         } else {

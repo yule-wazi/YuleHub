@@ -1,22 +1,26 @@
 <template>
   <div ref="category" class="category">
     <div class="title">
-      <div class="tag">#{{ route.query.tag }}</div>
+      <div class="tag">#{{ route.query.author || route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
-    <div class="list">
-      <template v-for="item in videoStore.videoList">
-        <ImageItem :itemData="item" />
-      </template>
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">全部动漫</span>
+      </div>
+      <div class="video-grid">
+        <template v-for="item in videoStore.categoryList" :key="item.vod_id">
+          <AnimeCard :item="item" />
+        </template>
+      </div>
     </div>
-    <Loading :dataList="videoStore.videoList" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
 <script setup>
 import useVideo from '@/sotre/module/video'
 import { useRoute } from 'vue-router'
-import ImageItem from '../../cpns/scheduleCard.vue'
+import AnimeCard from '../../cpns/animeCard.vue'
 import { scrollRestore } from '@/utils/scrollRestore'
 import { ref, watchEffect } from 'vue'
 
@@ -54,13 +58,11 @@ watchEffect(() => {
 
 <style lang="less" scoped>
 .category {
-  background-color: var(--comics-bg-color);
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   overflow: auto;
+  background-color: var(--comics-bg-color);
+
   .title {
     display: flex;
     justify-content: center;
@@ -81,33 +83,57 @@ watchEffect(() => {
       color: var(--comics-cardTitle-color);
     }
   }
-  .list {
-    width: 100%;
-    margin-top: 10px;
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    @media (min-width: 1000px) {
-      width: 90%;
+  .section {
+    width: 85vw;
+    margin: auto;
+    margin-bottom: 25px;
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+      @media (max-width: 1000px) {
+        flex-direction: column;
+        align-items: start;
+      }
+      .section-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--comics-cardTitle-color);
+      }
+      .week-tabs {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        &::-webkit-scrollbar {
+          height: 0;
+        }
+        .week-tab {
+          flex-shrink: 0;
+          font-size: 13px;
+          color: var(--comics-cardSubTitle-color);
+          cursor: pointer;
+          padding: 4px 10px;
+          border-radius: 4px;
+          transition: all 0.3s;
+          &:hover {
+            color: var(--comics-cardTitle-color);
+          }
+          &.active {
+            color: #ff007a;
+            background: rgba(255, 0, 122, 0.15);
+          }
+        }
+      }
     }
-  }
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  @media (min-width: 800px) {
-    &::-webkit-scrollbar {
-      display: block;
-      width: 8px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #ff007a;
-      border-radius: 4px;
-    }
-    &::-webkit-scrollbar-track {
-      background: var(--comics-headerBg-color);
-      border-radius: 4px;
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 15px;
+      @media (min-width: 1000px) {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+      }
     }
   }
 }

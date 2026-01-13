@@ -36,7 +36,6 @@
         </div>
       </div>
     </div>
-
     <!-- 全部列表 -->
     <div class="section">
       <div class="section-header">
@@ -48,20 +47,17 @@
         </template>
       </div>
     </div>
-
-    <Loading :dataList="videoStore.animeList" @loadingEmit="loadingFetch" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onActivated, nextTick } from 'vue'
+import { ref, computed, onActivated, nextTick, onMounted } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import useVideo from '@/sotre/module/video'
-import { createQueryCache } from '@/utils/queryCache'
 import Loading from '@/components/loading/loading.vue'
 import ScheduleCard from '../../cpns/scheduleCard.vue'
 import AnimeCard from '../../cpns/animeCard.vue'
@@ -69,55 +65,24 @@ import AnimeCard from '../../cpns/animeCard.vue'
 const videoStore = useVideo()
 const home = ref(null)
 
-// 创建查询缓存管理器（home 页面使用固定 key）
-const queryCache = createQueryCache({
-  prefix: 'VIDEO_HOME_CACHE:',
-  getR18Flag: () => false,
-  formatKey: () => 'VIDEO_HOME_CACHE:HOME',
+onMounted(() => {
+  videoStore.fetchAnimeList('cj.lziapi.com')
 })
-// 保存数据到缓存
-const saveToSession = () => {
-  if (videoStore.animeList.length > 0) {
-    const currentScrollTop = home.value ? home.value.scrollTop : 0
-    queryCache.saveToCache(null, null, {
-      list: videoStore.animeList,
-      page: videoStore.currentPage,
-      scrollTop: currentScrollTop,
-    })
-  }
-}
-// 从缓存恢复数据
-const restoreFromSession = () => {
-  const cached = queryCache.restoreFromCache(null, null)
-  if (cached) {
-    videoStore.animeList = cached.list
-    videoStore.currentPage = cached.page || 1
-    return cached
-  }
-  return null
-}
-// 加载数据（带缓存检查）
-const loadData = async () => {
-  const cached = restoreFromSession()
-  await nextTick()
-  if (cached) {
-    if (home.value && cached.scrollTop > 0) {
-      home.value.scrollTo({ top: cached.scrollTop, behavior: 'auto' })
-    }
-    return
-  }
-  // 缓存中没有，发起请求
-  if (!videoStore.animeList.length) {
-    await videoStore.fetchAnimeList('cj.lziapi.com')
-  }
-}
-// KeepAlive 激活时（从缓存恢复）
+
+// KeepAlive 激活时恢复滚动位置
 onActivated(async () => {
-  await loadData()
+  videoStore.fetchAnimeList('cj.lziapi.com')
+  await nextTick()
+  if (home.value && videoStore.scrollTop > 0) {
+    home.value.scrollTo({ top: videoStore.scrollTop, behavior: 'auto' })
+  }
 })
-// 路由离开前保存滚动位置和缓存
+
+// 路由离开前保存滚动位置
 onBeforeRouteLeave(() => {
-  saveToSession()
+  if (home.value) {
+    videoStore.scrollTop = home.value.scrollTop
+  }
 })
 
 let swiperInstance = null
@@ -185,6 +150,10 @@ const loadingFetch = () => {
   align-items: center;
   gap: 8px;
   margin: 12px 0;
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    align-items: start;
+  }
   .section-title {
     font-size: 20px;
     font-weight: bold;

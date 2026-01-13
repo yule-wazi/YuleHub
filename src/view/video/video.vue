@@ -18,7 +18,7 @@ import { onMounted } from 'vue'
 const router = useRouter()
 const videoStore = useVideo()
 const searchClick = (tag) => {
-  videoStore.categoryList = []
+  videoStore.animeSearchList = []
   videoStore.tagName = tag
   videoStore.currentPage = 1
   videoStore.searchVideoList({ isRefresh: true, keyword: tag })
