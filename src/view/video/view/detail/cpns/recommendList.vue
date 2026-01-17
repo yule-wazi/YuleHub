@@ -5,7 +5,7 @@
     </div>
     <div class="other-list">
       <div
-        v-for="item in recommendData"
+        v-for="item in videoStore.recommendList"
         :key="item.vod_id"
         class="recommend-item"
         @click="goToDetail(item)"
@@ -39,11 +39,11 @@ const props = defineProps({
 
 const videoStore = useVideo()
 
-const recommendData = computed(() => {
-  return videoStore.animeList
-    .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
-    .slice(0, props.limit)
-})
+// const recommendData = computed(() => {
+//   return videoStore.animeList
+//     .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
+//     .slice(0, props.limit)
+// })
 
 const goToDetail = (item) => {
   videoStore.videoDetail = item

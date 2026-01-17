@@ -13,6 +13,7 @@ const useVideo = defineStore('videoStore', {
     return {
       animeTypeList: [],
       animeList: [],
+      recommendList: [],
       categoryList: [], // 分类筛选后的列表
 
       videoList: [],

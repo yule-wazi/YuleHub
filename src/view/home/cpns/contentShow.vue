@@ -47,7 +47,7 @@ const getNovel = async () => {
 }
 // 获取每日动漫数据
 const getVideo = async () => {
-  videoStore.fetchAnimeList('cj.lziapi.com')
+  videoStore.fetchAnimeList(videoStore.baseUrl)
 }
 // 获取本月最火插画
 const hotMonthComics = ref(null)

@@ -43,6 +43,7 @@ const restoreFromSession = () => {
   const cached = sessionCache.get(STORAGE_KEY)
   if (cached) {
     // 恢复 videoDetail
+
     if (cached.videoDetail && Object.keys(cached.videoDetail).length > 0) {
       if (!videoStore.videoDetail || Object.keys(videoStore.videoDetail).length === 0) {
         videoStore.videoDetail = cached.videoDetail
@@ -50,13 +51,16 @@ const restoreFromSession = () => {
     }
     // 恢复 recommendList（仅缓存的推荐数据）
     if (cached.recommendList && cached.recommendList.length > 0) {
-      if (!videoStore.animeList || videoStore.animeList.length === 0) {
-        videoStore.animeList = cached.recommendList
-      }
+      videoStore.recommendList = cached.recommendList
     }
     return true
+  } else {
+    console.log('从animeList拿取数据')
+    videoStore.recommendList = videoStore.animeList
+      .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
+      .slice(0, 5)
+    return false
   }
-  return false
 }
 
 // 保存数据到 sessionStorage
@@ -64,10 +68,7 @@ const saveToSession = () => {
   if (!videoStore.videoDetail || Object.keys(videoStore.videoDetail).length === 0) {
     return
   }
-  // 只缓存推荐列表显示的条数（排除当前视频，取前5条）
-  const recommendList = videoStore.animeList
-    .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
-    .slice(0, 5)
+  const recommendList = videoStore.recommendList
 
   const cacheData = {
     videoDetail: { ...videoStore.videoDetail },

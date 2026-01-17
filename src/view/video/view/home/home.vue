@@ -65,13 +65,16 @@ import AnimeCard from '../../cpns/animeCard.vue'
 const videoStore = useVideo()
 const home = ref(null)
 
-onMounted(() => {
-  videoStore.fetchAnimeList('cj.lziapi.com')
+onMounted(async () => {
+  await videoStore.fetchAnimeList(videoStore.baseUrl)
+  // videoStore.recommendList = videoStore.animeList
+  //   .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
+  //   .slice(0, 5)
 })
 
 // KeepAlive 激活时恢复滚动位置
 onActivated(async () => {
-  videoStore.fetchAnimeList('cj.lziapi.com')
+  videoStore.fetchAnimeList(videoStore.baseUrl)
   await nextTick()
   if (home.value && videoStore.scrollTop > 0) {
     home.value.scrollTo({ top: videoStore.scrollTop, behavior: 'auto' })
