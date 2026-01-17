@@ -6,6 +6,7 @@ import {
   getAnimeType,
   getAnimeList,
 } from '@/service/module/video'
+import myLocalCache from '@/utils/cacheStorage'
 import { defineStore } from 'pinia'
 
 const useVideo = defineStore('videoStore', {
@@ -22,7 +23,8 @@ const useVideo = defineStore('videoStore', {
       tagName: '',
       currentPage: 1,
       scrollTop: 0,
-      baseUrl: 'cj.lziapi.com',
+      // baseUrl: 'cj.lziapi.com',
+      baseUrl: myLocalCache.get('animeBaseUrl') ?? '',
       isLoading: false,
     }
   },
@@ -51,6 +53,8 @@ const useVideo = defineStore('videoStore', {
         this.animeList = results.flat()
       } catch (e) {
         console.error('获取动漫列表失败:', e)
+        // 抛出错误，让调用方处理
+        throw new Error('连接资源站失败，请检查配置的网址是否正确')
       } finally {
         this.isLoading = false
       }

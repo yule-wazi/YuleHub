@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onActivated, nextTick, onMounted } from 'vue'
+import { ref, computed, onActivated, nextTick, onMounted, watch, inject } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper/modules'
@@ -64,17 +64,23 @@ import AnimeCard from '../../cpns/animeCard.vue'
 
 const videoStore = useVideo()
 const home = ref(null)
+const handleFetchError = inject('handleFetchError')
 
 onMounted(async () => {
-  await videoStore.fetchAnimeList(videoStore.baseUrl)
-  // videoStore.recommendList = videoStore.animeList
-  //   .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
-  //   .slice(0, 5)
+  try {
+    await videoStore.fetchAnimeList(videoStore.baseUrl)
+  } catch (error) {
+    handleFetchError?.(error)
+  }
 })
 
 // KeepAlive 激活时恢复滚动位置
 onActivated(async () => {
-  videoStore.fetchAnimeList(videoStore.baseUrl)
+  try {
+    await videoStore.fetchAnimeList(videoStore.baseUrl)
+  } catch (error) {
+    handleFetchError?.(error)
+  }
   await nextTick()
   if (home.value && videoStore.scrollTop > 0) {
     home.value.scrollTo({ top: videoStore.scrollTop, behavior: 'auto' })
@@ -110,6 +116,18 @@ const scheduleList = computed(() => {
     return new Date(item.vod_time).getDay() === targetDay
   })
 })
+
+watch(
+  () => videoStore.baseUrl,
+  async () => {
+    console.log('basrUrl变化')
+    try {
+      await videoStore.fetchAnimeList(videoStore.baseUrl)
+    } catch (error) {
+      handleFetchError?.(error)
+    }
+  },
+)
 </script>
 
 <style lang="less" scoped>
