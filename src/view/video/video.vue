@@ -1,6 +1,10 @@
 <template>
   <div class="video">
-    <HeaderCompoment title="YuLe动漫" @searchClickEmit="searchClick" />
+    <HeaderCompoment
+      title="YuLe动漫"
+      :extraMenuItems="extraMenuItems"
+      @searchClickEmit="searchClick"
+    />
     <RouterView v-slot="{ Component }">
       <KeepAlive :include="['home', 'category']">
         <component :is="Component" />
@@ -14,9 +18,23 @@ import HeaderCompoment from '@/components/headerComponent/headerCompoment.vue'
 import useVideo from '@/sotre/module/video'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue'
+import { Setting } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const videoStore = useVideo()
+
+const handleSettings = () => {
+  console.log('动漫设置按钮被点击')
+}
+
+const extraMenuItems = [
+  {
+    text: '设置',
+    icon: Setting,
+    onClick: handleSettings,
+  },
+]
+
 const searchClick = (tag) => {
   videoStore.animeSearchList = []
   videoStore.tagName = tag

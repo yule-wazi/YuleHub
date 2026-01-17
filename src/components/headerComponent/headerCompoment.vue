@@ -54,6 +54,14 @@
       </div>
       <div class="otherOption">
         <div class="switch">
+          <template v-for="(item, index) in extraMenuItems" :key="index">
+            <div class="item">
+              <div class="otherItem" @click="item.onClick">
+                <component :is="item.icon" />
+              </div>
+            </div>
+          </template>
+
           <div v-if="userInfo.role === 999" class="item">
             <div class="r18" @click="isNSFW = !isNSFW">
               <template v-if="isNSFW"><Hide /></template>
@@ -87,6 +95,26 @@
     <MenuDrawer :isDrawer="drawer" @closeDrawerEmit="drawer = false">
       <template #menuHeader> {{ title }} </template>
       <template #switch>
+        <div class="ohter">
+          <slot name="switchOther"></slot>
+          <template v-for="(menuItem, index) in extraMenuItems" :key="'extra-' + index">
+            <!-- Switch 切换式 -->
+            <div v-if="menuItem.type === 'switch' && menuItem.text" class="switchItem">
+              <div class="text">{{ menuItem.text }}</div>
+              <el-switch
+                :model-value="menuItem.value"
+                size="large"
+                @change="menuItem.onClick"
+                :active-action-icon="menuItem.activeIcon"
+                :inactive-action-icon="menuItem.inactiveIcon"
+              />
+            </div>
+            <!-- 点击式 -->
+            <div v-else-if="menuItem.text" class="otherClick" @click="menuItem.onClick">
+              <div class="text">{{ menuItem.text }}</div>
+            </div>
+          </template>
+        </div>
         <div class="r18" v-if="userInfo.role === 999">
           <div class="text">NSFW</div>
           <el-switch
@@ -107,9 +135,6 @@
             :inactive-action-icon="Sunny"
           />
         </div>
-        <div class="ohter">
-          <slot name="switchOther"></slot>
-        </div>
       </template>
       <template #menuDefault>
         <div
@@ -129,7 +154,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import useVip from '@/sotre/module/vip'
 import myCache, { sessionCache } from '@/utils/cacheStorage'
@@ -141,6 +166,10 @@ const props = defineProps({
   title: {
     type: String,
     default: '',
+  },
+  extraMenuItems: {
+    type: Array,
+    default: () => [],
   },
 })
 const userInfo = myCache.get('userInfo')
@@ -328,7 +357,8 @@ const { filteredNavList, handleNavClick } = useNavClick(drawer)
         align-items: center;
         .item {
           .r18,
-          .dark {
+          .dark,
+          .otherItem {
             display: flex;
             align-items: center;
             height: 35px;
@@ -457,6 +487,16 @@ const { filteredNavList, handleNavClick } = useNavClick(drawer)
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    .otherClick {
+      width: 100%;
+      cursor: pointer;
+    }
+    .switchItem {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
   }
   .item {
     display: flex;
