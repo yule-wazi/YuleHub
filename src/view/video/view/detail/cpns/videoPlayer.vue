@@ -47,6 +47,8 @@
       <div v-else-if="!isPlay" class="play-overlay" @click="togglePlay">
         <Icon name="play-circle" class="play-icon" />
       </div>
+      <!-- 播放时的透明覆盖层，用于保持层叠上下文 -->
+      <div v-else class="playing-overlay" @click="onVideoClick" @dblclick="onVideoDblClick"></div>
     </div>
     <!-- 底部控制栏 -->
     <div class="video-controls" :class="{ visible: showControls }">
@@ -63,6 +65,8 @@
         class="progress-bar"
         ref="progressRef"
         @click="handleProgressClick"
+        @mousemove="handleProgressHover"
+        @mouseleave="handleProgressLeave"
         @mousedown="startDrag"
         @touchstart="startTouchDrag"
       >
@@ -74,6 +78,14 @@
           @mousedown.stop="startDrag"
           @touchstart.stop="startTouchDrag"
         ></div>
+        <!-- 悬停时间提示 -->
+        <div
+          v-if="hoverTime !== null"
+          class="progress-time-tooltip"
+          :style="{ left: hoverPosition + '%' }"
+        >
+          {{ formatTime(hoverTime) }}
+        </div>
       </div>
       <div class="controls-right">
         <!-- 音量控制 -->
@@ -141,6 +153,8 @@ const isVolumeDragging = ref(false)
 const isDragging = ref(false)
 const dragPercent = ref(0)
 const seekingPercent = ref(null)
+const hoverTime = ref(null)
+const hoverPosition = ref(0)
 let seekDebounceTimer = null
 let hideControlsTimer = null
 let hideVolumeTimer = null
@@ -258,6 +272,18 @@ const handleProgressClick = (e) => {
   const rect = progressRef.value.getBoundingClientRect()
   const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
   seekToPercent(percent * 100)
+}
+
+const handleProgressHover = (e) => {
+  if (!progressRef.value || !duration.value) return
+  const rect = progressRef.value.getBoundingClientRect()
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  hoverTime.value = percent * duration.value
+  hoverPosition.value = percent * 100
+}
+
+const handleProgressLeave = () => {
+  hoverTime.value = null
 }
 
 const seekToPercent = (percent) => {
@@ -676,6 +702,16 @@ defineExpose({ loadVideo, play, videoRef })
       }
     }
 
+    .playing-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+      cursor: default;
+    }
+
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -891,6 +927,22 @@ defineExpose({ loadVideo, play, videoRef })
         transform: translate(-50%, -50%) scale(0);
         transition: transform 0.2s;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .progress-time-tooltip {
+        position: absolute;
+        bottom: 100%;
+        transform: translateX(-50%);
+        margin-bottom: 8px;
+        padding: 4px 8px;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        font-size: 12px;
+        border-radius: 4px;
+        white-space: nowrap;
+        pointer-events: none;
+        font-variant-numeric: tabular-nums;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
     }
   }
