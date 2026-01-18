@@ -1,7 +1,7 @@
 <template>
   <div
     class="videoPlayer"
-    :class="{ fullscreen: isFullscreen }"
+    :class="{ fullscreen: isFullscreen, 'hide-cursor': isFullscreen && !showControls }"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
     @mousemove="onMouseMove"
@@ -602,6 +602,15 @@ defineExpose({ loadVideo, play, videoRef })
   border-radius: 8px;
   overflow: hidden;
   max-width: 100%;
+
+  // 隐藏鼠标光标
+  &.hide-cursor {
+    cursor: none;
+
+    * {
+      cursor: none !important;
+    }
+  }
 
   // 全屏样式
   &.fullscreen {
