@@ -250,7 +250,7 @@ const onSlideChange = (swiperInstance) => {
     }
     :deep(.swiper-wrapper) {
       width: 100%;
-      height: 100%;
+      height: 100% !important;
     }
     :deep(.swiper-slide) {
       display: flex;
