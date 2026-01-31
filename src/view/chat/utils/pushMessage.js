@@ -37,7 +37,7 @@ export function updateMessage({
   const { loreBooksMessageList, messageKeys } = matchLoreBooks(messageList, loreBooksArray, {
     topK: 4,
     minScore: 0.4,
-    tokenBudget: 2000,
+    tokenBudget: Infinity, // 移除 token 限制
     enableRegex: true,
     // 历史扫描和会话控制
     historyMode: 'window',
@@ -53,9 +53,15 @@ export function updateMessage({
     respectPosition: true, // 使用 position 属性
     respectProbability: true, // 应用概率过滤
     includeConstant: true, // 包含常驻条目
+    debug: false, // 开启调试日志
   })
 
   if (loreBooksMessageList.length) {
+    console.log('📝 世界书注入:', {
+      总数: loreBooksMessageList.length,
+      触发关键词: messageKeys,
+    })
+
     // 根据 position 属性分组插入
     const positionGroups = {
       beforeChar: [], // position: 0 - 角色描述前
@@ -83,19 +89,24 @@ export function updateMessage({
 
     // 1. 在角色描述前插入 (position: 0)
     if (positionGroups.beforeChar.length > 0 && firstSystemIndex !== -1) {
+      console.log(`  📍 位置 0 (角色描述前): ${positionGroups.beforeChar.length} 条`)
       messageList.splice(firstSystemIndex, 0, ...positionGroups.beforeChar)
     }
 
     // 2. 在角色描述后插入 (position: 1)
     if (positionGroups.afterChar.length > 0 && firstSystemIndex !== -1) {
       const insertIndex = firstSystemIndex + 1 + positionGroups.beforeChar.length
+      console.log(`  📍 位置 1 (角色描述后): ${positionGroups.afterChar.length} 条`)
       messageList.splice(insertIndex, 0, ...positionGroups.afterChar)
     }
 
     // 3. 在用户最后一条消息前插入 (position: 2, 3, 4 或其他)
     if (positionGroups.beforeUser.length > 0) {
+      console.log(`  📍 位置 2-4 (用户消息前): ${positionGroups.beforeUser.length} 条`)
       messageList.splice(-1, 0, ...positionGroups.beforeUser)
     }
+
+    console.log(`✅ 世界书注入完成，消息队列长度: ${messageList.length}`)
   }
   // 给ai将要回答预留位置
   targetUser.message.push({
@@ -130,7 +141,7 @@ export async function chatWithDZMMAI(
     messages: messageList,
     stream: true,
     temperature: 0.7,
-    max_tokens: 10000,
+    // max_tokens: 10000, // 移除 token 限制
     top_p: 0.4,
     repetition_penalty: 1.1,
   }
@@ -224,7 +235,7 @@ export async function chatWithGemini(
     systemInstruction,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 10000,
+      // maxOutputTokens: 10000, // 移除输出 token 限制
       topP: 0.4,
       topK: 40,
     },

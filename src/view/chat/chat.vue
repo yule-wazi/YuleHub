@@ -232,67 +232,177 @@
       v-model="addLoreBook"
       :title="isAddLoreBookTitle"
       width="100vw"
-      style="max-width: 700px"
+      style="max-width: 900px; max-height: 90vh"
       center
-      top="0"
+      top="5vh"
       @closed="clear"
     >
-      <div class="addLoreBooks">
-        <el-form :model="roleForm">
-          <el-form-item props="addLoreBooksName">
-            <span>世界书名称：</span>
-            <el-input v-model="roleForm.addLoreBooksLabel" style="width: 90%" />
-          </el-form-item>
-          <el-form-item v-for="(item, index) in roleForm.addLoreBooksValue">
-            <el-row :gutter="10" class="flex-1" style="width: 100%">
-              <el-col :span="8">
-                <el-input-tag
-                  v-model="item.keys"
-                  tag-type="primary"
-                  tag-effect="dark"
-                  placeholder="主要关键词"
-                  size="large"
-                >
-                  <template #tag="{ value }">
-                    <div class="flex items-center">
-                      <el-icon class="mr-1">
-                        <Aim />
-                      </el-icon>
-                      <span>{{ value }}</span>
-                    </div>
-                  </template>
-                </el-input-tag>
-              </el-col>
-              <el-col :span="14">
-                <el-input
-                  v-model="item.content"
-                  style="width: 100%"
-                  :autosize="{ minRows: 2, maxRows: 4 }"
-                  type="textarea"
-                  placeholder="内容"
-                />
-              </el-col>
-              <el-col :span="1">
-                <el-button
-                  :style="{ visibility: index > 0 ? 'visible' : 'hidden' }"
-                  :icon="Delete"
-                  size="small"
-                  @click="removeLoreBooksItem(index)"
-                ></el-button>
-              </el-col>
-            </el-row>
-          </el-form-item>
-        </el-form>
-        <div class="flex justify-center align-middle mt-4" style="display: flex">
-          <el-button style="margin: auto" :icon="Plus" circle @click="addLoreBooksItem"></el-button>
+      <el-scrollbar max-height="70vh">
+        <div class="addLoreBooks">
+          <el-form :model="roleForm" label-width="120px">
+            <el-form-item label="世界书名称">
+              <el-input v-model="roleForm.addLoreBooksLabel" style="width: 100%" />
+            </el-form-item>
+
+            <el-divider>条目列表</el-divider>
+
+            <el-collapse v-model="activeEntryIndex" accordion>
+              <el-collapse-item
+                v-for="(item, index) in roleForm.addLoreBooksValue"
+                :key="index"
+                :name="index"
+              >
+                <template #title>
+                  <div style="display: flex; align-items: center; width: 100%">
+                    <span style="font-weight: bold"
+                      >条目 {{ index + 1 }}: {{ item.name || '未命名' }}</span
+                    >
+                    <el-button
+                      v-if="index > 0"
+                      :icon="Delete"
+                      size="small"
+                      type="danger"
+                      circle
+                      style="margin-left: auto"
+                      @click.stop="removeLoreBooksItem(index)"
+                    ></el-button>
+                  </div>
+                </template>
+
+                <el-form :model="item" label-width="140px">
+                  <!-- 基础信息 -->
+                  <el-form-item label="条目名称">
+                    <el-input v-model="item.name" placeholder="条目名称" />
+                  </el-form-item>
+
+                  <el-form-item label="ID">
+                    <el-input-number v-model="item.id" :min="0" style="width: 100%" />
+                  </el-form-item>
+
+                  <el-form-item label="主要关键词">
+                    <el-input-tag
+                      v-model="item.keys"
+                      tag-type="primary"
+                      tag-effect="dark"
+                      placeholder="输入关键词后按回车"
+                    >
+                      <template #tag="{ value }">
+                        <div class="flex items-center">
+                          <el-icon class="mr-1"><Aim /></el-icon>
+                          <span>{{ value }}</span>
+                        </div>
+                      </template>
+                    </el-input-tag>
+                  </el-form-item>
+
+                  <el-form-item label="次要关键词">
+                    <el-input-tag
+                      v-model="item.secondaryKeys"
+                      tag-type="info"
+                      tag-effect="plain"
+                      placeholder="输入次要关键词后按回车"
+                    />
+                  </el-form-item>
+
+                  <el-form-item label="内容">
+                    <el-input
+                      v-model="item.content"
+                      type="textarea"
+                      :autosize="{ minRows: 4, maxRows: 12 }"
+                      placeholder="世界书内容"
+                    />
+                  </el-form-item>
+
+                  <!-- 高级设置 -->
+                  <el-divider content-position="left">高级设置</el-divider>
+
+                  <el-form-item label="启用">
+                    <el-switch v-model="item.enabled" />
+                  </el-form-item>
+
+                  <el-form-item label="常驻条目">
+                    <el-switch v-model="item.constant" />
+                    <span style="margin-left: 10px; font-size: 12px; color: #999">
+                      常驻条目会一直生效
+                    </span>
+                  </el-form-item>
+
+                  <el-form-item label="选择性条目">
+                    <el-switch v-model="item.selective" />
+                    <span style="margin-left: 10px; font-size: 12px; color: #999">
+                      需要更高分数才触发
+                    </span>
+                  </el-form-item>
+
+                  <el-form-item label="插入顺序">
+                    <el-input-number v-model="item.insertionOrder" :min="0" :max="999" />
+                    <span style="margin-left: 10px; font-size: 12px; color: #999">
+                      数字越小越优先
+                    </span>
+                  </el-form-item>
+
+                  <el-form-item label="深度">
+                    <el-input-number v-model="item.depth" :min="0" :max="10" />
+                  </el-form-item>
+
+                  <el-form-item label="位置">
+                    <el-select v-model="item.position" placeholder="选择插入位置">
+                      <el-option label="角色描述前 (0)" :value="0" />
+                      <el-option label="角色描述后 (1)" :value="1" />
+                      <el-option label="示例对话后 (2)" :value="2" />
+                      <el-option label="聊天历史前 (3)" :value="3" />
+                      <el-option label="用户消息前 (4)" :value="4" />
+                    </el-select>
+                  </el-form-item>
+
+                  <el-form-item label="使用概率">
+                    <el-switch v-model="item.useProbability" />
+                  </el-form-item>
+
+                  <el-form-item label="触发概率 (%)" v-if="item.useProbability">
+                    <el-slider v-model="item.probability" :min="0" :max="100" show-input />
+                  </el-form-item>
+
+                  <el-form-item label="大小写敏感">
+                    <el-switch v-model="item.caseSensitive" />
+                  </el-form-item>
+
+                  <el-form-item label="全词匹配">
+                    <el-switch v-model="item.matchWholeWords" />
+                  </el-form-item>
+
+                  <el-form-item label="正则表达式">
+                    <el-input-tag
+                      v-model="item.regex"
+                      tag-type="warning"
+                      tag-effect="dark"
+                      placeholder="输入正则表达式后按回车"
+                    />
+                  </el-form-item>
+                </el-form>
+              </el-collapse-item>
+            </el-collapse>
+
+            <div
+              class="flex justify-center align-middle mt-4"
+              style="display: flex; margin-top: 20px"
+            >
+              <el-button type="primary" :icon="Plus" @click="addLoreBooksItem">
+                添加新条目
+              </el-button>
+            </div>
+          </el-form>
         </div>
+      </el-scrollbar>
+
+      <template #footer>
         <div class="addLoreBooksButton">
           <el-button @click="clear">取消</el-button>
           <el-button type="primary" @click="addLoreBooksConfirm">
             {{ isAddLoreBook ? '确认添加' : '确认修改' }}
           </el-button>
         </div>
-      </div>
+      </template>
     </el-dialog>
     <!-- 导入预览对话框 -->
     <el-dialog
@@ -472,11 +582,32 @@ const roleForm = reactive({
   description: '',
   firstMessage: '',
   loreBooks: [],
-  addLoreBooksValue: [{ keys: [], content: '' }],
+  addLoreBooksValue: [
+    {
+      id: 0,
+      name: '',
+      keys: [],
+      secondaryKeys: [],
+      content: '',
+      enabled: true,
+      insertionOrder: 0,
+      depth: 4,
+      position: 4,
+      probability: 100,
+      constant: false,
+      selective: false,
+      useProbability: false,
+      caseSensitive: false,
+      matchWholeWords: false,
+      regex: [],
+    },
+  ],
   addLoreBooksLabel: '',
   editCurrentIndex: 0,
   addLoreBooksData: myCache.get('loreBooks') ?? loreBooksOptions,
 })
+
+const activeEntryIndex = ref(0) // 折叠面板激活索引
 
 const agentStore = useAgent()
 const vipStore = useVip()
@@ -537,12 +668,23 @@ const handlePNGImport = async (e) => {
 
     // 1. 解析 PNG
     const parsed = await parsePNGCharacterCard(file)
+    console.log('✅ PNG 解析成功:', parsed)
 
     // 2. 验证数据
     validateCharacterCard(parsed.data)
+    console.log('✅ 数据验证通过')
 
     // 3. 映射为内部格式
     const mapped = mapToInternalFormat(parsed.data)
+    console.log('✅ 格式映射完成:', mapped)
+    console.log('📋 角色信息:', {
+      角色名: mapped.userName,
+      规范版本: mapped.metadata?.spec,
+      创建者: mapped.metadata?.creator,
+      世界书条目数: mapped.loreBooks?.value?.length || 0,
+      正则脚本数: mapped.regexScripts?.length || 0,
+      备用开场白数: mapped.alternateGreetings?.length || 0,
+    })
 
     // 4. 显示预览对话框
     previewData.value = mapped
@@ -654,10 +796,26 @@ const deleteLoreBook = (index) => {
 }
 // 添加一条世界书关键词
 const addLoreBooksItem = () => {
+  const newId = roleForm.addLoreBooksValue.length
   roleForm.addLoreBooksValue.push({
+    id: newId,
+    name: '',
     keys: [],
+    secondaryKeys: [],
     content: '',
+    enabled: true,
+    insertionOrder: newId,
+    depth: 4,
+    position: 4,
+    probability: 100,
+    constant: false,
+    selective: false,
+    useProbability: false,
+    caseSensitive: false,
+    matchWholeWords: false,
+    regex: [],
   })
+  activeEntryIndex.value = newId // 自动展开新添加的条目
 }
 // 删除一条世界书关键词
 const removeLoreBooksItem = (index) => {
@@ -665,7 +823,26 @@ const removeLoreBooksItem = (index) => {
 }
 // 清空创建世界书关键词
 const clear = () => {
-  roleForm.addLoreBooksValue = [{ keys: [], content: '' }]
+  roleForm.addLoreBooksValue = [
+    {
+      id: 0,
+      name: '',
+      keys: [],
+      secondaryKeys: [],
+      content: '',
+      enabled: true,
+      insertionOrder: 0,
+      depth: 4,
+      position: 4,
+      probability: 100,
+      constant: false,
+      selective: false,
+      useProbability: false,
+      caseSensitive: false,
+      matchWholeWords: false,
+      regex: [],
+    },
+  ]
   roleForm.addLoreBooksLabel = ''
   addLoreBook.value = false
 }

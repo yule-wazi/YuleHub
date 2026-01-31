@@ -31,11 +31,14 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     respectPosition = true, // 是否使用 position 属性
     respectProbability = true, // 是否应用概率过滤
     includeConstant = true, // 是否包含常驻条目
+    debug = false, // 是否开启调试日志
   } = options
 
   if (!Array.isArray(loreBooks) || loreBooks.length === 0) {
+    if (debug) console.log('📚 世界书匹配: 无世界书数据')
     return { loreBooksMessageList: [], messageKeys: [] }
   }
+
   const candidates = buildHistoryCandidates(messageList, {
     historyMode,
     windowSize,
@@ -44,7 +47,19 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
   })
 
   if (!candidates.length) {
+    if (debug) console.log('📚 世界书匹配: 无有效候选消息')
     return { loreBooksMessageList: [], messageKeys: [] }
+  }
+
+  if (debug) {
+    console.log('📚 世界书匹配开始:', {
+      世界书总数: loreBooks.length,
+      候选消息数: candidates.length,
+      候选消息内容: candidates.map((c) => c.raw.substring(0, 50) + '...'),
+      历史模式: historyMode,
+      TopK: topK,
+      最小分数: minScore,
+    })
   }
 
   // 轮次递增
@@ -57,13 +72,47 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     const it = loreBooks[i] || {}
     const id = it.id != null ? it.id : String(i)
     const content = it.content || ''
-    const keys = Array.isArray(it.keys) ? it.keys : []
-    const secondaryKeys = Array.isArray(it.secondaryKeys) ? it.secondaryKeys : []
+
+    // 处理关键词：如果是单个字符串包含逗号，自动分割
+    let keys = Array.isArray(it.keys) ? it.keys : []
+    keys = keys.flatMap((k) => {
+      if (typeof k === 'string' && (k.includes('，') || k.includes(','))) {
+        // 包含中文或英文逗号，分割
+        return k
+          .split(/[，,]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      }
+      return k
+    })
+
+    let secondaryKeys = Array.isArray(it.secondaryKeys) ? it.secondaryKeys : []
+    secondaryKeys = secondaryKeys.flatMap((k) => {
+      if (typeof k === 'string' && (k.includes('，') || k.includes(','))) {
+        return k
+          .split(/[，,]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      }
+      return k
+    })
+
     const rxList = Array.isArray(it.regex) ? it.regex : []
     const priority = Number(it.insertionOrder || it.priority || 0)
 
+    if (debug) {
+      console.log(`🔍 检查条目 [${it.name || id}]:`, {
+        主关键词: keys,
+        次要关键词: secondaryKeys,
+        正则: rxList,
+        常驻: it.constant,
+        启用: it.enabled !== false,
+      })
+    }
+
     // 检查是否启用
     if (it.enabled === false) {
+      if (debug) console.log(`  ⏭️ 跳过 (未启用)`)
       continue
     }
 
@@ -74,6 +123,11 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     if (it.constant && includeConstant) {
       score = 9999
       hitKeys.push('[常驻]')
+      if (debug) console.log(`  ⭐ 常驻条目，无条件注入`)
+    } else if (keys.length === 0 && secondaryKeys.length === 0 && rxList.length === 0) {
+      // 如果没有任何触发条件且不是常驻条目，跳过
+      if (debug) console.log(`  ⏭️ 跳过 (无触发条件且非常驻)`)
+      continue
     } else {
       // 遍历候选历史消息，带时间衰减加权
       for (const c of candidates) {
@@ -172,8 +226,24 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
 
     if (score > 0) {
       scored.push({ id, item: it, score, hitKeys, content })
-    } else if (it.enabled !== false) {
+      if (debug) {
+        console.log(`  ✅ 条目 [${it.name || id}] 得分: ${score.toFixed(2)}`, {
+          命中关键词: hitKeys,
+          常驻: it.constant,
+          选择性: it.selective,
+          启用概率: it.useProbability ? `${it.probability}%` : '否',
+          插入顺序: it.insertionOrder,
+          位置: it.position,
+          深度: it.depth,
+        })
+      }
+    } else if (it.enabled !== false && debug) {
+      console.log(`  ❌ 条目 [${it.name || id}] 未触发 (分数: ${score.toFixed(2)})`)
     }
+  }
+
+  if (debug) {
+    console.log(`📊 打分完成: ${scored.length} 个条目得分`)
   }
 
   // 概率过滤
@@ -181,19 +251,48 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
   if (respectProbability) {
     const beforeProb = filtered.length
     filtered = applyProbability(filtered)
+    if (debug && beforeProb !== filtered.length) {
+      console.log(`🎲 概率过滤: ${beforeProb} → ${filtered.length}`)
+    }
   }
 
   // 排序、TopK
   filtered.sort((a, b) => b.score - a.score)
   const picked = filtered.slice(0, topK)
 
+  if (debug) {
+    console.log(
+      `🎯 TopK 选择: ${picked.length} 个条目`,
+      picked.map((p) => ({
+        名称: p.item.name || p.id,
+        分数: p.score.toFixed(2),
+        位置: p.item.position,
+      })),
+    )
+  }
+
   // 预算裁剪（粗略token估计：字符/3）
   const loreBooksMessageList = []
   let used = 0
   for (const p of picked) {
     const cost = estimateTokens(p.content)
-    if (used + cost > tokenBudget) continue
+    if (used + cost > tokenBudget) {
+      if (debug) {
+        console.log(`⚠️ Token 预算不足，跳过条目 [${p.item.name || p.id}]`, {
+          需要: cost,
+          已用: used,
+          预算: tokenBudget,
+          剩余: tokenBudget - used,
+        })
+      }
+      continue
+    }
     used += cost
+
+    if (debug) {
+      console.log(`  ✅ 注入条目 [${p.item.name || p.id}]: ${cost} tokens`)
+    }
+
     loreBooksMessageList.push({
       id: p.id,
       content: formatLoreContent(p.item, { lorePromptText }),
@@ -205,6 +304,13 @@ export function matchLoreBooks(messageList, loreBooks, options = {}) {
     const usageKey = `${sessionId}:${p.id}`
     const prev = __loreUsageMap.get(usageKey) || { uses: 0, lastRound: -9999 }
     __loreUsageMap.set(usageKey, { uses: prev.uses + 1, lastRound: __loreSessionRound })
+  }
+
+  if (debug) {
+    console.log(
+      `✨ 最终注入: ${loreBooksMessageList.length} 个条目，使用 ${used}/${tokenBudget} tokens`,
+    )
+    console.log(`🔑 触发关键词:`, Array.from(seenKeys))
   }
 
   return { loreBooksMessageList, messageKeys: Array.from(seenKeys) }
