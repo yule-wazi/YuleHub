@@ -4,6 +4,7 @@ import useAgent from '@/sotre/module/agent'
 import { playAudio } from './createAudio'
 import myCache from '@/utils/cacheStorage'
 import { matchLoreBooks } from './matchLoreBooks'
+import { defaultGeminiModel } from '../config/modelConfig'
 const delay = 0
 export function updateMessage({
   targetUser,
@@ -220,6 +221,8 @@ export async function chatWithGemini(
 ) {
   const agentStore = useAgent()
   const geminiApiKeyList = myCache.get('GeminiApiKeyList') || []
+  const geminiModel = myCache.get('GeminiModel') || defaultGeminiModel
+
   if (!geminiApiKeyList || geminiApiKeyList.length === 0) {
     ElMessage.error('尚未设置 Gemini API Key')
     targetUser.message.splice(-2, 2)
@@ -242,7 +245,7 @@ export async function chatWithGemini(
   }
 
   try {
-    const response = await postGeminiAgent(requestBody, firstKey)
+    const response = await postGeminiAgent(requestBody, firstKey, geminiModel)
 
     const reader = response.body.getReader()
     const decoder = new TextDecoder()

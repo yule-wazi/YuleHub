@@ -22,9 +22,9 @@ export function postDZMMAgent(requestBody, firstToken) {
 }
 
 // Gemini AI (流式)
-export function postGeminiAgent(requestBody, apiKey) {
+export function postGeminiAgent(requestBody, apiKey, model = 'gemini-2.0-flash-exp') {
   return fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: {

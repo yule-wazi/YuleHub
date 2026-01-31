@@ -491,8 +491,34 @@
             </el-input-tag>
           </el-form-item>
         </template>
-
         <template v-else-if="modelType === 'gemini'">
+          <el-form-item>
+            <span>选择 Gemini 模型</span>
+            <el-select v-model="geminiModel" placeholder="请选择模型" style="width: 100%">
+              <el-option
+                v-for="model in allGeminiModels"
+                :key="model.value"
+                :label="model.label"
+                :value="model.value"
+              >
+                <div style="display: flex; flex-direction: column">
+                  <span>{{ model.label }}</span>
+                  <span style="font-size: 12px; color: #999">{{ model.description }}</span>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <span>添加自定义模型</span>
+            <div style="display: flex; gap: 8px">
+              <el-input
+                v-model="customModelInput"
+                placeholder="输入模型名称，如: gemini-1.5-pro-latest"
+                style="flex: 1; margin-left: 10px"
+              />
+              <el-button type="primary" @click="addCustomModel">添加</el-button>
+            </div>
+          </el-form-item>
           <el-form-item>
             <span>请输入 Gemini API Key（支持多个）</span>
             <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
@@ -535,7 +561,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch, computed } from 'vue'
 import ChatPage from './cpns/chatPage/chatPage.vue'
 import ChatUser from './cpns/chatUser/chatUser.vue'
 import useAgent from '@/sotre/module/agent'
@@ -567,6 +593,7 @@ import { systemPrompt } from './utils/systemPrompt'
 import { audioList } from '@/sotre/agentAudioConfig'
 import { parsePNGCharacterCard } from './utils/parseCharacterCard'
 import { mapToInternalFormat, validateCharacterCard } from './utils/mapCharacterCard'
+import { geminiModels, defaultGeminiModel } from './config/modelConfig'
 import { ElLoading, ElMessage } from 'element-plus'
 import { useNavClick } from '@/utils/useNavClick'
 // 初始化世界书
@@ -772,6 +799,45 @@ const inputToken = ref(myCache.get('TokenList') ?? [])
 const audioData = reactive(myCache.get('audioData') ?? { groupId: '', token: '' })
 const modelType = ref(myCache.get('modelType') || 'dzmm')
 const geminiApiKeyList = ref(myCache.get('GeminiApiKeyList') || [])
+const geminiModel = ref(myCache.get('GeminiModel') || defaultGeminiModel)
+
+// 自定义模型相关
+const customModelInput = ref('')
+const customModels = ref(myCache.get('CustomGeminiModels') || [])
+const allGeminiModels = computed(() => {
+  return [...geminiModels, ...customModels.value]
+})
+
+// 添加自定义模型
+const addCustomModel = () => {
+  const modelName = customModelInput.value.trim()
+  if (!modelName) {
+    ElMessage.error('请输入模型名称')
+    return
+  }
+
+  // 检查是否已存在
+  const exists = allGeminiModels.value.some((m) => m.value === modelName)
+  if (exists) {
+    ElMessage.warning('该模型已存在')
+    return
+  }
+
+  // 添加到自定义模型列表
+  const newModel = {
+    label: `${modelName} (自定义)`,
+    value: modelName,
+    description: '用户自定义模型',
+  }
+  customModels.value.push(newModel)
+  myCache.set('CustomGeminiModels', customModels.value)
+
+  // 自动选择新添加的模型
+  geminiModel.value = modelName
+  customModelInput.value = ''
+
+  ElMessage.success('自定义模型已添加')
+}
 
 // 选择世界书
 const addLoreBook = ref(false)
@@ -916,7 +982,8 @@ const addAPIToken = () => {
         return
       }
       myCache.set('GeminiApiKeyList', geminiApiKeyList.value)
-      ElMessage.success('Gemini API Key 已保存')
+      myCache.set('GeminiModel', geminiModel.value)
+      ElMessage.success('Gemini 配置已保存')
     }
   } else {
     myCache.set('audioData', { groupId: audioData.groupId, token: audioData.token })
