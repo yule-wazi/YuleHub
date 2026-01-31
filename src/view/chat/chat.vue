@@ -355,22 +355,47 @@
       @closed="addTokenVisible = false"
     >
       <template v-if="isChatToken">
-        <el-form-item prop="firstMessage">
-          <span>请输入至少一个API Token</span>
-          <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
-            >获取Token(需翻墙)</a
-          >
-          <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
-            <template #tag="{ value }">
-              <div class="flex items-center">
-                <el-icon class="mr-1">
-                  <Key />
-                </el-icon>
-                <span>{{ value }}</span>
-              </div>
-            </template>
-          </el-input-tag>
+        <el-form-item>
+          <span>选择AI模型</span>
+          <el-radio-group v-model="modelType" style="margin-left: 20px">
+            <el-radio label="dzmm">DZMM AI</el-radio>
+            <el-radio label="gemini">Google Gemini</el-radio>
+          </el-radio-group>
         </el-form-item>
+
+        <template v-if="modelType === 'dzmm'">
+          <el-form-item prop="firstMessage">
+            <span>请输入至少一个API Token</span>
+            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
+              >获取Token(需翻墙)</a
+            >
+            <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
+              <template #tag="{ value }">
+                <div class="flex items-center">
+                  <el-icon class="mr-1">
+                    <Key />
+                  </el-icon>
+                  <span>{{ value }}</span>
+                </div>
+              </template>
+            </el-input-tag>
+          </el-form-item>
+        </template>
+
+        <template v-else-if="modelType === 'gemini'">
+          <el-form-item>
+            <span>请输入 Gemini API Key</span>
+            <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
+              >获取 API Key</a
+            >
+            <el-input
+              v-model="geminiApiKey"
+              type="password"
+              show-password
+              placeholder="输入你的 Gemini API Key"
+            />
+          </el-form-item>
+        </template>
       </template>
       <template v-else>
         <el-form-item>
@@ -602,6 +627,8 @@ const addAPICard = (isAddChat = false) => {
 }
 const inputToken = ref(myCache.get('TokenList') ?? [])
 const audioData = reactive(myCache.get('audioData') ?? { groupId: '', token: '' })
+const modelType = ref(myCache.get('modelType') || 'dzmm')
+const geminiApiKey = ref(myCache.get('GeminiApiKey') || '')
 
 // 选择世界书
 const addLoreBook = ref(false)
@@ -699,9 +726,23 @@ const addAPIToken = () => {
   addTokenVisible.value = false
   drawer.value = false
   if (isChatToken.value) {
-    myCache.set('TokenList', inputToken.value)
+    // 保存模型类型
+    myCache.set('modelType', modelType.value)
+
+    if (modelType.value === 'dzmm') {
+      myCache.set('TokenList', inputToken.value)
+      ElMessage.success('DZMM Token 已保存')
+    } else if (modelType.value === 'gemini') {
+      if (!geminiApiKey.value) {
+        ElMessage.error('请输入 Gemini API Key')
+        return
+      }
+      myCache.set('GeminiApiKey', geminiApiKey.value)
+      ElMessage.success('Gemini API Key 已保存')
+    }
   } else {
     myCache.set('audioData', { groupId: audioData.groupId, token: audioData.token })
+    ElMessage.success('Audio Token 已保存')
   }
 }
 

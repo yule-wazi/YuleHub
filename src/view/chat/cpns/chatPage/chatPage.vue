@@ -100,11 +100,22 @@ const targetUser = computed(() =>
 const btnClick = () => {
   const inputValue = inputRef.value.value
   if (!inputValue) return
+
   // 判断是否有token
-  const tokenList = myCache.get('TokenList')
-  if (!tokenList || tokenList.length === 0) {
-    ElMessage.error('尚未存入API Token')
-    return
+  const modelType = myCache.get('modelType') || 'dzmm'
+
+  if (modelType === 'dzmm') {
+    const tokenList = myCache.get('TokenList')
+    if (!tokenList || tokenList.length === 0) {
+      ElMessage.error('尚未存入 DZMM API Token')
+      return
+    }
+  } else if (modelType === 'gemini') {
+    const geminiApiKey = myCache.get('GeminiApiKey')
+    if (!geminiApiKey) {
+      ElMessage.error('尚未设置 Gemini API Key')
+      return
+    }
   }
   // "我"的消息塞入消息队列
   targetUser.value.message.push({

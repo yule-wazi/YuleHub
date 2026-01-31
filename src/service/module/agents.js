@@ -21,6 +21,20 @@ export function postDZMMAgent(requestBody, firstToken) {
   })
 }
 
+// Gemini AI (流式)
+export function postGeminiAgent(requestBody, apiKey) {
+  return fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    },
+  )
+}
+
 // 文字语音
 export function textToAudio(data, groupId, token) {
   MyRequest.setBaseUrl(`https://api.minimax.chat/v1/t2a_v2?GroupId=${groupId}`)

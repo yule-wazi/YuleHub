@@ -15,20 +15,33 @@ export function formatOutputMessageToAgent(userName, message) {
 // 格式化输出——高亮对话内容
 export function formatSpecialOutput(message, istextLight = true) {
   let newMessage = message
+
   if (istextLight) {
-    newMessage = newMessage.replace(/"([^"]*)"/g, '<span class=chat>"$1"</span>') //高亮处理
+    // 使用 [^"'“”‘’]+ 确保不会跨行匹配或过度匹配
+    const quoteRegex = /((["“])([^"“”]+)(["”]))/g
+    newMessage = newMessage.replace(quoteRegex, '<span class="chat">$1</span>')
   }
   return newMessage
-    .replace(/\*/g, '')
-    .replace(/\n/g, `<br>`)
-    .replace(/```([\s\S]*?)```/g, `<pre>$1</pre>`) //规则处理
+    .replace(/\*/g, '') // 移除星号
+    .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>') // 先处理代码块，防止内部换行被替换
+    .replace(/\n/g, '<br>') // 替换换行
 }
 // 格式化输入audio——截取对话内容
 export function formatAudioMessage(message) {
-  return message
-    .match(/"([^"]*)"/g)
-    ?.map((item) => item.slice(1, -1))
-    .join('。')
+  // 使用与高亮相同的正则表达式，匹配所有引号组合
+  const quoteRegex = /((["“])([^"“”]+)(["”]))/g
+  const matches = message.match(quoteRegex)
+  if (!matches || matches.length === 0) {
+    return undefined
+  }
+  // 提取引号内的内容（去掉引号本身）
+  const contents = matches
+    .map((match) => {
+      // 去掉首尾的引号字符
+      return match.slice(1, -1)
+    })
+    .filter((content) => content.trim()) // 过滤空内容
+  return contents.length > 0 ? contents.join('。') : undefined
 }
 // 对内容进行审查
 export function checkContentFirstName(message) {
