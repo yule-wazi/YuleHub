@@ -494,15 +494,16 @@
 
         <template v-else-if="modelType === 'gemini'">
           <el-form-item>
-            <span>请输入 Gemini API Key</span>
+            <span>请输入 Gemini API Key（支持多个）</span>
             <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
               >获取 API Key</a
             >
-            <el-input
-              v-model="geminiApiKey"
-              type="password"
-              show-password
-              placeholder="输入你的 Gemini API Key"
+            <el-input-tag
+              v-model="geminiApiKeyList"
+              tag-type="primary"
+              tag-effect="plain"
+              draggable
+              placeholder="输入 API Key 后按回车添加"
             />
           </el-form-item>
         </template>
@@ -770,7 +771,7 @@ const addAPICard = (isAddChat = false) => {
 const inputToken = ref(myCache.get('TokenList') ?? [])
 const audioData = reactive(myCache.get('audioData') ?? { groupId: '', token: '' })
 const modelType = ref(myCache.get('modelType') || 'dzmm')
-const geminiApiKey = ref(myCache.get('GeminiApiKey') || '')
+const geminiApiKeyList = ref(myCache.get('GeminiApiKeyList') || [])
 
 // 选择世界书
 const addLoreBook = ref(false)
@@ -910,11 +911,11 @@ const addAPIToken = () => {
       myCache.set('TokenList', inputToken.value)
       ElMessage.success('DZMM Token 已保存')
     } else if (modelType.value === 'gemini') {
-      if (!geminiApiKey.value) {
-        ElMessage.error('请输入 Gemini API Key')
+      if (!geminiApiKeyList.value || geminiApiKeyList.value.length === 0) {
+        ElMessage.error('请至少输入一个 Gemini API Key')
         return
       }
-      myCache.set('GeminiApiKey', geminiApiKey.value)
+      myCache.set('GeminiApiKeyList', geminiApiKeyList.value)
       ElMessage.success('Gemini API Key 已保存')
     }
   } else {

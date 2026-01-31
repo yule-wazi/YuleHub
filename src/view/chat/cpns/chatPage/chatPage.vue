@@ -111,8 +111,8 @@ const btnClick = () => {
       return
     }
   } else if (modelType === 'gemini') {
-    const geminiApiKey = myCache.get('GeminiApiKey')
-    if (!geminiApiKey) {
+    const geminiApiKeyList = myCache.get('GeminiApiKeyList')
+    if (!geminiApiKeyList || geminiApiKeyList.length === 0) {
       ElMessage.error('尚未设置 Gemini API Key')
       return
     }

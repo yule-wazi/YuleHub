@@ -219,13 +219,13 @@ export async function chatWithGemini(
   targetUser,
 ) {
   const agentStore = useAgent()
-  const geminiApiKey = myCache.get('GeminiApiKey')
-
-  if (!geminiApiKey) {
+  const geminiApiKeyList = myCache.get('GeminiApiKeyList') || []
+  if (!geminiApiKeyList || geminiApiKeyList.length === 0) {
     ElMessage.error('尚未设置 Gemini API Key')
     targetUser.message.splice(-2, 2)
     return
   }
+  const firstKey = geminiApiKeyList[0]
 
   // 转换消息格式：DZMM -> Gemini
   const { systemInstruction, contents } = convertToGeminiFormat(messageList)
@@ -242,15 +242,7 @@ export async function chatWithGemini(
   }
 
   try {
-    const response = await postGeminiAgent(requestBody, geminiApiKey)
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Gemini API error:', errorData)
-      ElMessage.error(`Gemini API 错误: ${errorData.error?.message || response.statusText}`)
-      targetUser.message.splice(-2, 2)
-      return
-    }
+    const response = await postGeminiAgent(requestBody, firstKey)
 
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
@@ -312,11 +304,32 @@ export async function chatWithGemini(
               try {
                 const jsonData = JSON.parse(jsonStr)
 
-                // 检查错误 - 如果已有内容，只警告不删除
+                // 检查错误
                 if (jsonData.error) {
                   console.error('Gemini stream error:', jsonData.error)
+                  const errorCode = jsonData.error.code
+                  const errorStatus = jsonData.error.status
                   const errorMsg = jsonData.error.message || '未知错误'
 
+                  // 检查是否是配额超限错误 (429 或 RESOURCE_EXHAUSTED)
+                  if (errorCode === 429 || errorStatus === 'RESOURCE_EXHAUSTED') {
+                    console.log('Gemini API Key 配额不足，尝试切换...')
+                    targetUser.message.splice(-2, 2)
+
+                    ElMessage({
+                      message: '当前 Gemini API Key 配额不足，已自动切换至下一个 Key',
+                      type: 'warning',
+                    })
+
+                    // 轮换 API Key
+                    geminiApiKeyList.shift()
+                    geminiApiKeyList.push(firstKey)
+                    myCache.set('GeminiApiKeyList', geminiApiKeyList)
+                    console.log('已切换 Gemini API Key', geminiApiKeyList)
+                    return
+                  }
+
+                  // 其他错误：如果已有内容，只警告不删除
                   if (hasContent) {
                     // 已有内容输出，只显示警告，不删除消息
                     ElMessage.warning(`Gemini 中断: ${errorMsg}`)
@@ -378,7 +391,22 @@ export async function chatWithGemini(
     }
   } catch (error) {
     console.error('Gemini request failed:', error)
+    // 检查是否是配额超限错误 (429)
+    if (errorData.error?.code === 429 || errorData.error?.status === 'RESOURCE_EXHAUSTED') {
+      console.log('Gemini API Key 配额不足，尝试切换...')
+      targetUser.message.splice(-2, 2)
+      ElMessage({
+        message: '当前 Gemini API Key 配额不足，已自动切换至下一个 Key',
+        type: 'warning',
+      })
 
+      // 轮换 API Key
+      geminiApiKeyList.shift()
+      geminiApiKeyList.push(firstKey)
+      myCache.set('GeminiApiKeyList', geminiApiKeyList)
+      console.log('已切换 Gemini API Key', geminiApiKeyList)
+      return
+    }
     // 检查是否已有内容输出
     if (currentMessage.message && currentMessage.message.trim()) {
       // 有内容，只显示警告，保留已输出的内容
