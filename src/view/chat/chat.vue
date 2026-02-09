@@ -455,99 +455,82 @@
         <el-button type="primary" @click="confirmImport">确认导入</el-button>
       </template>
     </el-dialog>
-    <!-- API Token -->
+
+    <!-- Chat Token Dialog -->
     <el-dialog
       v-model="addTokenVisible"
-      :title="isChatToken ? 'Chat Token' : 'Audio Token'"
+      title="Chat Token"
       width="90vw"
       style="max-width: 700px"
       center
       @closed="addTokenVisible = false"
     >
-      <template v-if="isChatToken">
-        <el-form-item>
-          <span>选择AI模型</span>
-          <el-radio-group v-model="modelType" style="margin-left: 20px">
-            <el-radio label="dzmm">DZMM AI</el-radio>
-            <el-radio label="gemini">Google Gemini</el-radio>
-          </el-radio-group>
-        </el-form-item>
+      <el-form-item>
+        <span>选择AI模型</span>
+        <el-radio-group v-model="modelType" style="margin-left: 20px">
+          <el-radio label="dzmm">DZMM AI</el-radio>
+          <el-radio label="gemini">Google Gemini</el-radio>
+        </el-radio-group>
+      </el-form-item>
 
-        <template v-if="modelType === 'dzmm'">
-          <el-form-item prop="firstMessage">
-            <span>请输入至少一个API Token</span>
-            <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
-              >获取Token(需翻墙)</a
-            >
-            <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
-              <template #tag="{ value }">
-                <div class="flex items-center">
-                  <el-icon class="mr-1">
-                    <Key />
-                  </el-icon>
-                  <span>{{ value }}</span>
-                </div>
-              </template>
-            </el-input-tag>
-          </el-form-item>
-        </template>
-        <template v-else-if="modelType === 'gemini'">
-          <el-form-item>
-            <span>选择 Gemini 模型</span>
-            <el-select v-model="geminiModel" placeholder="请选择模型" style="width: 100%">
-              <el-option
-                v-for="model in allGeminiModels"
-                :key="model.value"
-                :label="model.label"
-                :value="model.value"
-              >
-                <div style="display: flex; flex-direction: column">
-                  <span>{{ model.label }}</span>
-                  <span style="font-size: 12px; color: #999">{{ model.description }}</span>
-                </div>
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <span>添加自定义模型</span>
-            <div style="display: flex; gap: 8px">
-              <el-input
-                v-model="customModelInput"
-                placeholder="输入模型名称，如: gemini-1.5-pro-latest"
-                style="flex: 1; margin-left: 10px"
-              />
-              <el-button type="primary" @click="addCustomModel">添加</el-button>
-            </div>
-          </el-form-item>
-          <el-form-item>
-            <span>请输入 Gemini API Key（支持多个）</span>
-            <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
-              >获取 API Key</a
-            >
-            <el-input-tag
-              v-model="geminiApiKeyList"
-              tag-type="primary"
-              tag-effect="plain"
-              draggable
-              placeholder="输入 API Key 后按回车添加"
-            />
-          </el-form-item>
-        </template>
-      </template>
-      <template v-else>
-        <el-form-item>
-          <span>请输入MiniMax的groupID</span>
-          <a
-            class="website"
-            href="https://platform.minimaxi.com/user-center/basic-information"
-            target="_blank"
-            >进入MiniMax官网</a
+      <template v-if="modelType === 'dzmm'">
+        <el-form-item prop="firstMessage">
+          <span>请输入至少一个API Token</span>
+          <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
+            >获取Token(需翻墙)</a
           >
-          <el-input v-model="audioData.groupId" tag-type="primary" tag-effect="plain" draggable />
+          <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
+            <template #tag="{ value }">
+              <div class="flex items-center">
+                <el-icon class="mr-1">
+                  <Key />
+                </el-icon>
+                <span>{{ value }}</span>
+              </div>
+            </template>
+          </el-input-tag>
+        </el-form-item>
+      </template>
+      <template v-else-if="modelType === 'gemini'">
+        <el-form-item>
+          <span>选择 Gemini 模型</span>
+          <el-select v-model="geminiModel" placeholder="请选择模型" style="width: 100%">
+            <el-option
+              v-for="model in allGeminiModels"
+              :key="model.value"
+              :label="model.label"
+              :value="model.value"
+            >
+              <div style="display: flex; flex-direction: column">
+                <span>{{ model.label }}</span>
+                <span style="font-size: 12px; color: #999">{{ model.description }}</span>
+              </div>
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
-          <span>请输入MiniMax的Token</span>
-          <el-input v-model="audioData.token" tag-type="primary" tag-effect="plain" draggable />
+          <span>添加自定义模型</span>
+          <div style="display: flex; gap: 8px">
+            <el-input
+              v-model="customModelInput"
+              placeholder="输入模型名称，如: gemini-1.5-pro-latest"
+              style="flex: 1; margin-left: 10px"
+            />
+            <el-button type="primary" @click="addCustomModel">添加</el-button>
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <span>请输入 Gemini API Key（支持多个）</span>
+          <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
+            >获取 API Key</a
+          >
+          <el-input-tag
+            v-model="geminiApiKeyList"
+            tag-type="primary"
+            tag-effect="plain"
+            draggable
+            placeholder="输入 API Key 后按回车添加"
+          />
         </el-form-item>
       </template>
       <template #footer>
@@ -558,6 +541,8 @@
       </template>
     </el-dialog>
   </div>
+  <!-- Audio Token Dialog Component -->
+  <AudioConfigDialog v-model="audioTokenVisible" @save="handleAudioTokenSave" />
 </template>
 
 <script setup>
@@ -596,6 +581,7 @@ import { mapToInternalFormat, validateCharacterCard } from './utils/mapCharacter
 import { geminiModels, defaultGeminiModel } from './config/modelConfig'
 import { ElLoading, ElMessage } from 'element-plus'
 import { useNavClick } from '@/utils/useNavClick'
+import AudioConfigDialog from '@/components/audioConfigDialog/audioConfigDialog.vue'
 // 初始化世界书
 const loreBooksOptions = [
   {
@@ -787,16 +773,23 @@ const confirmImport = () => {
   ElMessage.success('角色卡导入成功！请检查并确认信息')
 }
 // 打开添加API面板
+const audioTokenVisible = ref(false)
 const addAPICard = (isAddChat = false) => {
-  addTokenVisible.value = true
   if (isAddChat) {
-    isChatToken.value = true
+    // Chat Token - 打开 Chat Token dialog
+    addTokenVisible.value = true
   } else {
-    isChatToken.value = false
+    // Audio Token - 打开 AudioTokenDialog 组件
+    audioTokenVisible.value = true
   }
 }
+
+// 处理 Audio Token 保存
+const handleAudioTokenSave = (data) => {
+  console.log('Audio Token 配置已保存:', data)
+  ElMessage.success('Audio Token 配置已保存')
+}
 const inputToken = ref(myCache.get('TokenList') ?? [])
-const audioData = reactive(myCache.get('audioData') ?? { groupId: '', token: '' })
 const modelType = ref(myCache.get('modelType') || 'dzmm')
 const geminiApiKeyList = ref(myCache.get('GeminiApiKeyList') || [])
 const geminiModel = ref(myCache.get('GeminiModel') || defaultGeminiModel)
@@ -963,31 +956,25 @@ watch(roleForm.addLoreBooksData, () => {
 
 // 打开菜单
 const drawer = ref(false)
-// 确定添加APIToken
+// 确定添加 Chat Token
 const addTokenVisible = ref(false)
-const isChatToken = ref(true)
 const addAPIToken = () => {
   addTokenVisible.value = false
   drawer.value = false
-  if (isChatToken.value) {
-    // 保存模型类型
-    myCache.set('modelType', modelType.value)
+  // 保存模型类型
+  myCache.set('modelType', modelType.value)
 
-    if (modelType.value === 'dzmm') {
-      myCache.set('TokenList', inputToken.value)
-      ElMessage.success('DZMM Token 已保存')
-    } else if (modelType.value === 'gemini') {
-      if (!geminiApiKeyList.value || geminiApiKeyList.value.length === 0) {
-        ElMessage.error('请至少输入一个 Gemini API Key')
-        return
-      }
-      myCache.set('GeminiApiKeyList', geminiApiKeyList.value)
-      myCache.set('GeminiModel', geminiModel.value)
-      ElMessage.success('Gemini 配置已保存')
+  if (modelType.value === 'dzmm') {
+    myCache.set('TokenList', inputToken.value)
+    ElMessage.success('DZMM Token 已保存')
+  } else if (modelType.value === 'gemini') {
+    if (!geminiApiKeyList.value || geminiApiKeyList.value.length === 0) {
+      ElMessage.error('请至少输入一个 Gemini API Key')
+      return
     }
-  } else {
-    myCache.set('audioData', { groupId: audioData.groupId, token: audioData.token })
-    ElMessage.success('Audio Token 已保存')
+    myCache.set('GeminiApiKeyList', geminiApiKeyList.value)
+    myCache.set('GeminiModel', geminiModel.value)
+    ElMessage.success('Gemini 配置已保存')
   }
 }
 
