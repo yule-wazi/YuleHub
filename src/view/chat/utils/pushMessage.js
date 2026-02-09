@@ -138,7 +138,7 @@ export async function chatWithDZMMAI(
   targetUser,
 ) {
   const requestBody = {
-    model: 'nalang-turbo-v23',
+    model: 'nalang-turbo-0826',
     messages: messageList,
     stream: true,
     temperature: 0.7,
@@ -198,11 +198,11 @@ export async function chatWithDZMMAI(
   // 判断是否生成语音
   if (getAudio) {
     try {
-      const [audioElem, audioSrc] = await agentStore.audioToAgent(
-        formatAudioMessage(currentMessage.message),
+      const [audioElem, audioURL] = await agentStore.audioToAgent(
+        currentMessage.message,
         targetUser.userName,
       )
-      currentMessage.audioSrc = audioSrc
+      currentMessage.audioSrc = audioURL
       // 播放音频
       await playAudio(audioElem)
     } catch (error) {

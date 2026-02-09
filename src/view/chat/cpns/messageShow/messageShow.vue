@@ -56,13 +56,17 @@
 <script setup>
 import { ref, watchEffect } from 'vue'
 import { formatSpecialOutput } from '@/view/chat/utils/formatOutput'
-import { createAudio, playAudio } from '@/view/chat/utils/createAudio'
+import { createAudio, createAudioToBlob, playAudio } from '@/view/chat/utils/createAudio'
 import { EditPen } from '@element-plus/icons-vue'
 import useAgent from '@/sotre/module/agent'
 const agentStore = useAgent()
 
 const props = defineProps({
   messageInfo: {
+    type: Object,
+    default: {},
+  },
+  targetUser: {
     type: Object,
     default: {},
   },
@@ -89,9 +93,20 @@ const editUserMessageConfirm = () => {
   emit('sliceEmit', props.messageInfo)
 }
 // 播放音频
-const playAudioClick = () => {
-  const audioElem = createAudio(props.messageInfo.audioSrc)
-  playAudio(audioElem)
+const playAudioClick = async () => {
+  try {
+    const audioElem = document.createElement('audio')
+    audioElem.src = props.messageInfo.audioSrc
+    document.body.appendChild(audioElem)
+    playAudio(audioElem)
+  } catch (err) {
+    console.log('播放源异常', err)
+    const [audioElem] = await agentStore.audioToAgent(
+      props.messageInfo.message,
+      props.targetUser.voiceId,
+    )
+    playAudio(audioElem)
+  }
 }
 const emit = defineEmits(['sliceEmit'])
 </script>

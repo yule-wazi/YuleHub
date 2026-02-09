@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { postAgent, textToAudio } from '@/service/module/agents'
+import { postAgent, textToAudio, textToSpeech } from '@/service/module/agents'
 import { formatInputMessage } from '@/view/chat/utils/formatOutput'
-import { createAudio } from '@/view/chat/utils/createAudio'
+import { createAudio, createAudioToBlob } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 const useAgent = defineStore('agent', {
@@ -43,42 +43,68 @@ const useAgent = defineStore('agent', {
           })
       })
     },
-    audioToAgent(message, userName) {
+    // audioToAgent(message, userName) {
+    //   if (!message) return
+    //   // 查找目标智能体配置
+    //   const voiceId = this.users.find((item) => item.userName === userName).voiceId
+    //   let targetConfig = {
+    //     model: 'speech-02-hd',
+    //     text: `${message}`,
+    //     timber_weights: [
+    //       {
+    //         voice_id: `${voiceId}`,
+    //         weight: 1,
+    //       },
+    //     ],
+    //     voice_setting: {
+    //       voice_id: '',
+    //       speed: 1.25,
+    //       pitch: 0,
+    //       vol: 1.25,
+    //       emotion: 'disgusted',
+    //       latex_read: false,
+    //     },
+    //     audio_setting: {
+    //       sample_rate: 32000,
+    //       bitrate: 128000,
+    //       format: 'mp3',
+    //     },
+    //     language_boost: 'auto',
+    //   }
+    //   const audioData = myCache.get('audioData')
+    //   return new Promise((resolve, reject) => {
+    //     textToAudio(targetConfig, audioData.groupId, audioData.token)
+    //       .then((res) => {
+    // const audioElem = createAudio(res.data.data.audio)
+    //         resolve([audioElem, res.data.data.audio])
+    //       })
+    //       .catch((err) => {
+    //         reject(err)
+    //       })
+    //   })
+    // },
+    audioToAgent(message, userName, model = 'IndexTeam/IndexTTS-2') {
       if (!message) return
-      // 查找目标智能体配置
+      console.log('this.users=', this.users, userName)
       const voiceId = this.users.find((item) => item.userName === userName).voiceId
       let targetConfig = {
-        model: 'speech-02-hd',
-        text: `${message}`,
-        timber_weights: [
-          {
-            voice_id: `${voiceId}`,
-            weight: 1,
-          },
-        ],
-        voice_setting: {
-          voice_id: '',
-          speed: 1.25,
-          pitch: 0,
-          vol: 1.25,
-          emotion: 'disgusted',
-          latex_read: false,
-        },
-        audio_setting: {
-          sample_rate: 32000,
-          bitrate: 128000,
-          format: 'mp3',
-        },
-        language_boost: 'auto',
+        input: `${message}`,
+        gain: 0,
+        model,
+        speed: 1,
+        response_format: 'mp3',
+        voice: `${model}:${voiceId}`,
       }
-      const audioData = myCache.get('audioData')
       return new Promise((resolve, reject) => {
-        textToAudio(targetConfig, audioData.groupId, audioData.token)
-          .then((res) => {
-            const audioElem = createAudio(res.data.data.audio)
-            resolve([audioElem, res.data.data.audio])
+        const token = 'sk-zvuixuunyeuvangfopkurrxoggzhvwziayktntqjyyrhcufl'
+        textToSpeech(targetConfig, token)
+          .then(async (res) => {
+            const [audioElem, audioBlob] = await createAudioToBlob(res)
+            console.log(audioBlob)
+            resolve([audioElem, audioBlob])
           })
           .catch((err) => {
+            console.error('TTS 错误:', err)
             reject(err)
           })
       })

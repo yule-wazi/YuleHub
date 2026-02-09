@@ -8,6 +8,7 @@
         <template v-if="item.message">
           <MessageShow
             :messageInfo="item"
+            :targetUser
             @sliceEmit="(messageInfo) => sliceCurrentMessage(messageInfo, index)"
           />
         </template>

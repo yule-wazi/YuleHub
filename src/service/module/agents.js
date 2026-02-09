@@ -43,3 +43,14 @@ export function textToAudio(data, groupId, token) {
     data,
   })
 }
+// TTS-硅基（返回音频流，直接用 fetch）
+export function textToSpeech(data, token) {
+  return fetch('https://api.siliconflow.cn/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+}
