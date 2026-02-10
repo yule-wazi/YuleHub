@@ -36,18 +36,10 @@ export async function createAudioToBlob(response) {
   const audioUrl = URL.createObjectURL(audioBlob)
   const audioElem = document.createElement('audio')
   audioElem.src = audioUrl
+  document.body.appendChild(audioElem)
 
-  // 将 Blob 转换为 base64 字符串（可以存储）
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const base64String = reader.result
-      document.body.appendChild(audioElem)
-      resolve([audioElem, base64String])
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(audioBlob)
-  })
+  // 直接返回 Blob 对象，而不是 base64 字符串
+  return [audioElem, audioBlob]
 }
 
 // 播放音源
@@ -55,7 +47,7 @@ export function playAudio(audioElem) {
   return new Promise((resolve) => {
     audioElem.addEventListener('loadedmetadata', () => {
       const duration = audioElem.duration * 1000
-      console.log('音频长度：', duration)
+      console.log(`音频长度：${(duration / 1000 / 60).toFixed(2)}分钟`)
       const waitDuration = duration - 5000
       resolve(waitDuration)
     })

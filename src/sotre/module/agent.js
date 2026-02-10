@@ -4,6 +4,7 @@ import { formatInputMessage } from '@/view/chat/utils/formatOutput'
 import { createAudioToBlob } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
+import indexedDBStorage from '@/utils/indexedDBStorage'
 const useAgent = defineStore('agent', {
   state: () => {
     return {
@@ -85,7 +86,6 @@ const useAgent = defineStore('agent', {
     // },
     audioToAgent(message, userName, model = 'IndexTeam/IndexTTS-2') {
       if (!message) return
-      console.log('this.users=', this.users, userName)
 
       const targetUser = this.users.find((item) => item.userName === userName)
       const voiceId = targetUser.voiceId
@@ -116,8 +116,18 @@ const useAgent = defineStore('agent', {
         textToSpeech(targetConfig, token)
           .then(async (res) => {
             const [audioElem, audioBlob] = await createAudioToBlob(res)
-            console.log(audioBlob)
-            resolve([audioElem, audioBlob])
+
+            // 将音频 Blob 存储到 IndexedDB
+            const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            try {
+              await indexedDBStorage.saveAudioMessage(userName, messageId, audioBlob, message)
+              console.log('音频已保存到 IndexedDB:', messageId)
+            } catch (error) {
+              console.warn('保存音频到 IndexedDB 失败:', error)
+            }
+
+            // 返回音频元素和消息 ID（用于后续检索）
+            resolve([audioElem, { messageId, audioBlob }])
           })
           .catch((err) => {
             console.error('TTS 错误:', err)

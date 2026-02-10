@@ -198,11 +198,12 @@ export async function chatWithDZMMAI(
   // 判断是否生成语音
   if (getAudio) {
     try {
-      const [audioElem, audioURL] = await agentStore.audioToAgent(
+      const [audioElem, audioData] = await agentStore.audioToAgent(
         currentMessage.message,
         targetUser.userName,
       )
-      currentMessage.audioSrc = audioURL
+      // audioData 包含 { messageId, audioBlob }
+      currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
       // 播放音频
       await playAudio(audioElem)
     } catch (error) {
@@ -382,11 +383,12 @@ export async function chatWithGemini(
     // 判断是否生成语音
     if (getAudio && currentMessage.message) {
       try {
-        const [audioElem, audioSrc] = await agentStore.audioToAgent(
+        const [audioElem, audioData] = await agentStore.audioToAgent(
           formatAudioMessage(currentMessage.message),
           targetUser.userName,
         )
-        currentMessage.audioSrc = audioSrc
+        // audioData 包含 { messageId, audioBlob }
+        currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
         await playAudio(audioElem)
       } catch (error) {
         console.error('语音生成错误', error)

@@ -59,6 +59,8 @@ import { formatSpecialOutput } from '@/view/chat/utils/formatOutput'
 import { createAudio, createAudioToBlob, playAudio } from '@/view/chat/utils/createAudio'
 import { EditPen } from '@element-plus/icons-vue'
 import useAgent from '@/sotre/module/agent'
+import audioCache from '@/utils/audioCache'
+
 const agentStore = useAgent()
 
 const props = defineProps({
@@ -95,17 +97,34 @@ const editUserMessageConfirm = () => {
 // 播放音频
 const playAudioClick = async () => {
   try {
-    const audioElem = document.createElement('audio')
-    audioElem.src = props.messageInfo.audioSrc
-    document.body.appendChild(audioElem)
-    playAudio(audioElem)
+    // audioSrc 现在存储的是 messageId
+    const messageId = props.messageInfo.audioSrc
+
+    if (!messageId) {
+      throw new Error('没有音频数据')
+    }
+
+    // 从 IndexedDB 加载音频
+    const audioUrl = await audioCache.getAudio(props.targetUser.userName, messageId)
+
+    if (audioUrl) {
+      const audioElem = document.createElement('audio')
+      audioElem.src = audioUrl
+      document.body.appendChild(audioElem)
+      await playAudio(audioElem)
+    } else {
+      throw new Error('音频加载失败')
+    }
   } catch (err) {
-    console.log('播放源异常', err)
-    const [audioElem] = await agentStore.audioToAgent(
+    console.log('播放源异常，重新生成音频', err)
+    // 如果加载失败，重新生成音频
+    const [audioElem, audioData] = await agentStore.audioToAgent(
       props.messageInfo.message,
-      props.targetUser.voiceId,
+      props.targetUser.userName,
     )
-    playAudio(audioElem)
+    // 更新 messageId
+    props.messageInfo.audioSrc = audioData.messageId
+    await playAudio(audioElem)
   }
 }
 const emit = defineEmits(['sliceEmit'])
