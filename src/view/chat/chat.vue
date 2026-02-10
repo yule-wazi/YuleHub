@@ -577,6 +577,7 @@ import allUsers from '@/sotre/agentUsersConfig'
 import myCache, { sessionCache } from '@/utils/cacheStorage'
 import { storeToRefs } from 'pinia'
 import MenuDrawer from '@/components/menuDrawer/menuDrawer.vue'
+import indexedDBStorage from '@/utils/indexedDBStorage'
 import {
   Close,
   Sunny,
@@ -1056,6 +1057,23 @@ const isClonedVoice = ref(false)
 // 获取克隆音色列表
 const audioData = myCache.get('audioData') || {}
 const clonedVoicesList = ref(audioData.clonedVoices || [])
+
+// 从 IndexedDB 加载克隆音色的音频
+onMounted(async () => {
+  if (clonedVoicesList.value.length > 0) {
+    for (const voice of clonedVoicesList.value) {
+      try {
+        const voiceData = await indexedDBStorage.getClonedVoice(voice.reference_id)
+        if (voiceData && voiceData.audioBlob) {
+          // 创建 Blob URL 用于试听
+          voice.voiceSrc = URL.createObjectURL(voiceData.audioBlob)
+        }
+      } catch (error) {
+        console.error('加载克隆音色失败:', error)
+      }
+    }
+  }
+})
 
 const selectAudio = (item, index, isCloned = false) => {
   if (isCloned) {

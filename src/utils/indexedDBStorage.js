@@ -28,12 +28,19 @@ class IndexedDBStorage {
       request.onupgradeneeded = (event) => {
         const db = event.target.result
 
-        // 创建对象存储空间
+        // 创建音频消息存储空间
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
           // 创建索引
           objectStore.createIndex('userName', 'userName', { unique: false })
           objectStore.createIndex('timestamp', 'timestamp', { unique: false })
+        }
+
+        // 创建克隆音色存储空间
+        if (!db.objectStoreNames.contains('clonedVoices')) {
+          const voiceStore = db.createObjectStore('clonedVoices', { keyPath: 'reference_id' })
+          voiceStore.createIndex('customName', 'customName', { unique: false })
+          voiceStore.createIndex('timestamp', 'createdAt', { unique: false })
         }
       }
     })
@@ -219,6 +226,92 @@ class IndexedDBStorage {
       return await navigator.storage.estimate()
     }
     return null
+  }
+
+  /**
+   * 保存克隆音色
+   * @param {Object} voiceData - 克隆音色数据
+   */
+  async saveClonedVoice(voiceData) {
+    await this.ensureDB()
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['clonedVoices'], 'readwrite')
+      const objectStore = transaction.objectStore('clonedVoices')
+
+      // 确保 audioBlob 是 Blob 对象
+      if (voiceData.audioBlob && !(voiceData.audioBlob instanceof Blob)) {
+        reject(new Error('audioBlob 必须是 Blob 对象'))
+        return
+      }
+
+      const request = objectStore.put(voiceData)
+
+      request.onsuccess = () => {
+        console.log('✅ 克隆音色已保存到 IndexedDB:', voiceData.reference_id)
+        resolve(voiceData.reference_id)
+      }
+      request.onerror = () => {
+        console.error('❌ 保存克隆音色失败:', request.error)
+        reject(request.error)
+      }
+    })
+  }
+
+  /**
+   * 获取克隆音色
+   * @param {string} reference_id - 音色 ID
+   */
+  async getClonedVoice(reference_id) {
+    await this.ensureDB()
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['clonedVoices'], 'readonly')
+      const objectStore = transaction.objectStore('clonedVoices')
+
+      const request = objectStore.get(reference_id)
+
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 获取所有克隆音色
+   */
+  async getAllClonedVoices() {
+    await this.ensureDB()
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['clonedVoices'], 'readonly')
+      const objectStore = transaction.objectStore('clonedVoices')
+
+      const request = objectStore.getAll()
+
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 删除克隆音色
+   * @param {string} reference_id - 音色 ID
+   */
+  async deleteClonedVoice(reference_id) {
+    await this.ensureDB()
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(['clonedVoices'], 'readwrite')
+      const objectStore = transaction.objectStore('clonedVoices')
+
+      const request = objectStore.delete(reference_id)
+
+      request.onsuccess = () => {
+        console.log('✅ 克隆音色已删除:', reference_id)
+        resolve()
+      }
+      request.onerror = () => reject(request.error)
+    })
   }
 }
 

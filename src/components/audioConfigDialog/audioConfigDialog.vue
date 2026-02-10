@@ -281,6 +281,7 @@ import {
 } from '@/view/chat/config/siliconFlowTTSConfig'
 import myCache from '@/utils/cacheStorage'
 import { voiceClone } from '@/service/module/agents'
+import indexedDBStorage from '@/utils/indexedDBStorage'
 
 const props = defineProps({
   modelValue: {
@@ -386,13 +387,8 @@ const handleGenerateClone = async () => {
     // 解析 uri 获取 reference_id (最后一部分)
     const reference_id = uri.split(':').pop()
 
-    // 将音频文件转换为 Base64 用于持久化存储和试听
-    const reader = new FileReader()
-    const audioBase64 = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
+    // 将音频文件转换为 Blob
+    const audioBlob = new Blob([file], { type: file.type })
 
     // 创建克隆音色对象
     const clonedVoice = {
@@ -401,15 +397,33 @@ const handleGenerateClone = async () => {
       model: cloneData.model,
       text: cloneData.text,
       uri: uri,
-      voiceSrc: audioBase64, // 保存音频 Base64 用于试听和持久化
+      audioBlob: audioBlob, // 保存 Blob 到 IndexedDB
       createdAt: new Date().toISOString(),
     }
 
-    // 添加到克隆音色数组
+    // 保存到 IndexedDB
+    try {
+      await indexedDBStorage.saveClonedVoice(clonedVoice)
+      console.log('✅ 克隆音色已保存到 IndexedDB')
+    } catch (error) {
+      console.error('❌ 保存克隆音色到 IndexedDB 失败:', error)
+    }
+
+    // 添加到克隆音色数组（localStorage 只存储元数据，不存储 Blob）
     if (!formData.clonedVoices) {
       formData.clonedVoices = []
     }
-    formData.clonedVoices.push(clonedVoice)
+
+    // 创建不含 Blob 的轻量版本用于 localStorage
+    const clonedVoiceMetadata = {
+      customName: cloneData.name,
+      reference_id: reference_id,
+      model: cloneData.model,
+      text: cloneData.text,
+      uri: uri,
+      createdAt: new Date().toISOString(),
+    }
+    formData.clonedVoices.push(clonedVoiceMetadata)
 
     myCache.set('audioData', {
       apiKey: formData.apiKey,
@@ -434,7 +448,7 @@ const handleGenerateClone = async () => {
 }
 
 // 删除克隆音色
-const handleDeleteClonedVoice = (index) => {
+const handleDeleteClonedVoice = async (index) => {
   const voice = formData.clonedVoices[index]
 
   ElMessageBox.confirm(`确定要删除音色 "${voice.customName}" 吗？`, '删除确认', {
@@ -442,7 +456,16 @@ const handleDeleteClonedVoice = (index) => {
     cancelButtonText: '取消',
     type: 'warning',
   })
-    .then(() => {
+    .then(async () => {
+      // 从 IndexedDB 删除
+      try {
+        await indexedDBStorage.deleteClonedVoice(voice.reference_id)
+        console.log('✅ 已从 IndexedDB 删除克隆音色')
+      } catch (error) {
+        console.error('❌ 从 IndexedDB 删除失败:', error)
+      }
+
+      // 从数组中删除
       formData.clonedVoices.splice(index, 1)
 
       myCache.set('audioData', {
