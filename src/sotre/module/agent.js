@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { postAgent, textToAudio, textToSpeech } from '@/service/module/agents'
+import { postAgent, textToSpeech } from '@/service/module/agents'
 import { formatInputMessage } from '@/view/chat/utils/formatOutput'
-import { createAudio, createAudioToBlob } from '@/view/chat/utils/createAudio'
+import { createAudioToBlob } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 const useAgent = defineStore('agent', {
@@ -86,17 +86,33 @@ const useAgent = defineStore('agent', {
     audioToAgent(message, userName, model = 'IndexTeam/IndexTTS-2') {
       if (!message) return
       console.log('this.users=', this.users, userName)
-      const voiceId = this.users.find((item) => item.userName === userName).voiceId
+
+      const targetUser = this.users.find((item) => item.userName === userName)
+      const voiceId = targetUser.voiceId
+
+      // 获取音频配置数据
+      const audioData = myCache.get('audioData') || {}
+      const token = audioData.apiKey
+
+      // 检查是否是克隆音色，找到对应的克隆音色对象
+      const clonedVoice = audioData.clonedVoices?.find((v) => v.reference_id === voiceId)
+
       let targetConfig = {
         input: `${message}`,
         gain: 0,
         model,
         speed: 1,
         response_format: 'mp3',
-        voice: `${model}:${voiceId}`,
+      }
+      // 根据是否是克隆音色使用不同的参数
+      if (clonedVoice) {
+        // 克隆音色使用 reference_id，值为完整的 URI
+        targetConfig.voice = clonedVoice.uri
+      } else {
+        // 预设音色使用 voice 参数（格式：model:voiceId）
+        targetConfig.voice = `${model}:${voiceId}`
       }
       return new Promise((resolve, reject) => {
-        const token = 'sk-zvuixuunyeuvangfopkurrxoggzhvwziayktntqjyyrhcufl'
         textToSpeech(targetConfig, token)
           .then(async (res) => {
             const [audioElem, audioBlob] = await createAudioToBlob(res)

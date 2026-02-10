@@ -144,21 +144,43 @@
           <span>音色选择</span>
           <el-scrollbar>
             <div class="scrollbar-flex-content">
+              <!-- 预设音色 -->
               <div
                 ref="audioItemRef"
                 v-for="(item, index) in audioList"
-                :key="index"
+                :key="'preset-' + index"
                 class="scrollbar-demo-item"
-                :class="{ active: selectCurrentAudio === index }"
+                :class="{ active: selectCurrentAudio === index && !isClonedVoice }"
               >
                 <div class="audioItem">
                   <audio ref="audioRef" :src="item.voiceSrc"></audio>
                   <div class="voiceName">{{ item.name }}</div>
                   <div class="handle">
-                    <el-button type="primary" plain @click="selectAudio(item, index)"
+                    <el-button type="primary" plain @click="selectAudio(item, index, false)"
                       >选择</el-button
                     >
                     <el-button @click="audioRef[index].play()" style="padding: 5px" plain>
+                      <el-icon size="20px"><VideoPlay /></el-icon>
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+              <!-- 克隆音色 -->
+              <div
+                v-for="(voice, index) in clonedVoicesList"
+                :key="'cloned-' + index"
+                class="scrollbar-demo-item cloned-voice"
+                :class="{ active: selectCurrentAudio === index && isClonedVoice }"
+              >
+                <div class="audioItem">
+                  <audio ref="clonedAudioRef" :src="voice.voiceSrc"></audio>
+                  <div class="voiceName">{{ voice.customName }}</div>
+                  <div class="voice-badge">克隆</div>
+                  <div class="handle">
+                    <el-button type="primary" plain @click="selectAudio(voice, index, true)"
+                      >选择</el-button
+                    >
+                    <el-button @click="playClonedAudio(index)" style="padding: 5px" plain>
                       <el-icon size="20px"><VideoPlay /></el-icon>
                     </el-button>
                   </div>
@@ -1027,10 +1049,32 @@ const addRoleCardConfirm = () => {
 // 选择音色
 const audioItemRef = ref(null)
 const audioRef = ref(null)
+const clonedAudioRef = ref(null)
 const selectCurrentAudio = ref(-1)
-const selectAudio = (item, index) => {
-  roleForm.voiceId = item.voiceId
+const isClonedVoice = ref(false)
+
+// 获取克隆音色列表
+const audioData = myCache.get('audioData') || {}
+const clonedVoicesList = ref(audioData.clonedVoices || [])
+
+const selectAudio = (item, index, isCloned = false) => {
+  if (isCloned) {
+    // 选择克隆音色，使用 reference_id
+    roleForm.voiceId = item.reference_id
+    isClonedVoice.value = true
+  } else {
+    // 选择预设音色
+    roleForm.voiceId = item.voiceId
+    isClonedVoice.value = false
+  }
   selectCurrentAudio.value = index
+}
+
+// 播放克隆音色
+const playClonedAudio = (index) => {
+  if (clonedAudioRef.value && clonedAudioRef.value[index]) {
+    clonedAudioRef.value[index].play()
+  }
 }
 
 const { filteredNavList, handleNavClick } = useNavClick(drawer)
@@ -1252,11 +1296,29 @@ onMounted(() => {
       font-size: 20px;
       font-weight: 700;
     }
+    .voice-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 2px 8px;
+      background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+      color: #fff;
+      font-size: 12px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
     .handle {
       position: absolute;
       bottom: 10px;
       left: 10px;
       display: flex;
+    }
+  }
+  .cloned-voice {
+    border: 2px solid #ec4899;
+    &.active {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(190, 24, 93, 0.2) 100%);
+      border-color: #ec4899;
     }
   }
   .active {

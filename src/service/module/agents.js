@@ -54,3 +54,11 @@ export function textToSpeech(data, token) {
     body: JSON.stringify(data),
   })
 }
+// voiceClone-硅基
+export function voiceClone(data, token) {
+  MyRequest.setBaseUrl('https://api.siliconflow.cn/v1/uploads/audio/voice')
+  MyRequest.setToken(token)
+  return MyRequest.post({
+    data,
+  })
+}

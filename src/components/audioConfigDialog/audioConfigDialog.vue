@@ -186,15 +186,42 @@
                 </div>
               </div>
 
-              <!-- Cloned Voice ID Display -->
-              <div v-if="formData.cloneVoiceId" class="config-section">
-                <div class="form-group">
-                  <label>已克隆音色 ID</label>
-                  <el-input v-model="formData.cloneVoiceId" readonly>
-                    <template #append>
-                      <el-button @click="handleDeleteClonedVoice" type="danger">删除</el-button>
-                    </template>
-                  </el-input>
+              <!-- Cloned Voices List -->
+              <div
+                v-if="formData.clonedVoices && formData.clonedVoices.length > 0"
+                class="config-section"
+              >
+                <div class="section-header">
+                  <div class="header-content">
+                    <el-icon class="section-icon" color="#ec4899"><Collection /></el-icon>
+                    <div>
+                      <h3>已克隆音色列表</h3>
+                      <p class="section-desc">管理你的克隆音色</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="cloned-voices-list">
+                  <div
+                    v-for="(voice, index) in formData.clonedVoices"
+                    :key="voice.reference_id"
+                    class="voice-item"
+                  >
+                    <div class="voice-info">
+                      <div class="voice-name">{{ voice.customName }}</div>
+                      <div class="voice-meta">
+                        <span class="voice-id">ID: {{ voice.reference_id }}</span>
+                        <span class="voice-model">{{ voice.model.split('/')[1] }}</span>
+                      </div>
+                    </div>
+                    <el-button
+                      @click="handleDeleteClonedVoice(index)"
+                      type="danger"
+                      size="small"
+                      :icon="Delete"
+                    >
+                      删除
+                    </el-button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,13 +271,16 @@ import {
   DocumentCopy,
   MagicStick,
   Upload,
+  Delete,
+  Collection,
 } from '@element-plus/icons-vue'
-import { ElLoading, ElMessage } from 'element-plus'
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import {
   siliconFlowTTSModels,
   defaultSiliconFlowConfig,
 } from '@/view/chat/config/siliconFlowTTSConfig'
 import myCache from '@/utils/cacheStorage'
+import { voiceClone } from '@/service/module/agents'
 
 const props = defineProps({
   modelValue: {
@@ -266,7 +296,12 @@ const activeTab = ref('settings')
 const audioFileList = ref([])
 
 // 表单数据
-const formData = reactive(myCache.get('audioData') ?? { ...defaultSiliconFlowConfig })
+const formData = reactive(
+  myCache.get('audioData') ?? {
+    ...defaultSiliconFlowConfig,
+    clonedVoices: [], // 存储多个克隆音色的数组
+  },
+)
 
 // 克隆数据
 const cloneData = reactive({
@@ -304,7 +339,7 @@ const handleSaveSettings = () => {
     apiKey: formData.apiKey,
     model: formData.model,
     voice: formData.voice,
-    cloneVoiceId: formData.cloneVoiceId,
+    clonedVoices: formData.clonedVoices,
   })
 
   ElMessage.success('配置已保存')
@@ -336,74 +371,92 @@ const handleGenerateClone = async () => {
   try {
     const file = audioFileList.value[0].raw
     const formDataUpload = new FormData()
+    formDataUpload.append('model', cloneData.model)
+    formDataUpload.append('customName', cloneData.name)
+    formDataUpload.append('text', cloneData.text)
     formDataUpload.append('file', file)
 
-    const response = await fetch('https://api.siliconflow.cn/v1/audio/voices', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${formData.apiKey}`,
-      },
-      body: formDataUpload,
+    const response = await voiceClone(formDataUpload, formData.apiKey)
+    console.log('response', response)
+
+    // 从返回的 data.uri 中提取 reference_id
+    const result = response.data
+    const uri = result.uri // 格式: "speech:123:d411j31sssvc7385ptkg:yguyuztvapowmxtwvnax"
+
+    // 解析 uri 获取 reference_id (最后一部分)
+    const reference_id = uri.split(':').pop()
+
+    // 将音频文件转换为 Base64 用于持久化存储和试听
+    const reader = new FileReader()
+    const audioBase64 = await new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
     })
 
-    if (!response.ok) {
-      throw new Error('上传失败')
+    // 创建克隆音色对象
+    const clonedVoice = {
+      customName: cloneData.name,
+      reference_id: reference_id,
+      model: cloneData.model,
+      text: cloneData.text,
+      uri: uri,
+      voiceSrc: audioBase64, // 保存音频 Base64 用于试听和持久化
+      createdAt: new Date().toISOString(),
     }
 
-    const result = await response.json()
-    formData.cloneVoiceId = result.uri
+    // 添加到克隆音色数组
+    if (!formData.clonedVoices) {
+      formData.clonedVoices = []
+    }
+    formData.clonedVoices.push(clonedVoice)
 
     myCache.set('audioData', {
       apiKey: formData.apiKey,
       model: formData.model,
       voice: formData.voice,
-      cloneVoiceId: formData.cloneVoiceId,
+      clonedVoices: formData.clonedVoices,
     })
 
-    ElMessage.success('音色克隆成功！')
+    // 清空表单
+    cloneData.name = ''
+    cloneData.text = ''
+    audioFileList.value = []
+
+    ElMessage.success(`音色 "${clonedVoice.customName}" 克隆成功！`)
     emit('save', formData)
   } catch (error) {
-    ElMessage.error('音色克隆失败: ' + error.message)
+    ElMessage.error('音色克隆失败: ' + (error.message || '未知错误'))
+    console.error('Voice clone error:', error)
   } finally {
     loading.close()
   }
 }
 
 // 删除克隆音色
-const handleDeleteClonedVoice = async () => {
-  if (!formData.cloneVoiceId) return
+const handleDeleteClonedVoice = (index) => {
+  const voice = formData.clonedVoices[index]
 
-  try {
-    const response = await fetch(
-      `https://api.siliconflow.cn/v1/audio/voices/${formData.cloneVoiceId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${formData.apiKey}`,
-        },
-      },
-    )
+  ElMessageBox.confirm(`确定要删除音色 "${voice.customName}" 吗？`, '删除确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      formData.clonedVoices.splice(index, 1)
 
-    if (!response.ok) {
-      throw new Error('删除失败')
-    }
+      myCache.set('audioData', {
+        apiKey: formData.apiKey,
+        model: formData.model,
+        voice: formData.voice,
+        clonedVoices: formData.clonedVoices,
+      })
 
-    formData.cloneVoiceId = ''
-    audioFileList.value = []
-    cloneData.name = ''
-    cloneData.text = ''
-
-    myCache.set('audioData', {
-      apiKey: formData.apiKey,
-      model: formData.model,
-      voice: formData.voice,
-      cloneVoiceId: '',
+      ElMessage.success('克隆音色已删除')
     })
-
-    ElMessage.success('克隆音色已删除')
-  } catch (error) {
-    ElMessage.error('删除失败: ' + error.message)
-  }
+    .catch(() => {
+      // 取消删除
+    })
 }
 
 // 关闭
@@ -463,8 +516,10 @@ const handleClose = () => {
     }
 
     &:disabled {
-      background: #334155;
-      color: #64748b;
+      background: linear-gradient(135deg, #4a2c3e 0%, #3a2232 100%);
+      color: #9d6b9e;
+      opacity: 0.7;
+      cursor: not-allowed;
     }
   }
 }
@@ -548,6 +603,54 @@ const handleClose = () => {
     .upload-hint {
       font-size: 12px;
       color: #64748b;
+    }
+  }
+}
+
+.cloned-voices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .voice-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    transition: all 0.3s;
+
+    &:hover {
+      border-color: #ec4899;
+      background: #0f172a;
+    }
+  }
+
+  .voice-info {
+    flex: 1;
+  }
+
+  .voice-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .voice-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #94a3b8;
+
+    .voice-id {
+      font-family: monospace;
+    }
+
+    .voice-model {
+      color: #ec4899;
     }
   }
 }

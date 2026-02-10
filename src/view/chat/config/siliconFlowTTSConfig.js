@@ -46,5 +46,5 @@ export const defaultSiliconFlowConfig = {
   apiKey: '',
   model: 'FunAudioLLM/CosyVoice2-0.5B',
   voice: 'alex',
-  cloneVoiceId: '',
+  clonedVoices: [], // 克隆音色数组
 }
