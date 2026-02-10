@@ -5,6 +5,7 @@ import { createAudioToBlob } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import indexedDBStorage from '@/utils/indexedDBStorage'
+import { streamingTTS } from '@/utils/streamingTTS'
 const useAgent = defineStore('agent', {
   state: () => {
     return {
@@ -84,7 +85,7 @@ const useAgent = defineStore('agent', {
     //       })
     //   })
     // },
-    audioToAgent(message, userName, model = 'IndexTeam/IndexTTS-2') {
+    audioToAgent(message, userName, model = 'IndexTeam/IndexTTS-2', useStreaming = true) {
       if (!message) return
 
       const targetUser = this.users.find((item) => item.userName === userName)
@@ -96,41 +97,56 @@ const useAgent = defineStore('agent', {
 
       // 检查是否是克隆音色，找到对应的克隆音色对象
       const clonedVoice = audioData.clonedVoices?.find((v) => v.reference_id === voiceId)
+      // 构建 voice 参数
+      let voice = null
+      if (clonedVoice) {
+        voice = clonedVoice.uri
+      } else {
+        voice = `${model}:${voiceId}`
+      }
 
-      let targetConfig = {
-        input: `${message}`,
+      const textLength = message.length
+
+      // 短文本（<= 100 字符）或禁用流式：使用单次请求
+      if (textLength <= 100 || !useStreaming) {
+        return this.singleTTS(message, userName, { voice, model, token })
+      }
+
+      // 长文本：使用流式 TTS（边请求边播放，队列限制并发数为 10）
+      return streamingTTS(message, userName, { voice, model, token }, 100).then((result) => [
+        result.audioElem,
+        { messageId: result.messageId, audioBlob: result.audioBlob },
+      ])
+    },
+
+    // 单次 TTS 请求（内部方法）
+    singleTTS(message, userName, { voice, model, token }) {
+      const targetConfig = {
+        input: message,
         gain: 0,
         model,
         speed: 1,
         response_format: 'mp3',
+        voice,
       }
-      // 根据是否是克隆音色使用不同的参数
-      if (clonedVoice) {
-        // 克隆音色使用 reference_id，值为完整的 URI
-        targetConfig.voice = clonedVoice.uri
-      } else {
-        // 预设音色使用 voice 参数（格式：model:voiceId）
-        targetConfig.voice = `${model}:${voiceId}`
-      }
+
       return new Promise((resolve, reject) => {
         textToSpeech(targetConfig, token)
           .then(async (res) => {
             const [audioElem, audioBlob] = await createAudioToBlob(res)
 
-            // 将音频 Blob 存储到 IndexedDB
-            const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            const messageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
             try {
               await indexedDBStorage.saveAudioMessage(userName, messageId, audioBlob, message)
-              console.log('音频已保存到 IndexedDB:', messageId)
+              console.log('✅ 音频已保存到 IndexedDB:', messageId)
             } catch (error) {
-              console.warn('保存音频到 IndexedDB 失败:', error)
+              console.warn('⚠️ 保存音频到 IndexedDB 失败:', error)
             }
 
-            // 返回音频元素和消息 ID（用于后续检索）
             resolve([audioElem, { messageId, audioBlob }])
           })
           .catch((err) => {
-            console.error('TTS 错误:', err)
+            console.error('❌ TTS 错误:', err)
             reject(err)
           })
       })

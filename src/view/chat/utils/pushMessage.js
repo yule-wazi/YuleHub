@@ -205,7 +205,7 @@ export async function chatWithDZMMAI(
       // audioData 包含 { messageId, audioBlob }
       currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
       // 播放音频
-      await playAudio(audioElem)
+      // await playAudio(audioElem)
     } catch (error) {
       console.error('检测到错误', error)
     }

@@ -124,7 +124,6 @@ const playAudioClick = async () => {
     )
     // 更新 messageId
     props.messageInfo.audioSrc = audioData.messageId
-    await playAudio(audioElem)
   }
 }
 const emit = defineEmits(['sliceEmit'])
