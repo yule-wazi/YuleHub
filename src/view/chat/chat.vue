@@ -192,6 +192,7 @@
         <el-form-item prop="loreBooks">
           <span>世界书</span>
           <el-select
+            popper-class="select-dropdown"
             v-model="loreBooksModel"
             placeholder="选择世界书"
             @change="roleForm.loreBooks = JSON.parse(loreBooksModel)"

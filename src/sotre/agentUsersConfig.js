@@ -2,7 +2,7 @@ const allUsers = [
   {
     userName: '灵珑',
     image: '/userImg/userImg-4.png',
-    voiceId: 'Chinese (Mandarin)_Laid_BackGirl',
+    voiceId: 'anna',
     isVip: false,
     loreBooks: [],
     message: [
@@ -14,7 +14,7 @@ const allUsers = [
   },
   {
     userName: '沈初见',
-    voiceId: 'Chinese (Mandarin)_Cute_Spirit',
+    voiceId: 'diana',
     image: '/userImg/userImg-5.png',
     isVip: false,
     loreBooks: [],
@@ -27,7 +27,7 @@ const allUsers = [
   },
   {
     userName: '江浩',
-    voiceId: 'Chinese (Mandarin)_Unrestrained_Young_Man',
+    voiceId: 'benjamin',
     image: '/userImg/userImg-6.png',
     isVip: false,
     loreBooks: [],
@@ -40,7 +40,7 @@ const allUsers = [
   },
   {
     userName: '苍穹·问道长生',
-    voiceId: 'Chinese (Mandarin)_Narrator_Male',
+    voiceId: 'alex',
     image: '/userImg/userImg-2.webp',
     isVip: true,
     loreBooks: [],

@@ -194,15 +194,56 @@ export class StreamingTTSPlayer {
       return audioBlob
     } catch (error) {
       console.error(`❌ TTS 第 ${index + 1} 段失败:`, error)
+
+      // 标记为失败，但不阻塞后续播放
+      this.audioBlobs[index] = null
+      this.audioElements[index] = null
+
       if (this.onError) this.onError(error, index)
-      throw error
+
+      // 如果第一段失败，尝试触发下一段作为起始
+      if (index === 0) {
+        this.tryTriggerFirstReady()
+      }
+
+      // 返回 null 而不是抛出错误，让其他分段继续
+      return null
     }
   }
 
+  // 尝试触发第一段准备好的回调（找到第一个成功的分段）
+  tryTriggerFirstReady() {
+    // 延迟检查，给其他分段一些时间完成
+    setTimeout(() => {
+      for (let i = 0; i < this.audioElements.length; i++) {
+        if (this.audioElements[i]) {
+          debugLog(`🎉 第 ${i + 1} 段作为起始段`)
+          if (this.onFirstReady) {
+            this.onFirstReady()
+          }
+          break
+        }
+      }
+    }, 1000)
+  }
+
   async waitForFirstChunk() {
-    while (!this.audioElements[0]) {
+    // 等待第一个成功的分段（不一定是索引 0）
+    const maxWaitTime = 30000 // 最多等待 30 秒
+    const startTime = Date.now()
+
+    while (Date.now() - startTime < maxWaitTime) {
+      // 检查是否有任何分段准备好
+      for (let i = 0; i < this.chunks.length; i++) {
+        if (this.audioElements[i]) {
+          debugLog(`🎵 找到第一个可用分段: 第 ${i + 1} 段`)
+          return
+        }
+      }
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
+
+    throw new Error('等待首个音频分段超时')
   }
 
   async playNext() {
@@ -210,21 +251,54 @@ export class StreamingTTSPlayer {
 
     this.currentIndex++
 
+    // 跳过失败的分段，找到下一个可用的
+    while (this.currentIndex < this.chunks.length && !this.audioElements[this.currentIndex]) {
+      debugLog(`⏭️ 跳过失败的第 ${this.currentIndex + 1} 段`)
+      this.currentIndex++
+    }
+
     if (this.currentIndex >= this.chunks.length) {
       debugLog('▶️ 所有分段播放完成')
       this.cleanup()
       return
     }
 
-    while (!this.audioElements[this.currentIndex]) {
+    // 等待当前段准备好（可能还在请求中）
+    while (!this.audioElements[this.currentIndex] && this.currentIndex < this.chunks.length) {
       await new Promise((resolve) => setTimeout(resolve, 100))
+
+      // 如果等待过程中发现这段失败了，跳到下一段
+      if (this.audioElements[this.currentIndex] === null) {
+        debugLog(`⏭️ 第 ${this.currentIndex + 1} 段失败，跳过`)
+        this.currentIndex++
+
+        // 继续寻找下一个可用分段
+        while (this.currentIndex < this.chunks.length && !this.audioElements[this.currentIndex]) {
+          if (this.audioElements[this.currentIndex] === null) {
+            debugLog(`⏭️ 跳过失败的第 ${this.currentIndex + 1} 段`)
+            this.currentIndex++
+          } else {
+            break
+          }
+        }
+
+        if (this.currentIndex >= this.chunks.length) {
+          debugLog('▶️ 所有分段播放完成')
+          this.cleanup()
+          return
+        }
+      }
     }
 
     const audio = this.audioElements[this.currentIndex]
-    debugLog(`▶️ 播放第 ${this.currentIndex + 1} 段`)
-
-    audio.addEventListener('ended', () => this.playNext(), { once: true })
-    audio.play()
+    if (audio) {
+      debugLog(`▶️ 播放第 ${this.currentIndex + 1} 段`)
+      audio.addEventListener('ended', () => this.playNext(), { once: true })
+      audio.play()
+    } else {
+      // 如果还是没有可用音频，继续下一段
+      this.playNext()
+    }
   }
 
   play() {

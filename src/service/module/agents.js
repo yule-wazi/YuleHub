@@ -62,3 +62,14 @@ export function voiceClone(data, token) {
     data,
   })
 }
+
+// STT 语音转文本-硅基
+export function audioTranscription(data, token) {
+  return fetch('https://api.siliconflow.cn/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: data, // FormData 对象
+  })
+}

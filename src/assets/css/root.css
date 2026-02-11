@@ -14,10 +14,255 @@
   --comics-headerIcon-color: #858585;
   --comics-headerSearchBg-color: #f5f5f5;
   --comics-menuText-color: #474747;
-  
-  --comics-cardBg-color: #FFFFFF;
+
+  --comics-cardBg-color: #ffffff;
   --comics-tagBg-color: #e8ebf2;
   --comics-border-color: #d5d7de;
   --comics-cardSubTitle-color: #616369;
   --comics-cardText-color: #090b0f;
+}
+
+/* ==================== 全局 Dialog 样式 ==================== */
+/* Element Plus Dialog 暗色主题 */
+.el-dialog {
+  background-color: var(--comics-cardBg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+}
+
+.el-dialog__header {
+  background-color: var(--comics-cardBg-color) !important;
+  border-bottom: 1px solid var(--comics-headerIcon-color) !important;
+}
+
+.el-dialog__title {
+  color: var(--comics-cardText-color) !important;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.el-dialog__body {
+  padding: 0 !important;
+  background-color: var(--comics-cardBg-color) !important;
+}
+
+.el-dialog__footer {
+  background-color: var(--comics-cardBg-color) !important;
+  border-top: 1px solid var(--comics-headerIcon-color) !important;
+  padding: 16px 20px !important;
+}
+
+/* ==================== 全局 Input/Textarea 样式 ==================== */
+.el-input__wrapper {
+  background: var(--chat-card-bg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+  box-shadow: none !important;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--comics-headerIcon-color) !important;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: #ec4899 !important;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2) !important;
+}
+
+.el-input__inner {
+  color: var(--comics-cardText-color) !important;
+}
+
+.el-textarea__inner {
+  background: var(--chat-card-bg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+  color: var(--comics-cardText-color) !important;
+}
+
+.el-textarea__inner:hover {
+  border-color: var(--comics-headerIcon-color) !important;
+}
+
+.el-textarea__inner:focus {
+  border-color: #ec4899 !important;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2) !important;
+}
+
+/* ==================== 全局 Select 下拉框样式 ==================== */
+.el-select .el-input__wrapper {
+  background: var(--chat-card-bg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+  box-shadow: none !important;
+}
+
+.el-select .el-input__wrapper:hover {
+  border-color: var(--comics-headerIcon-color) !important;
+}
+
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px #ec4899 !important;
+}
+
+.el-select .el-input__wrapper.is-focus {
+  border-color: #ec4899 !important;
+  box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2) !important;
+}
+
+/* 下拉弹出层 - 使用 popper-class="select-dropdown" */
+.select-dropdown {
+  background: var(--comics-cardBg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+}
+
+.select-dropdown .el-select-dropdown__item {
+  color: var(--comics-cardText-color) !important;
+  background: transparent !important;
+}
+
+.select-dropdown .el-select-dropdown__item:hover,
+.select-dropdown .el-select-dropdown__item.is-hovering {
+  background: var(--comics-border-color) !important;
+}
+
+.select-dropdown .el-select-dropdown__item.is-selected {
+  color: #ec4899 !important;
+  background: var(--chat-card-inputBg-color) !important;
+  font-weight: 600;
+}
+
+.select-dropdown .el-popper__arrow::before {
+  background: var(--comics-cardBg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+}
+
+/* ==================== 全局 Upload 上传组件样式 ==================== */
+.el-upload-dragger {
+  background: var(--comics-cardBg-color) !important;
+  border: 2px dashed var(--comics-headerIcon-color) !important;
+  border-radius: 8px;
+  padding: 40px 20px;
+  transition: all 0.3s;
+}
+
+.el-upload-dragger:hover {
+  border-color: #ec4899 !important;
+  background-color: var(--chat-card-inputBg-color) !important;
+}
+
+.el-upload-list__item:hover {
+  background-color: var(--comics-headerIcon-color) !important;
+}
+
+/* ==================== 全局按钮样式 ==================== */
+/* Element Plus 按钮基础样式 */
+.el-button {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+/* Primary 按钮 - 粉色主题 */
+.el-button--primary {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background: linear-gradient(135deg, #be185d 0%, #9d174d 100%) !important;
+}
+
+.el-button--primary.is-disabled,
+.el-button--primary:disabled {
+  background: linear-gradient(135deg, #4a2c3e 0%, #3a2232 100%) !important;
+  color: #9d6b9e !important;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.el-button--primary.is-loading {
+  background: linear-gradient(135deg, #be185d 0%, #9d174d 100%) !important;
+}
+
+/* Default 按钮 - 暗色主题 */
+.el-button--default {
+  background: var(--comics-cardBg-color) !important;
+  border: 1px solid var(--comics-headerIcon-color) !important;
+  color: var(--comics-cardText-color) !important;
+}
+
+.el-button--default:hover,
+.el-button--default:focus {
+  background: var(--comics-bg-color) !important;
+  border-color: #ec4899 !important;
+  color: #ec4899 !important;
+}
+
+/* Danger 按钮 - 红色主题 */
+.el-button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.el-button--danger:hover,
+.el-button--danger:focus {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+}
+
+/* Small 按钮 */
+.el-button--small {
+  padding: 6px 15px;
+  font-size: 13px;
+}
+
+/* Large 按钮 */
+.el-button--large {
+  padding: 12px 32px;
+  font-size: 15px;
+}
+
+/* 粉色主题按钮（自定义类） */
+.btn-pink-gradient {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+.btn-pink-gradient:hover {
+  background: linear-gradient(135deg, #be185d 0%, #9d174d 100%) !important;
+}
+
+.btn-pink-gradient.is-disabled,
+.btn-pink-gradient:disabled {
+  background: linear-gradient(135deg, #4a2c3e 0%, #3a2232 100%) !important;
+  color: #9d6b9e !important;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 保存按钮样式 */
+.save-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+  border: none !important;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-btn:hover {
+  background: linear-gradient(135deg, #be185d 0%, #9d174d 100%) !important;
+}
+
+.save-btn.is-disabled,
+.save-btn:disabled {
+  background: linear-gradient(135deg, #4a2c3e 0%, #3a2232 100%) !important;
+  color: #9d6b9e !important;
+  opacity: 0.7;
+  cursor: not-allowed;
 }

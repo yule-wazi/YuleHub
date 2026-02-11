@@ -65,7 +65,12 @@
                 </div>
                 <div class="form-group">
                   <label>TTS 模型</label>
-                  <el-select v-model="formData.model" placeholder="选择模型" style="width: 100%">
+                  <el-select
+                    v-model="formData.model"
+                    placeholder="选择模型"
+                    style="width: 100%"
+                    popper-class="select-dropdown"
+                  >
                     <el-option
                       v-for="model in siliconFlowTTSModels"
                       :key="model.value"
@@ -152,6 +157,7 @@
                     v-model="cloneData.model"
                     placeholder="选择克隆模型"
                     style="width: 100%"
+                    popper-class="select-dropdown"
                   >
                     <el-option
                       v-for="model in siliconFlowTTSModels"
@@ -174,15 +180,27 @@
                   </div>
                 </div>
                 <div class="form-group">
+                  <div style="display: flex; gap: 8px; margin-bottom: 8px">
+                    <el-button
+                      class="btn-pink-gradient"
+                      size="small"
+                      @click="handleAutoTranscribe"
+                      :disabled="!audioFileList.length || isTranscribing"
+                      :loading="isTranscribing"
+                    >
+                      <el-icon><MagicStick /></el-icon>
+                      {{ isTranscribing ? '转换中...' : '自动识别文本' }}
+                    </el-button>
+                  </div>
                   <el-input
                     v-model="cloneData.text"
                     type="textarea"
                     :rows="4"
-                    placeholder="输入与上传音频对应的文本内容"
+                    placeholder="输入与上传音频对应的文本内容，或点击上方按钮自动识别"
                     maxlength="500"
                     show-word-limit
                   />
-                  <p class="hint-text">文本内容应尽可能与音频匹配</p>
+                  <p class="hint-text">文本内容应尽可能与音频匹配，可使用自动识别功能</p>
                 </div>
               </div>
 
@@ -280,7 +298,7 @@ import {
   defaultSiliconFlowConfig,
 } from '@/view/chat/config/siliconFlowTTSConfig'
 import myCache from '@/utils/cacheStorage'
-import { voiceClone } from '@/service/module/agents'
+import { voiceClone, audioTranscription } from '@/service/module/agents'
 import indexedDBStorage from '@/utils/indexedDBStorage'
 
 const props = defineProps({
@@ -295,6 +313,7 @@ const emit = defineEmits(['update:modelValue', 'save'])
 const dialogVisible = ref(props.modelValue)
 const activeTab = ref('settings')
 const audioFileList = ref([])
+const isTranscribing = ref(false) // 转换状态
 
 // 表单数据
 const formData = reactive(
@@ -327,6 +346,57 @@ watch(dialogVisible, (val) => {
 // 处理音频文件上传
 const handleAudioUpload = (file) => {
   audioFileList.value = [file]
+  // 清空之前的文本
+  cloneData.text = ''
+}
+
+// 自动转换音频为文本
+const handleAutoTranscribe = async () => {
+  if (!audioFileList.value.length) {
+    ElMessage.error('请先上传音频文件')
+    return
+  }
+  if (!formData.apiKey) {
+    ElMessage.error('请先输入 API Key')
+    return
+  }
+
+  isTranscribing.value = true
+  const loading = ElLoading.service({
+    lock: true,
+    text: '正在识别音频内容...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
+  try {
+    const file = audioFileList.value[0].raw
+    const formDataUpload = new FormData()
+    formDataUpload.append('model', 'FunAudioLLM/SenseVoiceSmall')
+    formDataUpload.append('file', file)
+
+    const response = await audioTranscription(formDataUpload, formData.apiKey)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`转换失败: ${response.status} - ${errorText}`)
+    }
+
+    const result = await response.json()
+    console.log('STT 结果:', result)
+
+    if (result.text) {
+      cloneData.text = result.text
+      ElMessage.success('音频内容识别成功！')
+    } else {
+      throw new Error('未能识别到文本内容')
+    }
+  } catch (error) {
+    ElMessage.error('音频识别失败: ' + (error.message || '未知错误'))
+    console.error('STT error:', error)
+  } finally {
+    isTranscribing.value = false
+    loading.close()
+  }
 }
 
 // 保存设置
@@ -492,7 +562,6 @@ const handleClose = () => {
 .audioConfigDialog {
   :deep(.el-dialog) {
     overflow: hidden;
-    background-color: var(--chat-card-inputBg-color);
   }
   :deep(.el-overlay-dialog) {
     &::-webkit-scrollbar {
@@ -523,31 +592,9 @@ const handleClose = () => {
 .dialog-footer {
   display: flex;
   justify-content: center;
-  .save-btn {
-    width: 100%;
-    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
-    border: none;
-    padding: 12px 32px;
-    font-size: 15px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &:hover {
-      background: linear-gradient(135deg, #be185d 0%, #9d174d 100%);
-    }
-
-    &:disabled {
-      background: linear-gradient(135deg, #4a2c3e 0%, #3a2232 100%);
-      color: #9d6b9e;
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-  }
 }
 .config-section {
-  background-color: var(--chat-card-inputBg-color);
+  background-color: var(--comics-cardBg-color);
   border: 1px solid var(--comics-headerIcon-color);
   border-radius: 12px;
   padding: 20px;
@@ -598,19 +645,22 @@ const handleClose = () => {
         }
       }
     }
-    .model-option {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      .model-name {
-        font-size: 14px;
-        color: #fff;
-      }
-      .model-desc {
-        font-size: 12px;
-        color: #94a3b8;
+    .model-select {
+      .model-option {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        .model-name {
+          font-size: 14px;
+          color: #fff;
+        }
+        .model-desc {
+          font-size: 12px;
+          color: #94a3b8;
+        }
       }
     }
+
     .upload-icon {
       font-size: 48px;
       color: #ec4899;
@@ -640,40 +690,39 @@ const handleClose = () => {
     align-items: center;
     justify-content: space-between;
     padding: 16px;
-    background: #1e293b;
-    border: 1px solid #334155;
+    background: var(--chat-card-bg-color);
+    border: 1px solid var(--comics-headerIcon-color);
     border-radius: 8px;
     transition: all 0.3s;
 
     &:hover {
       border-color: #ec4899;
-      background: #0f172a;
+      background-color: var(--comics-cardBg-color);
     }
   }
 
   .voice-info {
     flex: 1;
-  }
-
-  .voice-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 8px;
-  }
-
-  .voice-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: #94a3b8;
-
-    .voice-id {
-      font-family: monospace;
+    .voice-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--comics-cardSubTitle-color);
+      margin-bottom: 8px;
     }
 
-    .voice-model {
-      color: #ec4899;
+    .voice-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #94a3b8;
+
+      .voice-id {
+        font-family: monospace;
+      }
+
+      .voice-model {
+        color: #ec4899;
+      }
     }
   }
 }
@@ -684,7 +733,7 @@ const handleClose = () => {
 
   .el-tabs__header {
     border-radius: 5px;
-    background-color: var(--chat-card-inputBg-color);
+    background-color: var(--comics-cardBg-color);
     border-bottom: 2px solid var(--comics-headerIcon-color);
     margin: 0;
     .el-tabs__nav-wrap {
@@ -721,88 +770,5 @@ const handleClose = () => {
   .el-upload {
     width: 100%;
   }
-  .el-upload-dragger {
-    background: var(--comics-cardBg-color) !important;
-    border: 2px dashed var(--comics-headerIcon-color) !important;
-    border-radius: 8px;
-    padding: 40px 20px;
-    transition: all 0.3s;
-
-    &:hover {
-      border-color: #ec4899 !important;
-      background-color: var(--chat-card-inputBg-color);
-    }
-  }
-  .el-upload-list__item {
-    &:hover {
-      background-color: var(--comics-headerIcon-color);
-    }
-  }
-}
-
-:deep(.el-input__wrapper) {
-  background: #1e293b;
-  border: 1px solid var(--comics-headerIcon-color);
-  box-shadow: none;
-
-  &:hover {
-    border-color: var(--comics-headerIcon-color);
-  }
-
-  &.is-focus {
-    border-color: #ec4899;
-    box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2);
-  }
-}
-
-:deep(.el-input__inner) {
-  color: #fff;
-}
-
-:deep(.el-textarea__inner) {
-  background: #1e293b;
-  border: 1px solid var(--comics-headerIcon-color);
-  color: #fff;
-
-  &:hover {
-    border-color: var(--comics-headerIcon-color);
-  }
-
-  &:focus {
-    border-color: #ec4899;
-    box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2);
-  }
-}
-
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b;
-  border: 1px solid var(--comics-headerIcon-color);
-}
-
-:deep(.el-dialog) {
-  background-color: var(--chat-card-inputBg-color);
-  border: 1px solid var(--comics-headerIcon-color);
-}
-
-:deep(.el-dialog__header) {
-  background-color: var(--chat-card-inputBg-color);
-  border-bottom: 1px solid var(--comics-headerIcon-color);
-}
-
-:deep(.el-dialog__title) {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-:deep(.el-dialog__body) {
-  padding: 0;
-  background-color: var(--chat-card-inputBg-color);
-}
-
-:deep(.el-dialog__footer) {
-  background-color: var(--chat-card-inputBg-color);
-  border-top: 1px solid var(--comics-headerIcon-color);
-  padding: 16px 20px;
 }
 </style>
