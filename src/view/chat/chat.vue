@@ -1305,9 +1305,10 @@ onMounted(() => {
     padding: 5px;
     text-align: center;
     border-radius: 4px;
-    border: 1px solid #666;
+    border: 2px solid var(--comics-headerSearchBg-color);
     background: var(--comics-cardBg-color);
     color: var(--chat-card-text-color);
+    transition: all 0.3s;
     .voiceName {
       position: absolute;
       top: 10px;
@@ -1332,16 +1333,13 @@ onMounted(() => {
       left: 10px;
       display: flex;
     }
-  }
-  .cloned-voice {
-    border: 2px solid #ec4899;
     &.active {
       background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(190, 24, 93, 0.2) 100%);
       border-color: #ec4899;
     }
   }
-  .active {
-    background-color: var(--comics-headerIcon-color);
+  .cloned-voice {
+    /* 克隆音色不需要额外样式，统一使用 active 状态 */
   }
   .preview-content {
     .description-preview,
