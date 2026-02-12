@@ -384,12 +384,13 @@ export async function chatWithGemini(
     if (getAudio && currentMessage.message) {
       try {
         const [audioElem, audioData] = await agentStore.audioToAgent(
-          formatAudioMessage(currentMessage.message),
+          currentMessage.message,
+          // formatAudioMessage(currentMessage.message),
           targetUser.userName,
         )
         // audioData 包含 { messageId, audioBlob }
         currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
-        await playAudio(audioElem)
+        // await playAudio(audioElem)
       } catch (error) {
         console.error('语音生成错误', error)
       }
