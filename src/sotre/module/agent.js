@@ -125,7 +125,7 @@ const useAgent = defineStore('agent', {
         input: message,
         gain: 0,
         model,
-        speed: 1.25,
+        speed: 1.15,
         response_format: 'mp3',
         voice,
       }

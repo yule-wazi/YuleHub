@@ -60,6 +60,7 @@ import { createAudio, createAudioToBlob, playAudio } from '@/view/chat/utils/cre
 import { EditPen } from '@element-plus/icons-vue'
 import useAgent from '@/sotre/module/agent'
 import audioCache from '@/utils/audioCache'
+import myLocalCache from '@/utils/cacheStorage'
 
 const agentStore = useAgent()
 
@@ -117,10 +118,12 @@ const playAudioClick = async () => {
     }
   } catch (err) {
     console.log('播放源异常，重新生成音频', err)
+    const audioConfig = myLocalCache.get('audioData') || 'IndexTeam/IndexTTS-2'
     // 如果加载失败，重新生成音频
     const [audioElem, audioData] = await agentStore.audioToAgent(
       props.messageInfo.message,
       props.targetUser.userName,
+      audioConfig.model,
     )
     // 更新 messageId
     props.messageInfo.audioSrc = audioData.messageId

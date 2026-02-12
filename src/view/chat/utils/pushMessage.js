@@ -149,6 +149,7 @@ export async function chatWithDZMMAI(
   // ai网络请求
   const agentStore = useAgent()
   const tokenList = myCache.get('TokenList')
+  const audioConfig = myCache.get('audioData') || 'IndexTeam/IndexTTS-2'
   const firstToken = tokenList[0]
 
   const response = await postDZMMAgent(requestBody, firstToken)
@@ -201,6 +202,7 @@ export async function chatWithDZMMAI(
       const [audioElem, audioData] = await agentStore.audioToAgent(
         currentMessage.message,
         targetUser.userName,
+        audioConfig.model,
       )
       // audioData 包含 { messageId, audioBlob }
       currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
@@ -223,6 +225,7 @@ export async function chatWithGemini(
   const agentStore = useAgent()
   const geminiApiKeyList = myCache.get('GeminiApiKeyList') || []
   const geminiModel = myCache.get('GeminiModel') || defaultGeminiModel
+  const audioConfig = myCache.get('audioData') || 'IndexTeam/IndexTTS-2'
 
   if (!geminiApiKeyList || geminiApiKeyList.length === 0) {
     ElMessage.error('尚未设置 Gemini API Key')
@@ -387,6 +390,7 @@ export async function chatWithGemini(
           currentMessage.message,
           // formatAudioMessage(currentMessage.message),
           targetUser.userName,
+          audioConfig.model,
         )
         // audioData 包含 { messageId, audioBlob }
         currentMessage.audioSrc = audioData.messageId // 存储 messageId 而不是 Blob
