@@ -36,7 +36,7 @@
         </div>
       </template>
       <template v-else>
-        <MyImg :imgUrl="showImg" :showOriginal="true" />
+        <MyImg :imgUrl="showImg" :showOriginal="true" :key="showImg"/>
       </template>
     </div>
   </div>
