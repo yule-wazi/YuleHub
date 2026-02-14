@@ -85,6 +85,93 @@
                   </el-select>
                 </div>
               </div>
+
+              <!-- Voice Selection Section -->
+              <div class="config-section">
+                <div class="section-header">
+                  <div class="header-content">
+                    <el-icon class="section-icon" color="#ec4899"><Headset /></el-icon>
+                    <div>
+                      <h3>音色选择</h3>
+                      <p class="section-desc">选择当前角色的默认音色</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <el-scrollbar style="height: 140px">
+                    <div class="voice-selection-grid">
+                      <!-- 预设音色 -->
+                      <div
+                        v-for="(voice, index) in audioList"
+                        :key="'preset-' + index"
+                        class="voice-card"
+                        :class="{
+                          active: formData.voice === voice.voiceId && !isClonedVoiceSelected,
+                        }"
+                      >
+                        <audio
+                          :ref="
+                            (el) => {
+                              if (el) audioRefs[index] = el
+                            }
+                          "
+                          :src="voice.voiceSrc"
+                        ></audio>
+                        <div class="voice-name">{{ voice.name }}</div>
+                        <div class="voice-actions">
+                          <el-button
+                            type="primary"
+                            size="small"
+                            plain
+                            @click.stop="selectVoice(voice.voiceId, false)"
+                          >
+                            选择
+                          </el-button>
+                          <el-button
+                            size="small"
+                            @click.stop="playVoicePreview(index, false)"
+                            plain
+                          >
+                            <el-icon><VideoPlay /></el-icon>
+                          </el-button>
+                        </div>
+                      </div>
+                      <!-- 克隆音色 -->
+                      <div
+                        v-for="(voice, index) in formData.clonedVoices"
+                        :key="'cloned-' + index"
+                        class="voice-card"
+                        :class="{
+                          active: formData.voice === voice.reference_id && isClonedVoiceSelected,
+                        }"
+                      >
+                        <audio
+                          :ref="
+                            (el) => {
+                              if (el) clonedAudioRefs[index] = el
+                            }
+                          "
+                          :src="voice.voiceSrc"
+                        ></audio>
+                        <div class="voice-name">{{ voice.customName }}</div>
+                        <div class="voice-badge">克隆</div>
+                        <div class="voice-actions">
+                          <el-button
+                            type="primary"
+                            size="small"
+                            @click.stop="selectVoice(voice.reference_id, true)"
+                          >
+                            选择
+                          </el-button>
+                          <el-button size="small" @click.stop="playVoicePreview(index, true)" plain>
+                            <el-icon><VideoPlay /></el-icon>
+                          </el-button>
+                        </div>
+                      </div>
+                    </div>
+                  </el-scrollbar>
+                </div>
+              </div>
             </div>
           </el-tab-pane>
 
@@ -277,7 +364,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import {
   Setting,
   Key,
@@ -291,12 +378,15 @@ import {
   Upload,
   Delete,
   Collection,
+  VideoPlay,
 } from '@element-plus/icons-vue'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import {
   siliconFlowTTSModels,
   defaultSiliconFlowConfig,
 } from '@/view/chat/config/siliconFlowTTSConfig'
+import { audioList } from '@/sotre/agentAudioConfig'
+import useAgent from '@/sotre/module/agent'
 import myCache from '@/utils/cacheStorage'
 import { voiceClone, audioTranscription } from '@/service/module/agents'
 import indexedDBStorage from '@/utils/indexedDBStorage'
@@ -314,6 +404,11 @@ const dialogVisible = ref(props.modelValue)
 const activeTab = ref('settings')
 const audioFileList = ref([])
 const isTranscribing = ref(false) // 转换状态
+const isClonedVoiceSelected = ref(false) // 是否选择了克隆音色
+
+// 音频 refs
+const audioRefs = ref({})
+const clonedAudioRefs = ref({})
 
 // 表单数据
 const formData = reactive(
@@ -330,11 +425,30 @@ const cloneData = reactive({
   text: '',
 })
 
+// 初始化当前角色的音色
+const initCurrentVoice = () => {
+  const agentStore = useAgent()
+  const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
+
+  if (currentUser && currentUser.voiceId) {
+    // 设置当前音色
+    formData.voice = currentUser.voiceId
+
+    // 检查是否是克隆音色
+    const isCloned = formData.clonedVoices?.some((v) => v.reference_id === currentUser.voiceId)
+    isClonedVoiceSelected.value = isCloned
+  }
+}
+
 // 监听 props 变化
 watch(
   () => props.modelValue,
   (val) => {
     dialogVisible.value = val
+    // 对话框打开时，初始化当前角色的音色
+    if (val) {
+      initCurrentVoice()
+    }
   },
 )
 
@@ -406,6 +520,7 @@ const handleSaveSettings = () => {
     return
   }
 
+  // 保存到 localStorage
   myCache.set('audioData', {
     apiKey: formData.apiKey,
     model: formData.model,
@@ -413,7 +528,16 @@ const handleSaveSettings = () => {
     clonedVoices: formData.clonedVoices,
   })
 
-  ElMessage.success('配置已保存')
+  // 更新 Pinia store 中当前角色的 voiceId
+  const agentStore = useAgent()
+  const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
+  if (currentUser && formData.voice) {
+    currentUser.voiceId = formData.voice
+    ElMessage.success('配置已保存，当前角色音色已更新')
+  } else {
+    ElMessage.success('配置已保存')
+  }
+
   emit('save', formData)
   dialogVisible.value = false
 }
@@ -556,6 +680,50 @@ const handleDeleteClonedVoice = async (index) => {
 const handleClose = () => {
   emit('update:modelValue', false)
 }
+
+// 选择音色
+const selectVoice = (voiceId, isCloned) => {
+  formData.voice = voiceId
+  isClonedVoiceSelected.value = isCloned
+}
+
+// 播放音色预览
+const playVoicePreview = (index, isCloned = false) => {
+  try {
+    const refs = isCloned ? clonedAudioRefs.value : audioRefs.value
+    const audio = refs[index]
+    if (audio) {
+      audio.play().catch((error) => {
+        console.error('播放失败:', error)
+        ElMessage.error('播放失败，请重试')
+      })
+    } else {
+      console.error('未找到音频元素:', index, isCloned)
+    }
+  } catch (error) {
+    console.error('播放错误:', error)
+  }
+}
+
+// 加载克隆音色的音频
+onMounted(async () => {
+  // 初始化当前角色的音色
+  initCurrentVoice()
+
+  if (formData.clonedVoices && formData.clonedVoices.length > 0) {
+    for (let i = 0; i < formData.clonedVoices.length; i++) {
+      const voice = formData.clonedVoices[i]
+      try {
+        const clonedVoice = await indexedDBStorage.getClonedVoice(voice.reference_id)
+        if (clonedVoice && clonedVoice.audioBlob) {
+          voice.voiceSrc = URL.createObjectURL(clonedVoice.audioBlob)
+        }
+      } catch (error) {
+        console.error('加载克隆音色失败:', error)
+      }
+    }
+  }
+})
 </script>
 
 <style scoped lang="less">
@@ -769,6 +937,65 @@ const handleClose = () => {
   width: 100%;
   .el-upload {
     width: 100%;
+  }
+}
+
+// 音色选择网格
+.voice-selection-grid {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.voice-card {
+  position: relative;
+  flex-shrink: 0;
+  width: 120px;
+  height: 90px;
+  padding: 5px;
+  background: var(--comics-cardBg-color);
+  border: 2px solid var(--comics-headerSearchBg-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: var(--comics-headerIcon-color);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(190, 24, 93, 0.2) 100%);
+    border-color: #ec4899;
+  }
+
+  .voice-name {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--comics-cardText-color);
+  }
+
+  .voice-badge {
+    position: absolute;
+    line-height: 32px;
+    top: 10px;
+    right: 10px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+    color: #fff;
+    font-size: 12px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .voice-actions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
   }
 }
 </style>
