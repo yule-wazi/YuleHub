@@ -94,6 +94,7 @@ const useAgent = defineStore('agent', {
       // 获取音频配置数据
       const audioData = myCache.get('audioData') || {}
       const token = audioData.apiKey
+      const speed = audioData.speed || 1.0
 
       // 检查是否是克隆音色，找到对应的克隆音色对象
       const clonedVoice = audioData.clonedVoices?.find((v) => v.reference_id === voiceId)
@@ -113,7 +114,7 @@ const useAgent = defineStore('agent', {
       }
 
       // 长文本：使用流式 TTS（边请求边播放，队列限制并发数为 10）
-      return streamingTTS(message, userName, { voice, model, token }, 100).then((result) => [
+      return streamingTTS(message, userName, { voice, model, token, speed }, 100).then((result) => [
         result.audioElem,
         { messageId: result.messageId, audioBlob: result.audioBlob },
       ])
@@ -121,11 +122,15 @@ const useAgent = defineStore('agent', {
 
     // 单次 TTS 请求（内部方法）
     singleTTS(message, userName, { voice, model, token }) {
+      // 获取语速配置
+      const audioData = myCache.get('audioData') || {}
+      const speed = audioData.speed || 1.0
+
       const targetConfig = {
         input: message,
         gain: 0,
         model,
-        speed: 1.15,
+        speed: speed,
         response_format: 'mp3',
         voice,
       }

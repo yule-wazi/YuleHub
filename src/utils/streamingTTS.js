@@ -204,7 +204,7 @@ export class StreamingTTSPlayer {
         input: chunk,
         gain: 0,
         model: this.config.model,
-        speed: 1.15,
+        speed: this.config.speed || 1.0,
         response_format: 'mp3',
         voice: this.config.voice,
       }

@@ -151,6 +151,25 @@
   background-color: var(--comics-headerIcon-color) !important;
 }
 
+/* ==================== 全局 Slider 滑块样式 ==================== */
+.el-slider__bar {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+}
+
+.el-slider__button {
+  border-color: #ec4899 !important;
+  background-color: #fff !important;
+}
+
+.el-slider__button:hover {
+  transform: scale(1.2);
+}
+
+.el-slider__marks-text {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+}
+
 /* ==================== 全局按钮样式 ==================== */
 /* Element Plus 按钮基础样式 */
 .el-button {

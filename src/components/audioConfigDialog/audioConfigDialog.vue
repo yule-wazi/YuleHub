@@ -172,6 +172,32 @@
                   </el-scrollbar>
                 </div>
               </div>
+
+              <!-- Speed Control Section -->
+              <div class="config-section">
+                <div class="section-header">
+                  <div class="header-content">
+                    <el-icon class="section-icon" color="#ec4899"><Timer /></el-icon>
+                    <div>
+                      <h3>语速控制</h3>
+                      <p class="section-desc">调整语音播放速度</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="speed-control">
+                    <span class="speed-label">语速: {{ (formData.speed || 1.0).toFixed(1) }}</span>
+                    <el-slider
+                      v-model="formData.speed"
+                      :min="0.5"
+                      :max="2.0"
+                      :step="0.1"
+                      :marks="speedMarks"
+                      :show-tooltip="false"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </el-tab-pane>
 
@@ -197,7 +223,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label>音色名称 <span class="required">*</span></label>
+                  <label>音色名称 </label>
                   <el-input v-model="cloneData.name" placeholder="仅允许字母、数字、_ 和 -" />
                 </div>
               </div>
@@ -235,7 +261,7 @@
                   <div class="header-content">
                     <el-icon class="section-icon" color="#ec4899"><Cpu /></el-icon>
                     <div>
-                      <h3>克隆模型 <span class="required">*</span></h3>
+                      <h3>克隆模型</h3>
                     </div>
                   </div>
                 </div>
@@ -262,7 +288,7 @@
                   <div class="header-content">
                     <el-icon class="section-icon" color="#ec4899"><Document /></el-icon>
                     <div>
-                      <h3>音频文本内容 <span class="required">*</span></h3>
+                      <h3>音频文本内容</h3>
                     </div>
                   </div>
                 </div>
@@ -284,7 +310,6 @@
                     type="textarea"
                     :rows="4"
                     placeholder="输入与上传音频对应的文本内容，或点击上方按钮自动识别"
-                    maxlength="500"
                     show-word-limit
                   />
                   <p class="hint-text">文本内容应尽可能与音频匹配，可使用自动识别功能</p>
@@ -379,6 +404,7 @@ import {
   Delete,
   Collection,
   VideoPlay,
+  Timer,
 } from '@element-plus/icons-vue'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -411,12 +437,11 @@ const audioRefs = ref({})
 const clonedAudioRefs = ref({})
 
 // 表单数据
-const formData = reactive(
-  myCache.get('audioData') ?? {
-    ...defaultSiliconFlowConfig,
-    clonedVoices: [], // 存储多个克隆音色的数组
-  },
-)
+const formData = reactive({
+  ...(myCache.get('audioData') ?? defaultSiliconFlowConfig),
+  // 确保 speed 有默认值
+  speed: myCache.get('audioData')?.speed ?? 1.0,
+})
 
 // 克隆数据
 const cloneData = reactive({
@@ -424,6 +449,14 @@ const cloneData = reactive({
   model: 'FunAudioLLM/CosyVoice2-0.5B',
   text: '',
 })
+
+// 语速刻度标记
+const speedMarks = {
+  0.5: '0.5x',
+  1.0: '1.0x',
+  1.5: '1.5x',
+  2.0: '2.0x',
+}
 
 // 初始化当前角色的音色
 const initCurrentVoice = () => {
@@ -525,6 +558,7 @@ const handleSaveSettings = () => {
     apiKey: formData.apiKey,
     model: formData.model,
     voice: formData.voice,
+    speed: formData.speed,
     clonedVoices: formData.clonedVoices,
   })
 
@@ -645,35 +679,26 @@ const handleGenerateClone = async () => {
 const handleDeleteClonedVoice = async (index) => {
   const voice = formData.clonedVoices[index]
 
-  ElMessageBox.confirm(`确定要删除音色 "${voice.customName}" 吗？`, '删除确认', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
+  // 从 IndexedDB 删除
+  try {
+    await indexedDBStorage.deleteClonedVoice(voice.reference_id)
+    console.log('✅ 已从 IndexedDB 删除克隆音色')
+  } catch (error) {
+    console.error('❌ 从 IndexedDB 删除失败:', error)
+  }
+
+  // 从数组中删除
+  formData.clonedVoices.splice(index, 1)
+
+  myCache.set('audioData', {
+    apiKey: formData.apiKey,
+    model: formData.model,
+    voice: formData.voice,
+    speed: formData.speed,
+    clonedVoices: formData.clonedVoices,
   })
-    .then(async () => {
-      // 从 IndexedDB 删除
-      try {
-        await indexedDBStorage.deleteClonedVoice(voice.reference_id)
-        console.log('✅ 已从 IndexedDB 删除克隆音色')
-      } catch (error) {
-        console.error('❌ 从 IndexedDB 删除失败:', error)
-      }
 
-      // 从数组中删除
-      formData.clonedVoices.splice(index, 1)
-
-      myCache.set('audioData', {
-        apiKey: formData.apiKey,
-        model: formData.model,
-        voice: formData.voice,
-        clonedVoices: formData.clonedVoices,
-      })
-
-      ElMessage.success('克隆音色已删除')
-    })
-    .catch(() => {
-      // 取消删除
-    })
+  ElMessage.success('克隆音色已删除')
 }
 
 // 关闭
@@ -794,10 +819,6 @@ onMounted(async () => {
   }
   .form-group {
     margin-top: 16px;
-    .required {
-      color: #ec4899;
-      margin-left: 4px;
-    }
     .hint-text {
       font-size: 12px;
       color: #64748b;
@@ -996,6 +1017,16 @@ onMounted(async () => {
     left: 10px;
     display: flex;
     gap: 6px;
+  }
+}
+
+// 语速控制
+.speed-control {
+  .speed-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--comics-cardText-color);
   }
 }
 </style>
