@@ -106,6 +106,10 @@
   box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2) !important;
 }
 
+.el-select__wrapper.el-tooltip__trigger {
+  background-color: var(--chat-card-inputBg-color) !important; 
+}
+
 /* 下拉弹出层 - 使用 popper-class="select-dropdown" */
 .select-dropdown {
   background: var(--comics-cardBg-color) !important;

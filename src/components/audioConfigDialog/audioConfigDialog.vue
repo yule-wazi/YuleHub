@@ -422,6 +422,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  source: {
+    type: String,
+    default: 'chat', // 'chat' 或 'novel'
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'save'])
@@ -436,11 +440,14 @@ const isClonedVoiceSelected = ref(false) // 是否选择了克隆音色
 const audioRefs = ref({})
 const clonedAudioRefs = ref({})
 
-// 表单数据
+// 表单数据（深拷贝避免直接修改 audioData）
+const audioData = myCache.get('audioData') ?? defaultSiliconFlowConfig
 const formData = reactive({
-  ...(myCache.get('audioData') ?? defaultSiliconFlowConfig),
-  // 确保 speed 有默认值
-  speed: myCache.get('audioData')?.speed ?? 1.0,
+  apiKey: audioData.apiKey ?? '',
+  model: audioData.model ?? 'FunAudioLLM/CosyVoice2-0.5B',
+  speed: audioData.speed ?? 1.0,
+  clonedVoices: audioData.clonedVoices ? JSON.parse(JSON.stringify(audioData.clonedVoices)) : [],
+  voice: '', // 临时字段，用于界面显示，不保存到 audioData
 })
 
 // 克隆数据
@@ -460,16 +467,28 @@ const speedMarks = {
 
 // 初始化当前角色的音色
 const initCurrentVoice = () => {
-  const agentStore = useAgent()
-  const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
+  if (props.source === 'novel') {
+    // 小说分区：使用 novelVoice
+    const audioData = myCache.get('audioData')
+    if (audioData && audioData.novelVoice) {
+      formData.voice = audioData.novelVoice
+      const isCloned = formData.clonedVoices?.some((v) => v.reference_id === audioData.novelVoice)
+      isClonedVoiceSelected.value = isCloned
+      console.log('初始化小说音色:', audioData.novelVoice)
+    }
+  } else {
+    // AI Chat 分区：设置当前角色的音色
+    const agentStore = useAgent()
+    const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
 
-  if (currentUser && currentUser.voiceId) {
-    // 设置当前音色
-    formData.voice = currentUser.voiceId
+    if (currentUser && currentUser.voiceId) {
+      formData.voice = currentUser.voiceId
 
-    // 检查是否是克隆音色
-    const isCloned = formData.clonedVoices?.some((v) => v.reference_id === currentUser.voiceId)
-    isClonedVoiceSelected.value = isCloned
+      // 检查是否是克隆音色
+      const isCloned = formData.clonedVoices?.some((v) => v.reference_id === currentUser.voiceId)
+      isClonedVoiceSelected.value = isCloned
+      console.log('初始化角色音色:', currentUser.voiceId)
+    }
   }
 }
 
@@ -553,23 +572,41 @@ const handleSaveSettings = () => {
     return
   }
 
-  // 保存到 localStorage
-  myCache.set('audioData', {
-    apiKey: formData.apiKey,
-    model: formData.model,
-    voice: formData.voice,
-    speed: formData.speed,
-    clonedVoices: formData.clonedVoices,
-  })
+  // 获取当前的 audioData
+  const currentAudioData = myCache.get('audioData') || {}
 
-  // 更新 Pinia store 中当前角色的 voiceId
-  const agentStore = useAgent()
-  const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
-  if (currentUser && formData.voice) {
-    currentUser.voiceId = formData.voice
-    ElMessage.success('配置已保存，当前角色音色已更新')
+  if (props.source === 'novel') {
+    // 小说分区：更新 novelVoice
+    console.log('保存小说音色:', formData.voice)
+    myCache.set('audioData', {
+      apiKey: formData.apiKey,
+      model: formData.model,
+      speed: formData.speed,
+      clonedVoices: JSON.parse(JSON.stringify(formData.clonedVoices)), // 深拷贝
+      novelVoice: formData.voice, // 保存小说音色
+    })
+
+    ElMessage.success('配置已保存，小说音色已更新')
   } else {
-    ElMessage.success('配置已保存')
+    // AI Chat 分区：只更新角色的 voiceId
+    const agentStore = useAgent()
+    const currentUser = agentStore.users.find((user) => user.userName === agentStore.currentUser)
+
+    if (currentUser && formData.voice) {
+      currentUser.voiceId = formData.voice
+      console.log('保存角色音色:', formData.voice)
+    }
+
+    // 保存到 localStorage（不包含 voice，保留 novelVoice）
+    myCache.set('audioData', {
+      apiKey: formData.apiKey,
+      model: formData.model,
+      speed: formData.speed,
+      clonedVoices: JSON.parse(JSON.stringify(formData.clonedVoices)), // 深拷贝
+      novelVoice: currentAudioData.novelVoice, // 保留小说音色
+    })
+
+    ElMessage.success('配置已保存，当前角色音色已更新')
   }
 
   emit('save', formData)
@@ -653,11 +690,17 @@ const handleGenerateClone = async () => {
     }
     formData.clonedVoices.push(clonedVoiceMetadata)
 
+    // 获取当前的 audioData
+    const currentAudioData = myCache.get('audioData') || {}
+
+    // 保存到 localStorage（深拷贝，保留 novelVoice）
     myCache.set('audioData', {
       apiKey: formData.apiKey,
       model: formData.model,
-      voice: formData.voice,
-      clonedVoices: formData.clonedVoices,
+      speed: formData.speed,
+      clonedVoices: JSON.parse(JSON.stringify(formData.clonedVoices)), // 深拷贝
+      novelVoice: currentAudioData.novelVoice, // 保留小说音色
+      // 不保存 voice
     })
 
     // 清空表单
@@ -690,12 +733,16 @@ const handleDeleteClonedVoice = async (index) => {
   // 从数组中删除
   formData.clonedVoices.splice(index, 1)
 
+  // 获取当前的 audioData
+  const currentAudioData = myCache.get('audioData') || {}
+
+  // 保存到 localStorage（深拷贝，保留 novelVoice）
   myCache.set('audioData', {
     apiKey: formData.apiKey,
     model: formData.model,
-    voice: formData.voice,
     speed: formData.speed,
-    clonedVoices: formData.clonedVoices,
+    clonedVoices: JSON.parse(JSON.stringify(formData.clonedVoices)), // 深拷贝
+    novelVoice: currentAudioData.novelVoice, // 保留小说音色
   })
 
   ElMessage.success('克隆音色已删除')

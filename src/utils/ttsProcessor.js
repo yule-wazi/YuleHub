@@ -10,7 +10,7 @@ import { createAudioToBlob } from '@/view/chat/utils/createAudio'
 import indexedDBStorage from './indexedDBStorage'
 
 // Debug 模式开关
-const DEBUG_MODE = true
+const DEBUG_MODE = false
 
 const debugLog = (...args) => {
   if (DEBUG_MODE) {
