@@ -5,7 +5,7 @@ import { createAudioToBlob } from '@/view/chat/utils/createAudio'
 import allUsers from '../agentUsersConfig'
 import myCache from '@/utils/cacheStorage'
 import indexedDBStorage from '@/utils/indexedDBStorage'
-import { streamingTTS } from '@/utils/streamingTTS'
+import { streamingTTS } from '@/utils/ttsProcessor'
 const useAgent = defineStore('agent', {
   state: () => {
     return {
