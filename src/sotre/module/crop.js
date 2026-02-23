@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia'
-import { PORT } from '../../../express/config/globalVar'
-const HOST = import.meta.env.VITE_HOST || 'localhost'
 
 const useCropStore = defineStore('crop', {
   state: () => {
@@ -148,7 +146,7 @@ const useCropStore = defineStore('crop', {
     // 通过后端代理加载图片（解决CORS问题）
     async loadImageWithFetch(url) {
       console.log('通过代理加载图片:', url)
-      const proxyUrl = `http://${HOST}:${PORT}/proxy?url=${encodeURIComponent(url)}`
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`
       const response = await fetch(proxyUrl)
       if (!response.ok) {
         throw new Error(`代理请求失败: ${response.status}`)

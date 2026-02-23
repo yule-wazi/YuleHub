@@ -11,6 +11,18 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     cors: true,
+    proxy: {
+      '/api/type': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/type/, '/video/type'),
+      },
+      '/api/proxy': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/proxy/, '/proxy'),
+      },
+    },
   },
   plugins: [
     vue(),
