@@ -1,6 +1,6 @@
 <template>
   <div class="comics">
-    <headerCompoment title="YuLe插画" @searchClickEmit="searchClick" />
+    <headerCompoment title="Yule插画" @searchClickEmit="searchClick" />
     <RouterView v-slot="{ Component }">
       <KeepAlive :include="['home', 'category']">
         <component :is="Component" />

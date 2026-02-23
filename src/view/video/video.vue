@@ -1,7 +1,7 @@
 <template>
   <div class="video">
     <HeaderCompoment
-      title="YuLe动漫"
+      title="Yule动漫"
       :extraMenuItems="extraMenuItems"
       @searchClickEmit="searchClick"
     />

@@ -1,7 +1,7 @@
 <template>
   <div class="pica">
     <HeaderCompoment
-      title="YuLe漫画"
+      title="Yule漫画"
       @searchClickEmit="searchClick"
       :extraMenuItems="extraMenuItems"
     />

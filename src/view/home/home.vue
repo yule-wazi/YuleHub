@@ -7,7 +7,7 @@
         borderBottom: isScrolled ? '1px solid var(--comics-border-color)' : 'none',
         transition: 'all 0.3s ease',
       }"
-      title="YuLeHub"
+      title="YuleHub"
     />
     <HeaderBanner ref="headerBannerRef" @mouseleave="handleHeaderMouseLeave" />
     <div class="content">

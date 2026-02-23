@@ -1,7 +1,7 @@
 <template>
   <div class="novel">
     <headerCompoment
-      title="YuLe小说"
+      title="Yule小说"
       :extraMenuItems="extraMenuItems"
       @searchClickEmit="searchClick"
     />

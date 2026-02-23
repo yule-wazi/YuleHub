@@ -20,8 +20,14 @@
           loop
         ></video>
         <div class="brand-overlay">
-          <h1 class="brand-title">YuLe<span class="highlight">Hub</span></h1>
-          <p class="brand-slogan">探索精彩的娱乐世界，动漫影视，趣味聊天，动漫美图，动漫小说尽在</p>
+          <div class="brand-content">
+            <h1 class="brand-title">Yule<span class="highlight">Hub</span></h1>
+            <div class="slogan-wrapper">
+              <span class="slogan-line"></span>
+              <p class="brand-slogan">次元无界，语你同行</p>
+              <span class="slogan-line"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -30,14 +36,13 @@
         <div class="login-box">
           <div class="login-header">
             <h2 class="login-title">
-              <div class="text">欢迎来到</div>
-              <div class="brand-name">YuLe<span class="highlight">Hub</span></div>
+              <span class="welcome-text">欢迎来到</span>
+              <span class="brand-name">Yule<span class="highlight">Hub</span></span>
             </h2>
             <p class="login-subtitle">
               登录您的账号，畅享娱乐世界，动漫影视，趣味聊天，动漫美图，动漫小说
             </p>
           </div>
-
           <div class="login-form">
             <div class="form-group">
               <label class="form-label">账号</label>
@@ -179,8 +184,8 @@ const formClick = () => {
     }
 
     @media (max-width: 1000px) {
-      top: 20px;
-      right: 20px;
+      top: 10px;
+      right: 10px;
       width: 45px;
       height: 45px;
     }
@@ -208,7 +213,8 @@ const formClick = () => {
     overflow: hidden;
 
     @media (max-width: 1000px) {
-      min-height: 250px;
+      min-height: 200px;
+      flex-shrink: 0;
     }
 
     .bg-video {
@@ -221,49 +227,82 @@ const formClick = () => {
 
     .brand-overlay {
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       right: 0;
+      bottom: 0;
       z-index: 2;
-      padding: 50px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.85) 0%,
-        rgba(0, 0, 0, 0.6) 50%,
-        transparent 100%
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0.7) 100%
       );
 
-      @media (max-width: 1000px) {
-        padding: 30px 25px;
-      }
+      .brand-content {
+        text-align: center;
+        padding: 40px;
 
-      .brand-title {
-        font-size: 64px;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 15px;
-        font-family:
-          'Lucida Handwriting',
-          Georgia Pro,
-          Georgia,
-          Times New Roman,
-          serif;
-        letter-spacing: 2px;
+        .brand-title {
+          font-size: 80px;
+          font-weight: 900;
+          color: #fff;
+          margin-bottom: 30px;
+          font-family:
+            'Lucida Handwriting',
+            Georgia Pro,
+            Georgia,
+            Times New Roman,
+            serif;
+          letter-spacing: 3px;
+          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 
-        @media (max-width: 1000px) {
-          font-size: 42px;
+          @media (max-width: 1000px) {
+            font-size: 48px;
+            margin-bottom: 20px;
+          }
+
+          .highlight {
+            color: var(--primary-pink-color);
+          }
         }
 
-        .highlight {
-          color: var(--primary-pink-color);
-        }
-      }
+        .slogan-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
 
-      .brand-slogan {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        line-height: 1.6;
-        max-width: 450px;
+          @media (max-width: 1000px) {
+            gap: 15px;
+          }
+
+          .slogan-line {
+            width: 80px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.8);
+
+            @media (max-width: 1000px) {
+              width: 50px;
+            }
+          }
+
+          .brand-slogan {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
+            letter-spacing: 4px;
+            white-space: nowrap;
+
+            @media (max-width: 1000px) {
+              font-size: 16px;
+              letter-spacing: 2px;
+            }
+          }
+        }
       }
     }
   }
@@ -278,27 +317,33 @@ const formClick = () => {
     background: var(--comics-cardBg-color);
 
     @media (max-width: 1000px) {
-      padding: 40px 30px;
+      padding: 35px 25px;
     }
 
     .login-box {
       width: 100%;
       max-width: 450px;
 
+      @media (max-width: 1000px) {
+        max-width: 100%;
+      }
+
       .login-header {
         margin-bottom: 50px;
-        .text {
-          font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+
+        @media (max-width: 1000px) {
+          margin-bottom: 35px;
         }
+
         .login-title {
           display: flex;
-          justify-content: space-between;
-          align-items: end;
-          font-size: 42px;
+          align-items: baseline;
+          gap: 8px;
+          font-size: clamp(20px, 5vw, 42px);
           font-weight: 900;
           color: var(--comics-menuText-color);
           margin-bottom: 20px;
-          line-height: 1.2;
+          line-height: 1.3;
           font-family:
             'Lucida Handwriting',
             Georgia Pro,
@@ -306,15 +351,23 @@ const formClick = () => {
             Times New Roman,
             serif;
           letter-spacing: 1px;
+          white-space: nowrap;
+          overflow: hidden;
 
           @media (max-width: 1000px) {
-            font-size: 32px;
+            font-size: clamp(16px, 9vw, 28px);
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            gap: 6px;
+          }
+          .welcome-text {
+            flex-shrink: 1;
+            min-width: 0;
           }
 
           .brand-name {
-            font-size: 50px;
-            color: #fff;
             color: var(--comics-menuText-color);
+            flex-shrink: 0;
 
             .highlight {
               color: var(--primary-pink-color);
@@ -327,6 +380,11 @@ const formClick = () => {
           color: var(--comics-cardSubTitle-color);
           line-height: 1.8;
           font-weight: 400;
+
+          @media (max-width: 1000px) {
+            font-size: 13px;
+            line-height: 1.6;
+          }
         }
       }
 
@@ -334,12 +392,20 @@ const formClick = () => {
         .form-group {
           margin-bottom: 24px;
 
+          @media (max-width: 1000px) {
+            margin-bottom: 20px;
+          }
+
           .form-label {
             display: block;
             font-size: 14px;
             font-weight: 500;
             color: var(--comics-cardText-color);
             margin-bottom: 8px;
+
+            @media (max-width: 1000px) {
+              font-size: 13px;
+            }
           }
 
           .input-wrapper {
@@ -368,6 +434,11 @@ const formClick = () => {
               transition: all 0.3s;
               font-family: inherit;
               outline: none;
+
+              @media (max-width: 1000px) {
+                height: 48px;
+                font-size: 14px;
+              }
 
               &::placeholder {
                 color: var(--comics-cardSubTitle-color);
@@ -404,6 +475,12 @@ const formClick = () => {
           cursor: pointer;
           transition: all 0.3s;
           box-shadow: 0 4px 16px rgba(255, 0, 122, 0.3);
+
+          @media (max-width: 1000px) {
+            height: 48px;
+            font-size: 15px;
+            margin-top: 5px;
+          }
 
           .btn-text {
             letter-spacing: 1px;
