@@ -5,6 +5,10 @@ import router from './router'
 import App from './App.vue'
 import persistPlugin from './sotre/persistPlugin'
 
+// vercel监控
+import { inject } from '@vercel/analytics'
+inject()
+
 const pinia = createPinia()
 pinia.use(persistPlugin)
 const app = createApp(App)
