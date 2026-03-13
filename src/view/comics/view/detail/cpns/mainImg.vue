@@ -23,7 +23,7 @@
       <template v-else-if="isUgoira">
         <!-- 动图播放 -->
         <canvas v-show="isPlaying" ref="canvasRef" class="ugoira-canvas"></canvas>
-        <img v-show="!isPlaying" :src="showImg" />
+        <MyImg v-show="!isPlaying" :imgUrl="showImg" :key="showImg" />
         <div class="play-button" @click="togglePlay">
           <el-icon :size="60">
             <VideoPlay v-if="!isPlaying" />
@@ -36,7 +36,7 @@
         </div>
       </template>
       <template v-else>
-        <MyImg :imgUrl="showImg" :showOriginal="true" :key="showImg"/>
+        <MyImg :imgUrl="showImg" :showOriginal="true" :key="showImg" />
       </template>
     </div>
   </div>
@@ -241,6 +241,7 @@ const onSlideChange = (swiperInstance) => {
     height: auto;
     border-radius: 10px;
     position: relative;
+    height: calc(100vh - 140px);
     @media (min-width: 1000px) {
       height: calc(100vh - 100px);
     }

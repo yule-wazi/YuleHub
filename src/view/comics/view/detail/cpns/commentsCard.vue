@@ -115,6 +115,7 @@ const input = ref('')
         .image {
           width: 40px;
           height: 40px;
+          flex-shrink: 0;
           border-radius: 50%;
           overflow: hidden;
           margin-right: 10px;

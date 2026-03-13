@@ -25,7 +25,7 @@ const props = defineProps({
   },
   rootMargin: {
     type: String,
-    default: '0px 0px 500px 0px', // 底部提前1000px开始加载
+    default: '500px 0px 500px 0px', // 底部提前1000px开始加载
   },
 })
 
