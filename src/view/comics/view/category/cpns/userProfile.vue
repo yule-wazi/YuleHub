@@ -23,7 +23,26 @@
           />
         </div>
         <div class="user-info">
-          <div class="username">{{ userDetail.name }}</div>
+          <div class="username">
+            <div class="text">{{ userDetail.name }}</div>
+            <div class="gender">
+              <el-icon
+                v-if="userDetail.gender === 'male'"
+                style="border: 1px solid #0096fa; border-radius: 2px; color: #0096fa"
+                ><Male
+              /></el-icon>
+              <el-icon
+                v-else-if="userDetail.gender === 'female'"
+                style="
+                  border: 1px solid var(--primary-pink-color);
+                  border-radius: 2px;
+                  color: var(--primary-pink-color);
+                "
+                ><Female
+              /></el-icon>
+            </div>
+          </div>
+
           <div class="info-row">
             <div class="user-account">@{{ userDetail.account }}</div>
             <div class="user-id">UID:{{ userDetail.id }}</div>
@@ -31,11 +50,11 @@
           <!-- 用户粉丝&地址 -->
           <div class="info-row">
             <div class="fans">
-              <span class="fans-num">{{ userDetail.total_follow_users }}</span>
+              <span class="fans-num">{{ formatNumber(userDetail.total_follow_users) }}</span>
               粉丝
             </div>
             <div class="region" v-if="userDetail.region">
-              <el-icon><Location /></el-icon> {{ userDetail.region }}
+              <el-icon><LocationFilled /></el-icon> {{ userDetail.region }}
             </div>
           </div>
           <div class="user-comment" v-if="userDetail.comment">{{ userDetail.comment }}</div>
@@ -44,32 +63,49 @@
       <!-- 右 -->
       <div class="right">
         <div class="stat-item">
-          <span class="stat-number">{{ userDetail.total_illusts || 0 }}</span>
+          <el-icon class="stat-icon"><PictureFilled /></el-icon>
+          <span class="stat-number">{{ formatNumber(userDetail.total_illusts) || 0 }}</span>
           <span class="stat-label">作品</span>
         </div>
         <div class="stat-item">
-          <span class="stat-number">{{ formatNumber(userDetail.total_follow_users) }}</span>
-          <span class="stat-label">关注</span>
+          <el-icon class="stat-icon"><StarFilled /></el-icon>
+          <span class="stat-number">{{
+            formatNumber(userDetail.total_illust_bookmarks_public)
+          }}</span>
+          <span class="stat-label">收藏</span>
         </div>
         <div class="stat-item">
+          <el-icon class="stat-icon"><UserFilled /></el-icon>
           <span class="stat-number">{{ formatNumber(userDetail.total_mypixiv_users) }}</span>
-          <span class="stat-label">好P友</span>
+          <span class="stat-label">好友</span>
         </div>
       </div>
     </div>
 
     <!-- 作品标题 -->
     <div class="works-title">
-      <el-icon><Picture /></el-icon>
-      <span>插画作品</span>
-      <span class="works-count">共 {{ userDetail.total_illusts || 0 }} 张</span>
+      <div class="title">
+        <el-icon size="20"><Picture /></el-icon>
+        <div>插画作品</div>
+      </div>
+      <div class="numbers">
+        共 <span class="works-count">{{ userDetail.total_illusts }}</span> 张
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Location, Briefcase, Calendar, Link, Picture } from '@element-plus/icons-vue'
+import {
+  Female,
+  LocationFilled,
+  Male,
+  Picture,
+  PictureFilled,
+  StarFilled,
+  UserFilled,
+} from '@element-plus/icons-vue'
+import formatNumber from '@/utils/formatNum'
 import MyImg from '@/components/myImg/myImg.vue'
 
 const props = defineProps({
@@ -78,20 +114,6 @@ const props = defineProps({
     default: () => ({}),
   },
 })
-
-// 格式化数字（大于1000显示k）
-const formatNumber = (num) => {
-  if (!num) return 0
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k'
-  }
-  return num
-}
-
-// 头像加载失败处理
-const handleAvatarError = (e) => {
-  e.target.src = '/public/userImg/userImg-2.webp' // 默认头像
-}
 </script>
 
 <style lang="less" scoped>
@@ -150,14 +172,25 @@ const handleAvatarError = (e) => {
       .user-info {
         margin: 55px 0 0 30px;
         .username {
+          display: flex;
           font-size: 44px;
           font-weight: 700;
           color: var(--comics-cardText-color);
           margin-top: 4px;
+          .text {
+          }
+          .gender {
+            height: 100%;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-left: 8px;
+            margin-top: 5px;
+          }
         }
         .info-row {
           display: flex;
           font-size: 17px;
+          margin-top: 2px;
           color: var(--comics-cardSubTitle-color);
           .user-id {
             margin-left: 10px;
@@ -180,10 +213,11 @@ const handleAvatarError = (e) => {
     }
     // 统计信息
     .right {
+      flex-shrink: 0;
       display: flex;
       justify-content: center;
       gap: 40px;
-      margin-bottom: 20px;
+      margin-top: -60px;
 
       .stat-item {
         display: flex;
@@ -192,14 +226,19 @@ const handleAvatarError = (e) => {
         gap: 4px;
 
         .stat-number {
-          font-size: 20px;
-          font-weight: 700;
+          font-size: 33px;
+          font-weight: 900;
           color: #ff007a;
         }
-
+        .stat-icon {
+          font-size: 26px;
+          font-weight: 500;
+          color: #fff;
+        }
         .stat-label {
-          font-size: 12px;
-          color: var(--comics-cardSubTitle-color);
+          font-size: 18px;
+          font-weight: 900;
+          color: #fff;
         }
       }
     }
@@ -207,26 +246,31 @@ const handleAvatarError = (e) => {
 
   // 作品标题
   .works-title {
+    width: 100%;
+    height: 30px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    padding: 16px 24px;
-    background-color: var(--comics-headerBg-color);
-    font-size: 16px;
+    padding: 20px 150px;
+    box-sizing: border-box;
+    background-color: var(--comics-bg-color);
+    font-size: 20px;
     font-weight: 600;
     color: var(--comics-cardTitle-color);
-    border-top: 1px solid var(--comics-border-color);
+    border-top: 2px solid var(--comics-border-color);
 
-    .el-icon {
-      color: #ff007a;
-      font-size: 18px;
+    .title {
+      display: flex;
+      align-items: center;
+      .el-icon {
+        color: var(--primary-pink-color);
+        font-size: 18px;
+        margin-right: 5px;
+      }
     }
-
     .works-count {
       margin-left: auto;
-      font-size: 14px;
-      color: var(--comics-cardSubTitle-color);
-      font-weight: 400;
+      color: var(--primary-pink-color);
     }
   }
 

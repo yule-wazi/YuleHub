@@ -4,7 +4,9 @@
       <div class="tag">#{{ route.query.author || route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
-    <UserProfile v-if="route.query.uid" :userDetail="authorDetail" />
+    <div class="user">
+      <UserProfile v-if="route.query.uid" :userDetail="authorDetail" />
+    </div>
     <div class="list">
       <template v-for="(item, index) in vipStore.vipSearchImgData" :key="`${item.pid}-${index}`">
         <ImageItem
@@ -189,6 +191,9 @@ const removeErrorData = (errorItem) => {
     .text {
       color: var(--comics-cardTitle-color);
     }
+  }
+  .user {
+    width: 100%;
   }
   .list {
     width: 100%;
