@@ -4,7 +4,7 @@
       <div class="tag">#{{ route.query.author || route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
-    <div class="user">
+    <div class="userProfile">
       <UserProfile v-if="route.query.uid" :userDetail="authorDetail" />
     </div>
     <div class="list">
@@ -192,7 +192,7 @@ const removeErrorData = (errorItem) => {
       color: var(--comics-cardTitle-color);
     }
   }
-  .user {
+  .userProfile {
     width: 100%;
   }
   .list {

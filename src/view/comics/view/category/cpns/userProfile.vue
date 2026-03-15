@@ -177,8 +177,6 @@ const props = defineProps({
           font-weight: 700;
           color: var(--comics-cardText-color);
           margin-top: 4px;
-          .text {
-          }
           .gender {
             height: 100%;
             font-size: 16px;
@@ -275,38 +273,60 @@ const props = defineProps({
   }
 
   // 响应式设计
-  @media (max-width: 768px) {
+  @media (max-width: 1000px) {
     .profile-background {
-      height: 150px;
+      height: 30vh;
     }
-
     .profile-card {
+      flex-direction: column;
+      align-items: center;
       padding: 0 16px 16px;
       margin-top: -50px;
-
-      .avatar-section .avatar {
-        width: 100px;
-        height: 100px;
-      }
-
-      .user-info {
-        .username {
-          font-size: 20px;
-        }
-
-        .right {
-          gap: 24px;
-
-          .stat-item .stat-number {
-            font-size: 18px;
+      .left {
+        flex-direction: column;
+        align-items: center;
+        .avatar-section {
+          margin: 0;
+          .avatar {
+            width: 100px !important;
+            height: 100px !important;
           }
+        }
+        .user-info {
+          margin: 0;
+          text-align: center;
+          .username {
+            font-size: 28px;
+            justify-content: center;
+          }
+          .info-row {
+            justify-content: center;
+            font-size: 12px;
+          }
+          .user-comment {
+            font-size: 14px;
+          }
+        }
+      }
+      .right {
+        margin-top: 10px;
+        font-size: 18px;
+        .stat-number {
+          font-size: 20px !important;
+          font-weight: 900;
+        }
+        .stat-icon {
+          display: none;
+        }
+        .stat-label {
+          font-size: 12px !important;
         }
       }
     }
 
     .works-title {
-      padding: 12px 16px;
-      font-size: 14px;
+      padding: 16px;
+      font-size: 18px;
     }
   }
 }
