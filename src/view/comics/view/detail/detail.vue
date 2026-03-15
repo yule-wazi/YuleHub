@@ -178,6 +178,7 @@ const saveToSession = (pid) => {
       ...vipStore.detailDataAll,
       scrollTop: scrollTop, // 保存滚动位置
     },
+    authorDetail: vipStore.authorDetail,
     currentDetailShowImg: vipStore.currentDetailShowImg,
     timestamp: Date.now(), // 更新时间戳
   }
@@ -198,6 +199,7 @@ const restoreFromSession = (pid) => {
   if (cached && cached.detailDataAll) {
     vipStore.detailDataAll = cached.detailDataAll
     vipStore.detailData = cached.detailData
+    vipStore.authorDetail = cached.authorDetail
     vipStore.currentDetailShowImg = cached.currentDetailShowImg
     return cached
   }

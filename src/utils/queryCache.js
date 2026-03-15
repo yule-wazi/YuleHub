@@ -50,19 +50,27 @@ export function createQueryCache(options) {
    * @param {number} data.page 当前页码
    * @param {string|null} data.date 日期
    * @param {number} data.scrollTop 滚动位置
+   * @param {Object} data.* 其他扩展数据（如 authorDetail）
    */
   const saveToCache = (tag, uid, data) => {
     const storageKey = getStorageKey(tag, uid)
-    if (storageKey && data.list && data.list.length > 0) {
-      const cacheData = {
-        list: [...data.list],
-        page: data.page || 1,
-        date: data.date || null,
-        scrollTop: data.scrollTop || 0,
-        timestamp: Date.now(),
-      }
-      sessionCache.set(storageKey, cacheData)
+    if (!storageKey) return
+    const cacheData = {
+      list: data.list ? [...data.list] : [],
+      page: data.page || 1,
+      date: data.date || null,
+      scrollTop: data.scrollTop || 0,
+      timestamp: Date.now(),
     }
+
+    // 将其他扩展属性也保存进去
+    Object.keys(data).forEach((key) => {
+      if (!['list', 'page', 'date', 'scrollTop'].includes(key)) {
+        cacheData[key] = data[key]
+      }
+    })
+
+    sessionCache.set(storageKey, cacheData)
   }
 
   /**
@@ -76,7 +84,8 @@ export function createQueryCache(options) {
     if (!storageKey) return null
 
     const cached = sessionCache.get(storageKey)
-    if (cached && cached.list && cached.list.length > 0) {
+    // 只要有缓存数据就返回，不再强制要求 list 有数据
+    if (cached) {
       return cached
     }
     return null

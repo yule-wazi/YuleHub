@@ -23,6 +23,7 @@ const useVip = defineStore('vip', {
       vipSearchImgData: [],
       detailData: {},
       detailDataAll: {},
+      authorDetail: {},
       currentDetailShowImg: '',
       isNSFW: false,
       validDate: null, // 存储有效的排名日期
@@ -104,6 +105,8 @@ const useVip = defineStore('vip', {
     async fetchAuthorIllustsList({ isRefresh = false, options } = {}) {
       // 使用 member_illust 接口直接获取作品列表
       const illustRes = await getPixivMemberIllust(options)
+      const artistRes = await getPixivArtistDetail(options.id)
+      this.authorDetail = { ...artistRes.data.user, ...artistRes.data.profile }
       const illusts = illustRes.data.illusts || []
       let formatList = illusts.map((item) => {
         return {
@@ -165,6 +168,7 @@ const useVip = defineStore('vip', {
         total_follow_users,
         total_mypixiv_users,
       }
+      this.authorDetail = { ...artistRes.data.user, ...artistRes.data.profile }
       this.detailDataAll.imgDetail = {
         pid: id,
         uid: uid,

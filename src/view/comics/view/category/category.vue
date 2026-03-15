@@ -1,9 +1,10 @@
 <template>
   <div ref="category" class="category">
-    <div class="title">
+    <div class="title" v-if="!route.query.uid">
       <div class="tag">#{{ route.query.author || route.query.tag }}</div>
       <div class="text">一览</div>
     </div>
+    <UserProfile v-if="route.query.uid" :userDetail="authorDetail" />
     <div class="list">
       <template v-for="(item, index) in vipStore.vipSearchImgData" :key="`${item.pid}-${index}`">
         <ImageItem
@@ -21,6 +22,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import ImageItem from '../../cpns/imageItem.vue'
+import UserProfile from './cpns/userProfile.vue'
 import useVip from '@/sotre/module/vip'
 import Loading from '@/components/loading/loading.vue'
 import { createQueryCache } from '@/utils/queryCache'
@@ -30,8 +32,9 @@ import { flowFlex } from '@/utils/waterflow'
 
 const route = useRoute()
 const vipStore = useVip()
-const { vipSearchImgData } = storeToRefs(vipStore)
+const { vipSearchImgData, authorDetail } = storeToRefs(vipStore)
 const category = ref(null)
+
 // 创建查询缓存管理器
 const queryCache = createQueryCache({
   prefix: 'COMICS_CACHE:',
@@ -40,26 +43,27 @@ const queryCache = createQueryCache({
 
 // 保存数据到缓存
 const saveToSession = (tag, uid) => {
-  if (vipStore.vipSearchImgData.length > 0) {
-    // 直接从 DOM 元素获取滚动位置
-    const currentScrollTop = category.value ? category.value.scrollTop : 0
-    queryCache.saveToCache(tag, uid, {
-      list: vipStore.vipSearchImgData,
-      page: vipStore.searchCurrentPage,
-      date: vipStore.validDate,
-      scrollTop: currentScrollTop,
-    })
-  }
+  // 直接从 DOM 元素获取滚动位置
+  const currentScrollTop = category.value ? category.value.scrollTop : 0
+
+  queryCache.saveToCache(tag, uid, {
+    list: vipStore.vipSearchImgData,
+    page: vipStore.searchCurrentPage,
+    date: vipStore.validDate,
+    scrollTop: currentScrollTop,
+    authorDetail: vipStore.authorDetail, // 扩展参数：作者详情
+  })
 }
 
 // 从缓存恢复数据
 const restoreFromSession = (tag, uid) => {
   const cached = queryCache.restoreFromCache(tag, uid)
   if (cached) {
-    vipStore.vipSearchImgData = cached.list
+    vipStore.vipSearchImgData = cached.list || []
     vipStore.searchCurrentPage = cached.page || 1
     vipStore.validDate = cached.date || null
     vipStore.tagName = tag || ''
+    vipStore.authorDetail = cached.authorDetail
     return cached // 返回完整缓存数据
   }
   return null
@@ -97,6 +101,7 @@ const loadData = async () => {
       options: { word: tag, page: vipStore.searchCurrentPage },
     })
   }
+  saveToSession(route.query.tag, route.query.uid)
 }
 
 // 路由离开前保存滚动位置和缓存
