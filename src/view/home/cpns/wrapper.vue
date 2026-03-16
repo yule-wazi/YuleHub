@@ -102,6 +102,8 @@ const likeList = myLocalCache.get(collectionKey) ?? []
 // 智能推荐算法
 const randomYourLike = async () => {
   const SEED_LIMIT = 6 // 最多使用6个种子作品
+  const MIN_DISPLAY_COUNT = 6 // 最少展示数量
+
   // 从用户收藏中随机选择种子作品
   let seeds = [...likeList]
     .sort(() => Math.random() - 0.5)
@@ -110,53 +112,55 @@ const randomYourLike = async () => {
   if (!seeds.length) {
     seeds = [139397638, 106403528, 138959428]
   }
-  try {
-    // 并发请求所有种子作品的相关推荐
-    const responses = await Promise.all(
-      seeds.map((pid) =>
-        getPixivRelatedImg(pid).catch((err) => {
-          console.warn(`获取 pid:${pid} 的推荐失败:`, err)
-          return { data: { illusts: [] } }
-        }),
-      ),
-    )
-    // 提取所有推荐结果
-    const lists = responses.map(
-      (res) => [...res.data?.illusts].sort(() => Math.random() - 0.5) || [],
-    )
 
-    const result = []
-    const seen = new Set()
-    likeList.forEach((id) => seen.add(id))
-    const maxLen = Math.max(...lists.map((list) => list.length))
-    for (let i = 0; i < maxLen; i++) {
-      for (let j = 0; j < lists.length; j++) {
-        const currentList = lists[j]
-        const item = currentList[i]
-        if (item && item.id && !seen.has(item.id)) {
-          result.push({
-            img: item.image_urls.large,
-            title: item.title,
-            pid: item.id,
-            uid: item.user.id,
-            coverImg: item.image_urls,
-            ...item,
-          })
-          seen.add(item.id)
-        }
+  const responses = await Promise.allSettled(seeds.map((pid) => getPixivRelatedImg(pid)))
+  const lists = responses
+    .filter((result) => {
+      if (result.status !== 'fulfilled') return false
+      const data = result.value?.data
+      if (!data || data.error) {
+        return false
+      }
+      return true
+    })
+    .map((result) => [...result.value.data?.illusts].sort(() => Math.random() - 0.5) || [])
+  const result = []
+  const seen = new Set()
+  likeList.forEach((id) => seen.add(id))
+  const maxLen = Math.max(...lists.map((list) => list.length), 0)
+
+  for (let i = 0; i < maxLen; i++) {
+    for (let j = 0; j < lists.length; j++) {
+      const currentList = lists[j]
+      const item = currentList[i]
+      if (item && item.id && !seen.has(item.id)) {
+        result.push({
+          img: item.image_urls.large,
+          title: item.title,
+          pid: item.id,
+          uid: item.user.id,
+          coverImg: item.image_urls,
+          ...item,
+        })
+        seen.add(item.id)
       }
     }
-    yourLike.value = result
-  } catch (err) {
-    console.error('个性化推荐获取失败:', err)
-    // 降级方案：使用随机推荐
+  }
+
+  yourLike.value = result
+  // 兜底方案：当推荐结果不足展示数量时，使用降级推荐补充
+  if (result.length < MIN_DISPLAY_COUNT) {
+    console.warn(`推荐结果不足 ${MIN_DISPLAY_COUNT} 个，触发兜底方案`)
     try {
       const res = await getPixivsionSpotlights()
-      yourLike.value = res.data.spotlight_articles.map((item) => ({
-        img: item.thumbnail,
-        title: item.title,
-        pid: item.id,
-      }))
+      const fallbackItems = res.data.spotlight_articles
+        .slice(0, MIN_DISPLAY_COUNT - result.length)
+        .map((item) => ({
+          img: item.thumbnail,
+          title: item.title,
+          pid: item.id,
+        }))
+      yourLike.value = [...result, ...fallbackItems]
     } catch (fallbackErr) {
       console.error('降级推荐也失败了:', fallbackErr)
     }

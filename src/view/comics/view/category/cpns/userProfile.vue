@@ -3,7 +3,7 @@
     <!-- 背景图 -->
     <div class="profile-background">
       <MyImg
-        :imgUrl="userDetail.background_image_url ?? userDetail.profile_image_urls.medium"
+        :imgUrl="userDetail.background_image_url ?? defaultImage?.coverImg.large"
         alt="background"
         class="background-image"
         :lazyLoad="false"
@@ -113,6 +113,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  defaultImage: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 </script>
 
@@ -127,7 +131,7 @@ const props = defineProps({
   .profile-background {
     width: 100%;
     height: 100%;
-    max-height: 60vh;
+    height: 60vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
     overflow: hidden;
@@ -319,6 +323,7 @@ const props = defineProps({
           display: none;
         }
         .stat-label {
+          color: var(--comics-cardText-color) !important;
           font-size: 12px !important;
         }
       }
