@@ -2,7 +2,8 @@ import myCache from '@/utils/cacheStorage'
 import MyRequest from '../request/index'
 // const baseURL = 'api.cocomi.eu.org'
 // const baseURL = 'hibiapi.getloli.com'
-const baseURL = 'hi.yyaan.com'
+// const baseURL = 'hi.yyaan.com'
+const baseURL = 'hibi.yunzai-bot.com'
 // pixivRank
 export function getPixivRankList(options, date = null, mode = 'day') {
   let isR18 = myCache.get('isNSFW') ?? false
