@@ -12,10 +12,10 @@
 import { ref, onUnmounted } from 'vue'
 
 const bgImages = {
-  morning: 'https://i.pximg.org/img-original/img/2025/01/30/22/31/38/126727491_p0.jpg', // 早晨 (6:00-11:59)
-  noon: 'https://i.pximg.org/img-original/img/2025/10/16/18/14/05/136342601_p0.jpg', // 中午 (12:00-15:59)
-  afternoon: 'https://i.pximg.org/img-original/img/2025/07/25/20/03/31/133100525_p0.jpg', // 下午到黄昏 (16:00-18:59)
-  night: 'https://i.pximg.org/img-original/img/2025/07/25/20/01/48/133100429_p0.jpg', // 晚上 (19:00-5:59)
+  morning: 'https://i.pixiv.re/img-original/img/2025/01/30/22/31/38/126727491_p0.jpg', // 早晨 (6:00-11:59)
+  noon: 'https://i.pixiv.re/img-original/img/2025/10/16/18/14/05/136342601_p0.jpg', // 中午 (12:00-15:59)
+  afternoon: 'https://i.pixiv.re/img-original/img/2025/07/25/20/03/31/133100525_p0.jpg', // 下午到黄昏 (16:00-18:59)
+  night: 'https://i.pixiv.re/img-original/img/2025/07/25/20/01/48/133100429_p0.jpg', // 晚上 (19:00-5:59)
 }
 
 const currentBgImage = ref('')
