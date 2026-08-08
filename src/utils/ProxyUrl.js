@@ -1,6 +1,6 @@
 export function switchProxyUrl(url) {
   const regex = /i\.pximg\.net/
-  const newUrl = url.replace(regex, 'i.pximg.org')
+  const newUrl = url.replace(regex, 'i.pixiv.re')
   return newUrl
 }
 export function emunProxyUrl(url, index) {
@@ -35,7 +35,7 @@ export function switchImgResolutionUrl(url, quality = 'low') {
   const proxyUrl1 = /i\.pixiv\.re/
   const proxyUrl2 = /i\.pximg\.net/
   //切换代理服务器（如果觉得卡可以不换）
-  const prixy = 'i.pximg.org'
+  const prixy = 'i.pixiv.re'
   newUrl = newUrl.replace(proxyUrl1, prixy).replace(proxyUrl2, prixy)
   return newUrl
 }

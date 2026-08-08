@@ -70,7 +70,7 @@ const emit = defineEmits(['save'])
 
 const videoStore = useVideo()
 const form = reactive({
-  baseUrl: myLocalCache.get('animeBaseUrl') ?? '',
+  baseUrl: myLocalCache.get('animeBaseUrl') ?? 'cj.lziapi.com',
 })
 
 const handleClose = () => {
