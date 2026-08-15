@@ -38,7 +38,7 @@
         </template>
         <template #other>
           <div class="addUserCard" style="cursor: pointer" @click="openEditCard()">添加角色卡</div>
-          <div class="apiToken" style="cursor: pointer" @click="addAPICard(true)">API Token</div>
+          <div class="apiToken" style="cursor: pointer" @click="openSettings">设置</div>
         </template>
         <template #switch>
           <div class="showTip">
@@ -479,7 +479,193 @@
       </template>
     </el-dialog>
 
-    <!-- Chat Token Dialog -->
+    <!-- 设置对话框 -->
+    <el-dialog
+      v-model="settingsVisible"
+      title="设置"
+      width="90vw"
+      style="max-width: 800px"
+      center
+      @closed="settingsVisible = false"
+    >
+      <el-tabs v-model="activeSettingTab" type="border-card">
+        <!-- API Token 标签页 -->
+        <el-tab-pane label="API Token" name="apiToken">
+          <el-form-item>
+            <span>选择AI模型</span>
+            <el-radio-group v-model="modelType" style="margin-left: 20px">
+              <el-radio label="dzmm">DZMM AI</el-radio>
+              <el-radio label="gemini">Google Gemini</el-radio>
+              <el-radio label="custom">自定义 OpenAI</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <template v-if="modelType === 'dzmm'">
+            <el-form-item prop="firstMessage">
+              <span>请输入至少一个API Token</span>
+              <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
+                >获取Token(需翻墙)</a
+              >
+              <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
+                <template #tag="{ value }">
+                  <div class="flex items-center">
+                    <el-icon class="mr-1">
+                      <Key />
+                    </el-icon>
+                    <span>{{ value }}</span>
+                  </div>
+                </template>
+              </el-input-tag>
+            </el-form-item>
+          </template>
+          <template v-else-if="modelType === 'gemini'">
+            <el-form-item>
+              <span>选择 Gemini 模型</span>
+              <el-select v-model="geminiModel" placeholder="请选择模型" style="width: 100%">
+                <el-option
+                  v-for="model in allGeminiModels"
+                  :key="model.value"
+                  :label="model.label"
+                  :value="model.value"
+                >
+                  <div style="display: flex; flex-direction: column">
+                    <span>{{ model.label }}</span>
+                    <span style="font-size: 12px; color: #999">{{ model.description }}</span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <span>添加自定义模型</span>
+              <div style="display: flex; gap: 8px">
+                <el-input
+                  v-model="customModelInput"
+                  placeholder="输入模型名称，如: gemini-1.5-pro-latest"
+                  style="flex: 1; margin-left: 10px"
+                />
+                <el-button type="primary" @click="addCustomModel">添加</el-button>
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <span>请输入 Gemini API Key（支持多个）</span>
+              <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
+                >获取 API Key</a
+              >
+              <el-input-tag
+                v-model="geminiApiKeyList"
+                tag-type="primary"
+                tag-effect="plain"
+                draggable
+                placeholder="输入 API Key 后按回车添加"
+              />
+            </el-form-item>
+          </template>
+          <template v-else-if="modelType === 'custom'">
+            <el-form-item>
+              <span>接口地址</span>
+              <el-input
+                v-model="customOpenAIBaseUrl"
+                placeholder="https://api.example.com/v1 或完整 /chat/completions 地址"
+                style="width: 100%; margin-left: 10px"
+              />
+            </el-form-item>
+            <el-form-item>
+              <span>API Key</span>
+              <el-input
+                v-model="customOpenAIApiKey"
+                placeholder="请输入 API Key"
+                show-password
+                style="width: 100%; margin-left: 10px"
+              />
+            </el-form-item>
+            <el-form-item>
+              <span>模型名称</span>
+              <el-input
+                v-model="customOpenAIModel"
+                placeholder="如: gpt-4o-mini、deepseek-chat、qwen-plus"
+                style="width: 100%; margin-left: 10px"
+              />
+            </el-form-item>
+          </template>
+
+          <div style="margin-top: 20px; display: flex; justify-content: flex-end">
+            <el-button @click="settingsVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveAPIToken">保存</el-button>
+          </div>
+        </el-tab-pane>
+
+        <!-- 上下文窗口标签页 -->
+        <el-tab-pane label="上下文窗口" name="contextWindow">
+          <el-alert
+            title="上下文窗口说明"
+            type="info"
+            :closable="false"
+            style="margin-bottom: 20px"
+          >
+            <p style="margin: 0">
+              控制发送给 AI 的历史消息数量，避免超出模型限制或过度消耗 Token。
+            </p>
+          </el-alert>
+
+          <el-form label-width="140px">
+            <el-form-item label="启用限制">
+              <el-switch v-model="contextWindowEnabled" />
+              <span style="margin-left: 10px; font-size: 12px; color: #999">
+                关闭后将发送全部历史消息
+              </span>
+            </el-form-item>
+
+            <el-form-item label="最大消息条数" v-if="contextWindowEnabled">
+              <el-input-number
+                v-model="maxMessages"
+                :min="4"
+                :max="200"
+                :step="2"
+                style="width: 200px"
+              />
+              <span style="margin-left: 10px; font-size: 12px; color: #999">
+                {{ Math.floor(maxMessages / 2) }} 轮对话（{{ maxMessages }} 条消息）
+              </span>
+            </el-form-item>
+
+            <el-form-item label="保留系统消息" v-if="contextWindowEnabled">
+              <el-switch v-model="keepSystemMessage" />
+              <span style="margin-left: 10px; font-size: 12px; color: #999">
+                始终保留角色描述等系统提示
+              </span>
+            </el-form-item>
+
+            <el-divider />
+
+            <el-descriptions :column="1" border size="small">
+              <el-descriptions-item label="当前模型">
+                <el-tag v-if="modelType === 'dzmm'" type="primary">DZMM AI</el-tag>
+                <el-tag v-else-if="modelType === 'gemini'" type="success">Google Gemini</el-tag>
+                <el-tag v-else type="warning">自定义 OpenAI</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="建议窗口大小">
+                <span v-if="modelType === 'dzmm'">20-40 条（10-20 轮）</span>
+                <span v-else-if="modelType === 'gemini'">40-100 条（20-50 轮）</span>
+                <span v-else>根据模型上下文限制调整</span>
+              </el-descriptions-item>
+              <el-descriptions-item label="当前设置">
+                <el-tag v-if="!contextWindowEnabled" type="info">无限制</el-tag>
+                <el-tag v-else type="success"
+                  >{{ maxMessages }} 条（{{ Math.floor(maxMessages / 2) }} 轮）</el-tag
+                >
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-form>
+
+          <div style="margin-top: 20px; display: flex; justify-content: flex-end">
+            <el-button @click="settingsVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveContextWindow">保存</el-button>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
+
+    <!-- Chat Token Dialog (已废弃，保留用于兼容) -->
     <el-dialog
       v-model="addTokenVisible"
       title="Chat Token"
@@ -488,106 +674,11 @@
       center
       @closed="addTokenVisible = false"
     >
-      <el-form-item>
-        <span>选择AI模型</span>
-        <el-radio-group v-model="modelType" style="margin-left: 20px">
-          <el-radio label="dzmm">DZMM AI</el-radio>
-          <el-radio label="gemini">Google Gemini</el-radio>
-          <el-radio label="custom">自定义 OpenAI</el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <template v-if="modelType === 'dzmm'">
-        <el-form-item prop="firstMessage">
-          <span>请输入至少一个API Token</span>
-          <a class="website" href="https://www.dzmm.ai/profile?tab=api" target="_blank"
-            >获取Token(需翻墙)</a
-          >
-          <el-input-tag v-model="inputToken" tag-type="primary" tag-effect="plain" draggable>
-            <template #tag="{ value }">
-              <div class="flex items-center">
-                <el-icon class="mr-1">
-                  <Key />
-                </el-icon>
-                <span>{{ value }}</span>
-              </div>
-            </template>
-          </el-input-tag>
-        </el-form-item>
-      </template>
-      <template v-else-if="modelType === 'gemini'">
-        <el-form-item>
-          <span>选择 Gemini 模型</span>
-          <el-select v-model="geminiModel" placeholder="请选择模型" style="width: 100%">
-            <el-option
-              v-for="model in allGeminiModels"
-              :key="model.value"
-              :label="model.label"
-              :value="model.value"
-            >
-              <div style="display: flex; flex-direction: column">
-                <span>{{ model.label }}</span>
-                <span style="font-size: 12px; color: #999">{{ model.description }}</span>
-              </div>
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <span>添加自定义模型</span>
-          <div style="display: flex; gap: 8px">
-            <el-input
-              v-model="customModelInput"
-              placeholder="输入模型名称，如: gemini-1.5-pro-latest"
-              style="flex: 1; margin-left: 10px"
-            />
-            <el-button type="primary" @click="addCustomModel">添加</el-button>
-          </div>
-        </el-form-item>
-        <el-form-item>
-          <span>请输入 Gemini API Key（支持多个）</span>
-          <a class="website" href="https://aistudio.google.com/app/apikey" target="_blank"
-            >获取 API Key</a
-          >
-          <el-input-tag
-            v-model="geminiApiKeyList"
-            tag-type="primary"
-            tag-effect="plain"
-            draggable
-            placeholder="输入 API Key 后按回车添加"
-          />
-        </el-form-item>
-      </template>
-      <template v-else-if="modelType === 'custom'">
-        <el-form-item>
-          <span>接口地址</span>
-          <el-input
-            v-model="customOpenAIBaseUrl"
-            placeholder="https://api.example.com/v1 或完整 /chat/completions 地址"
-            style="width: 100%; margin-left: 10px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <span>API Key</span>
-          <el-input
-            v-model="customOpenAIApiKey"
-            placeholder="请输入 API Key"
-            show-password
-            style="width: 100%; margin-left: 10px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <span>模型名称</span>
-          <el-input
-            v-model="customOpenAIModel"
-            placeholder="如: gpt-4o-mini、deepseek-chat、qwen-plus"
-            style="width: 100%; margin-left: 10px"
-          />
-        </el-form-item>
-      </template>
+      <el-empty description="此对话框已移至设置中" />
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="addTokenVisible = false">取消</el-button>
-          <el-button type="primary" @click="addAPIToken"> 确定 </el-button>
+          <el-button @click="addTokenVisible = false">关闭</el-button>
+          <el-button type="primary" @click="openSettings">前往设置</el-button>
         </div>
       </template>
     </el-dialog>
@@ -849,6 +940,15 @@ const customOpenAIBaseUrl = ref(myCache.get('CustomOpenAIBaseUrl') || '')
 const customOpenAIApiKey = ref(myCache.get('CustomOpenAIApiKey') || '')
 const customOpenAIModel = ref(myCache.get('CustomOpenAIModel') || '')
 
+// 设置对话框相关
+const settingsVisible = ref(false)
+const activeSettingTab = ref('apiToken')
+
+// 上下文窗口设置
+const contextWindowEnabled = ref(myCache.get('ContextWindowEnabled') ?? false)
+const maxMessages = ref(myCache.get('MaxMessages') || 20)
+const keepSystemMessage = ref(myCache.get('KeepSystemMessage') ?? true)
+
 // 自定义模型相关
 const customModelInput = ref('')
 const customModels = ref(myCache.get('CustomGeminiModels') || [])
@@ -1011,11 +1111,16 @@ watch(roleForm.addLoreBooksData, () => {
 
 // 打开菜单
 const drawer = ref(false)
-// 确定添加 Chat Token
-const addTokenVisible = ref(false)
-const addAPIToken = () => {
-  addTokenVisible.value = false
+
+// 打开设置对话框
+const openSettings = () => {
+  settingsVisible.value = true
   drawer.value = false
+  addTokenVisible.value = false
+}
+
+// 保存 API Token 设置
+const saveAPIToken = () => {
   // 保存模型类型
   myCache.set('modelType', modelType.value)
 
@@ -1043,6 +1148,23 @@ const addAPIToken = () => {
     myCache.set('CustomOpenAIModel', model)
     ElMessage.success('自定义 OpenAI 配置已保存')
   }
+}
+
+// 保存上下文窗口设置
+const saveContextWindow = () => {
+  myCache.set('ContextWindowEnabled', contextWindowEnabled.value)
+  myCache.set('MaxMessages', maxMessages.value)
+  myCache.set('KeepSystemMessage', keepSystemMessage.value)
+  ElMessage.success('上下文窗口设置已保存')
+}
+
+// 确定添加 Chat Token (旧方法，保留兼容)
+const addTokenVisible = ref(false)
+const addAPIToken = () => {
+  // 跳转到新的设置对话框
+  addTokenVisible.value = false
+  drawer.value = false
+  openSettings()
 }
 
 // 确认添加角色
@@ -1281,6 +1403,151 @@ onMounted(() => {
 }
 :deep(.el-dialog) {
   background-color: var(--chat-card-bg-color);
+
+  /* Tab 标签页样式 */
+  .el-tabs--border-card {
+    background-color: var(--chat-card-bg-color);
+    border-color: var(--comics-headerSearchBg-color);
+    box-shadow: none;
+
+    .el-tabs__header {
+      background-color: var(--comics-cardBg-color);
+      border-bottom-color: var(--comics-headerSearchBg-color);
+    }
+
+    .el-tabs__nav {
+      border-color: var(--comics-headerSearchBg-color);
+    }
+
+    .el-tabs__item {
+      color: var(--chat-card-text-color);
+      border-color: var(--comics-headerSearchBg-color);
+      background-color: transparent;
+
+      &.is-active {
+        background-color: var(--chat-card-bg-color);
+        color: var(--primary-color);
+        border-bottom-color: var(--chat-card-bg-color);
+      }
+
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+
+    .el-tabs__content {
+      padding: 20px;
+      background-color: var(--chat-card-bg-color);
+    }
+  }
+
+  /* Alert 提示框样式 */
+  .el-alert {
+    background-color: var(--comics-headerSearchBg-color);
+    border-color: var(--comics-headerSearchBg-color);
+
+    .el-alert__title,
+    .el-alert__description,
+    p {
+      color: var(--chat-card-text-color);
+    }
+  }
+
+  /* 表单标签样式 */
+  .el-form-item__label {
+    color: var(--chat-card-text-color);
+  }
+
+  /* Input Number 样式 */
+  .el-input-number {
+    .el-input__wrapper {
+      background-color: var(--chat-card-inputBg-color);
+    }
+    .el-input-number__decrease,
+    .el-input-number__increase {
+      background-color: var(--chat-card-inputBg-color);
+      color: var(--chat-card-text-color);
+      border-color: var(--comics-headerSearchBg-color);
+
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  /* Descriptions 描述列表样式 */
+  .el-descriptions {
+    .el-descriptions__header {
+      .el-descriptions__title {
+        color: var(--chat-card-text-color);
+      }
+    }
+
+    .el-descriptions__body {
+      background-color: var(--chat-card-bg-color);
+
+      .el-descriptions__table {
+        border-color: var(--comics-headerSearchBg-color);
+
+        .el-descriptions__cell {
+          border-color: var(--comics-headerSearchBg-color);
+        }
+      }
+
+      .el-descriptions__label,
+      .el-descriptions__content {
+        color: var(--chat-card-text-color);
+        background-color: var(--comics-cardBg-color);
+      }
+    }
+  }
+
+  /* Tag 标签样式 */
+  .el-tag {
+    background-color: var(--comics-cardBg-color);
+    border-color: var(--comics-headerSearchBg-color);
+    color: var(--chat-card-text-color);
+
+    &.el-tag--primary {
+      background-color: var(--comics-cardBg-color);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    &.el-tag--success {
+      background-color: var(--comics-cardBg-color);
+      border-color: var(--comics-headerSearchBg-color);
+      color: var(--chat-card-text-color);
+    }
+
+    &.el-tag--warning {
+      background-color: var(--comics-cardBg-color);
+      border-color: var(--comics-headerSearchBg-color);
+      color: var(--chat-card-text-color);
+    }
+
+    &.el-tag--info {
+      background-color: var(--comics-cardBg-color);
+      border-color: var(--comics-headerSearchBg-color);
+      color: var(--chat-card-text-color);
+    }
+  }
+
+  /* Divider 分割线样式 */
+  .el-divider {
+    border-color: var(--comics-headerSearchBg-color);
+
+    .el-divider__text {
+      color: var(--chat-card-text-color);
+      background-color: var(--chat-card-bg-color);
+    }
+  }
+
+  /* Empty 空状态样式 */
+  .el-empty__description {
+    color: var(--chat-card-text-color);
+  }
+
   .website {
     margin-left: 10px;
     font-size: 14px;

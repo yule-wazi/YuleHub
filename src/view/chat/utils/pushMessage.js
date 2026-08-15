@@ -23,6 +23,25 @@ export function updateMessage({
     }
     return { role: item.isMe ? 'user' : 'assistant', content: item.message }
   })
+
+  // 应用上下文窗口限制
+  const contextWindowEnabled = myCache.get('ContextWindowEnabled') ?? false
+  const maxMessages = myCache.get('MaxMessages') || 20
+  const keepSystemMessage = myCache.get('KeepSystemMessage') ?? true
+
+  if (contextWindowEnabled && messageList.length > maxMessages) {
+    const systemMessages = keepSystemMessage ? messageList.filter((m) => m.role === 'system') : []
+    const nonSystemMessages = messageList.filter((m) => m.role !== 'system')
+
+    // 保留最近的消息
+    const recentMessages = nonSystemMessages.slice(-(maxMessages - systemMessages.length))
+
+    // 重新组合：系统消息 + 最近的消息
+    messageList = [...systemMessages, ...recentMessages]
+
+    console.log(`🔄 上下文窗口限制已应用: ${messageList.length} 条消息`)
+  }
+
   // 世界书插入（支持TopK/预算等参数，可按需调整）
   // 提取世界书数组（兼容旧格式和新格式）
   let loreBooksArray = []
