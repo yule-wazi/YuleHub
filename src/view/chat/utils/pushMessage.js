@@ -1,10 +1,11 @@
 import { formatAudioMessage } from './formatOutput'
-import { postDZMMAgent, postGeminiAgent } from '@/service/module/agents'
+import { postCustomOpenAIAgent, postDZMMAgent, postGeminiAgent } from '@/service/module/agents'
 import useAgent from '@/sotre/module/agent'
 import { playAudio } from './createAudio'
 import myCache from '@/utils/cacheStorage'
 import { matchLoreBooks } from './matchLoreBooks'
 import { defaultGeminiModel } from '../config/modelConfig'
+import { ElMessage } from 'element-plus'
 const delay = 0
 export function updateMessage({
   targetUser,
@@ -123,12 +124,15 @@ export function updateMessage({
   const modelType = myCache.get('modelType') || 'dzmm'
   if (modelType === 'gemini') {
     chatWithGemini(currentMessage, messageList, contentElem, getAudio, targetUser)
+  } else if (modelType === 'custom') {
+    chatWithCustomOpenAI(currentMessage, messageList, contentElem, getAudio, targetUser)
   } else {
     chatWithDZMMAI(currentMessage, messageList, contentElem, getAudio, targetUser)
   }
 
   return messageKeys
 }
+
 // 发出请求&流式输出 （DZMM）
 export async function chatWithDZMMAI(
   currentMessage,
@@ -432,7 +436,105 @@ export async function chatWithGemini(
   }
 }
 
-// 转换消息格式：DZMM -> Gemini
+// 发出请求&流式输出 (自定义 OpenAI)
+export async function chatWithCustomOpenAI(
+  currentMessage,
+  messageList,
+  contentElem,
+  getAudio,
+  targetUser,
+) {
+  const agentStore = useAgent()
+  const baseUrl = myCache.get('CustomOpenAIBaseUrl') || ''
+  const apiKey = myCache.get('CustomOpenAIApiKey') || ''
+  const model = myCache.get('CustomOpenAIModel') || ''
+  const audioConfig = myCache.get('audioData') || 'IndexTeam/IndexTTS-2'
+
+  if (!baseUrl || !apiKey || !model) {
+    ElMessage.error('尚未配置自定义 OpenAI 接口')
+    targetUser.message.splice(-2, 2)
+    return
+  }
+
+  const requestBody = {
+    model,
+    messages: messageList,
+    stream: true,
+    temperature: 0.7,
+    top_p: 0.4,
+  }
+
+  try {
+    const response = await postCustomOpenAIAgent(requestBody, apiKey, baseUrl)
+    if (!response.ok) {
+      let errorMessage = `HTTP 错误！状态: ${response.status}`
+      try {
+        const errorData = await response.json()
+        errorMessage = errorData.error?.message || errorData.message || errorMessage
+      } catch {}
+      throw new Error(errorMessage)
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      let newlineIndex
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newlineIndex).trim()
+        buffer = buffer.slice(newlineIndex + 1)
+
+        if (!line.startsWith('data:')) continue
+        const data = line.slice(5).trim()
+        if (!data || data === '[DONE]') continue
+
+        try {
+          const jsonData = JSON.parse(data)
+          if (jsonData.error) {
+            throw new Error(jsonData.error.message || '自定义 OpenAI 流式响应错误')
+          }
+          const content = jsonData.choices?.[0]?.delta?.content
+          if (content) {
+            currentMessage.message += content
+          }
+        } catch (error) {
+          console.error('自定义 OpenAI 流式解析失败:', error)
+          throw error
+        }
+      }
+    }
+
+    if (getAudio && currentMessage.message) {
+      try {
+        const [audioElem, audioData] = await agentStore.audioToAgent(
+          currentMessage.message,
+          targetUser.userName,
+          audioConfig.model,
+        )
+        currentMessage.audioSrc = audioData.messageId
+      } catch (error) {
+        console.error('自定义 OpenAI 语音生成失败:', error)
+      }
+    }
+  } catch (error) {
+    console.error('自定义 OpenAI 请求失败:', error)
+    if (currentMessage.message && currentMessage.message.trim()) {
+      ElMessage.warning(`自定义 OpenAI 请求中断: ${error.message}`)
+      if (!currentMessage.message.endsWith('...')) {
+        currentMessage.message += '\n\n[连接中断]'
+      }
+    } else {
+      ElMessage.error(`自定义 OpenAI 请求失败: ${error.message}`)
+      targetUser.message.splice(-2, 2)
+    }
+  }
+}
+
 function convertToGeminiFormat(messageList) {
   let systemInstruction = null
   const contents = []

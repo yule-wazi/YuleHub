@@ -493,6 +493,7 @@
         <el-radio-group v-model="modelType" style="margin-left: 20px">
           <el-radio label="dzmm">DZMM AI</el-radio>
           <el-radio label="gemini">Google Gemini</el-radio>
+          <el-radio label="custom">自定义 OpenAI</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -553,6 +554,33 @@
             tag-effect="plain"
             draggable
             placeholder="输入 API Key 后按回车添加"
+          />
+        </el-form-item>
+      </template>
+      <template v-else-if="modelType === 'custom'">
+        <el-form-item>
+          <span>接口地址</span>
+          <el-input
+            v-model="customOpenAIBaseUrl"
+            placeholder="https://api.example.com/v1 或完整 /chat/completions 地址"
+            style="width: 100%; margin-left: 10px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <span>API Key</span>
+          <el-input
+            v-model="customOpenAIApiKey"
+            placeholder="请输入 API Key"
+            show-password
+            style="width: 100%; margin-left: 10px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <span>模型名称</span>
+          <el-input
+            v-model="customOpenAIModel"
+            placeholder="如: gpt-4o-mini、deepseek-chat、qwen-plus"
+            style="width: 100%; margin-left: 10px"
           />
         </el-form-item>
       </template>
@@ -817,6 +845,9 @@ const inputToken = ref(myCache.get('TokenList') ?? [])
 const modelType = ref(myCache.get('modelType') || 'dzmm')
 const geminiApiKeyList = ref(myCache.get('GeminiApiKeyList') || [])
 const geminiModel = ref(myCache.get('GeminiModel') || defaultGeminiModel)
+const customOpenAIBaseUrl = ref(myCache.get('CustomOpenAIBaseUrl') || '')
+const customOpenAIApiKey = ref(myCache.get('CustomOpenAIApiKey') || '')
+const customOpenAIModel = ref(myCache.get('CustomOpenAIModel') || '')
 
 // 自定义模型相关
 const customModelInput = ref('')
@@ -999,6 +1030,18 @@ const addAPIToken = () => {
     myCache.set('GeminiApiKeyList', geminiApiKeyList.value)
     myCache.set('GeminiModel', geminiModel.value)
     ElMessage.success('Gemini 配置已保存')
+  } else if (modelType.value === 'custom') {
+    const baseUrl = customOpenAIBaseUrl.value.trim()
+    const apiKey = customOpenAIApiKey.value.trim()
+    const model = customOpenAIModel.value.trim()
+    if (!baseUrl || !apiKey || !model) {
+      ElMessage.error('请填写完整的接口地址、API Key 和模型名称')
+      return
+    }
+    myCache.set('CustomOpenAIBaseUrl', baseUrl)
+    myCache.set('CustomOpenAIApiKey', apiKey)
+    myCache.set('CustomOpenAIModel', model)
+    ElMessage.success('自定义 OpenAI 配置已保存')
   }
 }
 

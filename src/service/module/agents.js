@@ -22,6 +22,24 @@ export function postDZMMAgent(requestBody, firstToken) {
 }
 
 // Gemini AI (流式)
+export function postCustomOpenAIAgent(requestBody, apiKey, baseUrl) {
+  const normalizedBaseUrl = baseUrl.trim().replace(/\/+$/, '')
+  const url = normalizedBaseUrl.endsWith('/chat/completions')
+    ? normalizedBaseUrl
+    : normalizedBaseUrl.endsWith('/v1')
+      ? `${normalizedBaseUrl}/chat/completions`
+      : `${normalizedBaseUrl}/v1/chat/completions`
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(requestBody),
+  })
+}
+
 export function postGeminiAgent(requestBody, apiKey, model = 'gemini-2.0-flash-exp') {
   return fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`,

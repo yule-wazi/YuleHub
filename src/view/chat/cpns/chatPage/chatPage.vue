@@ -117,6 +117,14 @@ const btnClick = () => {
       ElMessage.error('尚未设置 Gemini API Key')
       return
     }
+  } else if (modelType === 'custom') {
+    const customBaseUrl = myCache.get('CustomOpenAIBaseUrl')
+    const customApiKey = myCache.get('CustomOpenAIApiKey')
+    const customModel = myCache.get('CustomOpenAIModel')
+    if (!customBaseUrl || !customApiKey || !customModel) {
+      ElMessage.error('尚未配置自定义 OpenAI 接口')
+      return
+    }
   }
   // "我"的消息塞入消息队列
   targetUser.value.message.push({
