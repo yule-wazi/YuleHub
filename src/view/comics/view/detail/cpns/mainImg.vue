@@ -14,7 +14,7 @@
         >
           <template v-for="item in pageList" :key="item.id || item.image_urls?.large">
             <swiper-slide>
-              <MyImg :imgUrl="item.image_urls.large" />
+              <MyImg :imgUrl="item.image_urls.large" :lazyLoad="false"/>
             </swiper-slide>
           </template>
         </swiper>
