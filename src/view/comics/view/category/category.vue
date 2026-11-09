@@ -5,7 +5,11 @@
       <div class="text">一览</div>
     </div>
     <div class="userProfile">
-      <UserProfile v-if="route.query.uid" :userDetail="authorDetail" :defaultImage="vipSearchImgData[0]" />
+      <UserProfile
+        v-if="route.query.uid"
+        :userDetail="authorDetail"
+        :defaultImage="vipSearchImgData[0]"
+      />
     </div>
     <div class="list">
       <template v-for="(item, index) in vipStore.vipSearchImgData" :key="`${item.pid}-${index}`">

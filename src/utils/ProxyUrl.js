@@ -35,7 +35,8 @@ export function switchImgResolutionUrl(url, quality = 'low') {
   const proxyUrl1 = /i\.pixiv\.re/
   const proxyUrl2 = /i\.pximg\.net/
   //切换代理服务器（如果觉得卡可以不换）
-  const prixy = 'i.pixiv.re'
+  // const prixy = 'i.pixiv.re'
+  const prixy = 'pximg.hakurei.cc'
   newUrl = newUrl.replace(proxyUrl1, prixy).replace(proxyUrl2, prixy)
   return newUrl
 }
