@@ -7,20 +7,43 @@
       <template #content>
         <div class="content">
           <div class="artistList">
-            <template v-for="item in showAllArtist ? artistList : artistList.slice(0, 3)">
-              <div class="artistItem">
+            <template
+              v-for="(item, index) in showAllArtist ? artistList : artistList.slice(0, 3)"
+              :key="item?.user?.id || index"
+            >
+              <div v-if="item?.user" class="artistItem">
                 <div class="artist">
                   <div class="image">
-                    <img :src="switchImgResolutionUrl(item.user.profile_image_urls.medium)" />
+                    <MyImg
+                      :imgUrl="
+                        item.user.profile_image_urls?.medium ||
+                        'https://s.pximg.net/common/images/no_profile.png'
+                      "
+                      :lazyLoad="false"
+                    />
                   </div>
                   <div class="info">
-                    <div class="name">{{ item.user.name }}</div>
-                    <div class="account">@{{ item.user.account }}</div>
-                    <div class="UID">UID：{{ item.user.id }}</div>
+                    <div class="name">{{ item.user.name || '未知作者' }}</div>
+                    <div class="account">@{{ item.user.account || '...' }}</div>
+                    <div class="UID">UID：{{ item.user.id || '...' }}</div>
                   </div>
                 </div>
                 <div class="viewBtn">
                   <el-button color="#ff007a" @click="viewArtist(item)">查看</el-button>
+                </div>
+              </div>
+            </template>
+            <!-- 加载中骨架屏 -->
+            <template v-if="artistList.length === 0">
+              <div v-for="i in 3" :key="`skeleton-${i}`" class="artistItem skeleton">
+                <div class="artist">
+                  <div class="image">
+                    <div class="skeleton-avatar"></div>
+                  </div>
+                  <div class="info">
+                    <div class="name skeleton-text"></div>
+                    <div class="account skeleton-text"></div>
+                  </div>
                 </div>
               </div>
             </template>
@@ -43,15 +66,15 @@
 
 <script setup>
 import useVip from '@/sotre/module/vip'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const props = defineProps({
   artistList: {
     type: Array,
-    default: [],
+    default: () => [],
   },
 })
 const showAllArtist = ref(false)
@@ -101,6 +124,38 @@ const viewArtist = (currentUser) => {
         &:hover {
           background-color: var(--comics-tagBg-color);
         }
+        &.skeleton {
+          pointer-events: none;
+          .skeleton-avatar {
+            background: linear-gradient(
+              90deg,
+              var(--comics-headerIcon-color) 25%,
+              var(--comics-cardBg-color) 50%,
+              var(--comics-headerIcon-color) 75%
+            );
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+          }
+          .skeleton-text {
+            height: 12px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            background: linear-gradient(
+              90deg,
+              var(--comics-headerIcon-color) 25%,
+              var(--comics-cardBg-color) 50%,
+              var(--comics-headerIcon-color) 75%
+            );
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+            &:first-child {
+              width: 80px;
+            }
+            &:last-child {
+              width: 60px;
+            }
+          }
+        }
         .artist {
           display: flex;
           .image {
@@ -110,10 +165,13 @@ const viewArtist = (currentUser) => {
             border-radius: 50%;
             overflow: hidden;
             margin-right: 10px;
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
+            background-color: var(--comics-headerIcon-color);
+            :deep(.myImg) {
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
             }
           }
           .info {
@@ -146,6 +204,15 @@ const viewArtist = (currentUser) => {
         }
       }
     }
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

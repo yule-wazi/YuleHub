@@ -99,10 +99,19 @@ const isNSFW = myLocalCache.get('isNSFW') ? 'nsfw' : 'sfw'
 const collectionKey = `${isNSFW}_collectionList`
 const likeList = myLocalCache.get(collectionKey) ?? []
 
-// 智能推荐算法
-const randomYourLike = async () => {
+// 推荐数据池：存储待展示的推荐数据（已去重，未展示）
+const recommendPool = ref([])
+// 用户收藏的ID集合：这些内容永远不推荐
+const userCollectionIds = new Set(likeList)
+// 正在加载中的标志
+const isLoading = ref(false)
+
+// 流式智能推荐算法
+const streamYourLike = async () => {
   const SEED_LIMIT = 6 // 最多使用6个种子作品
-  const MIN_DISPLAY_COUNT = 6 // 最少展示数量
+  const DISPLAY_COUNT = 6 // 展示数量
+
+  isLoading.value = true
 
   // 从用户收藏中随机选择种子作品
   let seeds = [...likeList]
@@ -113,64 +122,137 @@ const randomYourLike = async () => {
     seeds = [139397638, 106403528, 138959428]
   }
 
-  const responses = await Promise.allSettled(seeds.map((pid) => getPixivRelatedImg(pid)))
-  const lists = responses
-    .filter((result) => {
-      if (result.status !== 'fulfilled') return false
-      const data = result.value?.data
-      if (!data || data.error) {
-        return false
-      }
-      return true
-    })
-    .map((result) => [...result.value.data?.illusts].sort(() => Math.random() - 0.5) || [])
-  const result = []
-  const seen = new Set()
-  likeList.forEach((id) => seen.add(id))
-  const maxLen = Math.max(...lists.map((list) => list.length), 0)
+  // 用于本次加载的去重
+  const loadedIds = new Set([...userCollectionIds])
 
-  for (let i = 0; i < maxLen; i++) {
-    for (let j = 0; j < lists.length; j++) {
-      const currentList = lists[j]
-      const item = currentList[i]
-      if (item && item.id && !seen.has(item.id)) {
-        result.push({
-          img: item.image_urls.large,
-          title: item.title,
-          pid: item.id,
-          uid: item.user.id,
-          coverImg: item.image_urls,
-          ...item,
-        })
-        seen.add(item.id)
-      }
-    }
-  }
-
-  yourLike.value = result
-  // 兜底方案：当推荐结果不足展示数量时，使用降级推荐补充
-  if (result.length < MIN_DISPLAY_COUNT) {
-    console.warn(`推荐结果不足 ${MIN_DISPLAY_COUNT} 个，触发兜底方案`)
+  // 并发发起所有请求，但不等待全部完成
+  const loadPromises = seeds.map(async (pid) => {
     try {
-      const res = await getPixivsionSpotlights()
-      const fallbackItems = res.data.spotlight_articles
-        .slice(0, MIN_DISPLAY_COUNT - result.length)
-        .map((item) => ({
-          img: item.thumbnail,
-          title: item.title,
-          pid: item.id,
-        }))
-      yourLike.value = [...result, ...fallbackItems]
-    } catch (fallbackErr) {
-      console.error('降级推荐也失败了:', fallbackErr)
+      const response = await getPixivRelatedImg(pid)
+      const data = response?.data
+
+      if (!data || data.error || !data.illusts) {
+        return []
+      }
+
+      // 处理单个请求的数据
+      const validItems = data.illusts
+        .filter((item) => item && item.id && !loadedIds.has(item.id))
+        .map((item) => {
+          loadedIds.add(item.id) // 立即标记为已加载
+          return {
+            img: item.image_urls.large,
+            title: item.title,
+            pid: item.id,
+            uid: item.user.id,
+            coverImg: item.image_urls,
+            total_view: item.total_view,
+            total_bookmarks: item.total_bookmarks,
+            ...item,
+          }
+        })
+
+      // 随机打乱本批数据
+      const shuffledItems = validItems.sort(() => Math.random() - 0.5)
+
+      // 立即添加到推荐池
+      recommendPool.value.push(...shuffledItems)
+
+      // 实时更新展示：如果当前展示数量不足，立即补充
+      updateDisplay()
+
+      return shuffledItems
+    } catch (err) {
+      console.warn(`获取相关推荐失败 (pid: ${pid}):`, err)
+      return []
     }
-  }
+  })
+
+  // 兜底方案：如果500ms后仍无数据，使用降级推荐
+  setTimeout(async () => {
+    if (recommendPool.value.length === 0) {
+      console.warn('推荐数据加载较慢，触发兜底方案')
+      try {
+        const res = await getPixivsionSpotlights()
+        const fallbackItems = res.data.spotlight_articles
+          .filter((item) => !loadedIds.has(item.id))
+          .slice(0, DISPLAY_COUNT)
+          .map((item) => {
+            loadedIds.add(item.id)
+            return {
+              img: item.thumbnail,
+              title: item.title,
+              pid: item.id,
+            }
+          })
+
+        recommendPool.value.push(...fallbackItems)
+        updateDisplay()
+      } catch (fallbackErr) {
+        console.error('降级推荐也失败了:', fallbackErr)
+      }
+    }
+  }, 500)
+
+  // 等待所有请求完成
+  await Promise.allSettled(loadPromises)
+  isLoading.value = false
 }
+
+// 更新展示列表：从推荐池中随机抽取数据展示并移出推荐池
+const updateDisplay = () => {
+  const DISPLAY_COUNT = 6
+
+  if (recommendPool.value.length === 0) return
+
+  // 如果当前展示的数量已满，不自动替换（等待用户点击"换一批"）
+  const currentValidCount = yourLike.value.filter((item) => item?.pid).length
+  if (currentValidCount >= DISPLAY_COUNT) {
+    return
+  }
+
+  // 从推荐池中随机抽取并移除
+  const shuffled = [...recommendPool.value].sort(() => Math.random() - 0.5)
+  const selected = shuffled.slice(0, DISPLAY_COUNT)
+
+  // 从推荐池中移除已展示的
+  const selectedIds = new Set(selected.map((item) => item.pid))
+  recommendPool.value = recommendPool.value.filter((item) => !selectedIds.has(item.pid))
+
+  yourLike.value = selected
+}
+
 // 发起猜你喜欢请求
-randomYourLike()
-// 换一批：重新打乱当前推荐列表
+streamYourLike()
+
+// 换一批：从推荐池中随机抽取新的数据展示，并从池中移除
 const changeList = () => {
-  yourLike.value = [...yourLike.value].sort(() => Math.random() - 0.5)
+  const DISPLAY_COUNT = 6
+
+  // 如果推荐池数据不足6条，清空并重新加载
+  if (recommendPool.value.length < DISPLAY_COUNT) {
+    console.log('推荐池数据不足，重新加载...')
+    // 清空当前展示
+    yourLike.value = new Array(6)
+    // 清空推荐池
+    recommendPool.value = []
+    // 重新请求
+    streamYourLike()
+    return
+  }
+
+  // 从推荐池中随机抽取
+  const shuffled = [...recommendPool.value].sort(() => Math.random() - 0.5)
+  const selected = shuffled.slice(0, DISPLAY_COUNT)
+
+  // 从推荐池中移除已展示的
+  const selectedIds = new Set(selected.map((item) => item.pid))
+  recommendPool.value = recommendPool.value.filter((item) => !selectedIds.has(item.pid))
+
+  // 更新展示
+  yourLike.value = selected
+
+  console.log(`已展示 ${selected.length} 条，推荐池剩余 ${recommendPool.value.length} 条`)
 }
 
 // 进入详情页
@@ -203,6 +285,11 @@ const getDetail = async (item) => {
     background-color: var(--comics-headerIcon-color);
     @media (max-width: 1000px) {
       max-height: 200px;
+    }
+    .mySwiper {
+      @media (max-width: 1000px) {
+        height: 200px !important;
+      }
     }
     .slide-content {
       width: 100%;

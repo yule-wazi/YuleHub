@@ -7,15 +7,13 @@
       <template #content>
         <div class="content">
           <div class="imgList">
-            <template v-for="item in imgList">
-              <div class="image" @click="getDetail(item)">
-                <img
-                  :src="
-                    switchImgResolutionUrl(item?.image_urls?.large, 'origin') ??
-                    'https://s.pximg.net/common/images/no_profile.png'
-                  "
-                  alt=""
-                />
+            <template v-for="(item, index) in imgList" :key="item?.id || index">
+              <div v-if="item?.image_urls" class="image" @click="getDetail(item)">
+                <MyImg :imgUrl="item?.image_urls?.large" :lazyLoad="false" />
+              </div>
+              <div v-else class="image skeleton">
+                <!-- 骨架屏由 MyImg 自动处理 -->
+                <MyImg imgUrl="" :lazyLoad="false" />
               </div>
             </template>
           </div>
@@ -27,17 +25,17 @@
 
 <script setup>
 import useVip from '@/sotre/module/vip'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 import { watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const vipStore = useVip()
 const router = useRouter()
 defineProps({
   imgList: {
     type: Array,
-    default: [...Array(6)],
+    default: () => [...Array(6)],
   },
 })
 const scrollToTop = () => {
@@ -47,6 +45,21 @@ const scrollToTop = () => {
 
 const getDetail = async (imgInfo) => {
   const pid = imgInfo.id
+
+  // ✅ 立即更新 detailData，让主图能立即显示
+  vipStore.detailData = {
+    pid: imgInfo.id,
+    uid: imgInfo.user?.id || vipStore.detailData.uid, // 复用当前作者ID
+    title: imgInfo.title,
+    coverImg: imgInfo.image_urls,
+    pageList: imgInfo.meta_pages || [],
+    tags: imgInfo.tags || [],
+    width: imgInfo.width,
+    height: imgInfo.height,
+    x_restrict: imgInfo.x_restrict || 0,
+  }
+  vipStore.currentDetailShowImg = imgInfo.image_urls?.large
+
   router.push({
     path: '/comics/detail',
     query: { pid },
@@ -81,14 +94,20 @@ watch(
         border-radius: 6px;
         overflow: hidden;
         cursor: pointer;
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: 0.2s ease;
-          &:hover {
+        background-color: var(--comics-headerIcon-color);
+        :deep(.myImg) {
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.2s ease;
+          }
+          &:hover img {
             transform: scale(1.1);
           }
+        }
+        &.skeleton {
+          pointer-events: none;
         }
       }
     }

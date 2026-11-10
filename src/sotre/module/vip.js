@@ -129,7 +129,7 @@ const useVip = defineStore('vip', {
         this.vipSearchImgData.push(...formatList)
       }
     },
-    // 获取详情页数据集合
+    // 获取详情页数据集合（旧方法，保留兼容性）
     async fetchImgDetailAll(pid, uid) {
       const [imgRes, artistRes, moreImgRes, moreRelatedImgRes] = await Promise.all([
         getPixivImgDetail(pid),
@@ -192,6 +192,115 @@ const useVip = defineStore('vip', {
       this.detailDataAll.relatedImgList = {
         list: illusts,
         page: 1,
+      }
+    },
+    // 【优化】获取核心详情数据（作品详情 + 作者详情）
+    async fetchImgDetailCore(pid, uid) {
+      try {
+        const imgRes = await getPixivImgDetail(pid)
+        const {
+          id,
+          image_urls,
+          meta_pages,
+          total_view,
+          total_bookmarks,
+          total_comments,
+          title,
+          caption,
+          create_date,
+          tags,
+          width,
+          height,
+          type,
+          x_restrict,
+          sanity_level,
+          user,
+        } = imgRes.data.illust
+
+        // 立即更新作品详情
+        this.detailDataAll.imgDetail = {
+          pid: id,
+          uid: uid,
+          artist: user.name,
+          coverImg: image_urls,
+          pageList: meta_pages,
+          total_view,
+          total_bookmarks,
+          total_comments,
+          title,
+          caption,
+          create_date,
+          tags,
+          width,
+          height,
+          type,
+          x_restrict,
+          sanity_level,
+        }
+
+        return imgRes
+      } catch (error) {
+        console.error('获取作品详情失败:', error)
+        throw error
+      }
+    },
+    // 【优化】获取作者详情
+    async fetchArtistDetail(uid) {
+      try {
+        const artistRes = await getPixivArtistDetail(uid)
+        const { name, account, profile_image_urls } = artistRes.data.user
+        const { total_illusts, total_follow_users, total_mypixiv_users } = artistRes.data.profile
+
+        // 立即更新作者详情
+        this.detailDataAll.artistDetail = {
+          id: uid,
+          name,
+          account,
+          profile_image_urls,
+          total_illusts,
+          total_follow_users,
+          total_mypixiv_users,
+        }
+        this.authorDetail = { ...artistRes.data.user, ...artistRes.data.profile }
+
+        return artistRes
+      } catch (error) {
+        console.error('获取作者详情失败:', error)
+        throw error
+      }
+    },
+    // 【优化】获取作者更多作品
+    async fetchArtistMoreWorks(uid) {
+      try {
+        const moreImgRes = await getPixivMemberIllust({ id: uid, page: 1 })
+        this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(0, 6)
+        return moreImgRes
+      } catch (error) {
+        console.error('获取作者更多作品失败:', error)
+        // 失败不阻塞，返回空数组
+        this.detailDataAll.moreImgFromArtist = []
+        return null
+      }
+    },
+    // 【优化】初始化相关作品（第一页）
+    async fetchRelatedImgInit(pid) {
+      try {
+        const relatedImgRes = await getPixivRelatedImg(pid, 1)
+        const { illusts } = relatedImgRes.data
+
+        this.detailDataAll.relatedImgList = {
+          list: illusts,
+          page: 1,
+        }
+        return relatedImgRes
+      } catch (error) {
+        console.error('获取相关作品失败:', error)
+        // 失败不阻塞，返回空数组
+        this.detailDataAll.relatedImgList = {
+          list: [],
+          page: 1,
+        }
+        return null
       }
     },
     // 获取相关作品（支持加载更多）

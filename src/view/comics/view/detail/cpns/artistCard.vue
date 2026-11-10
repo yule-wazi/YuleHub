@@ -4,18 +4,12 @@
       <template #headerLeft>
         <div class="artist">
           <div class="image">
-            <img
-              :src="
-                switchImgResolutionUrl(profile_image_urls.medium) ??
-                'https://s.pximg.net/common/images/no_profile.png'
-              "
-              alt=""
-            />
+            <MyImg :imgUrl="profile_image_urls?.medium" :lazyLoad="false" />
           </div>
           <div class="info">
-            <div class="name">{{ name }}</div>
-            <div class="account">@{{ account }}</div>
-            <div class="UID">UID：{{ id }}</div>
+            <div class="name">{{ name || '加载中...' }}</div>
+            <div class="account">@{{ account || '...' }}</div>
+            <div class="UID">UID：{{ id || '...' }}</div>
           </div>
         </div>
       </template>
@@ -48,9 +42,10 @@
 
 <script setup>
 import useVip from '@/sotre/module/vip'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 import { useRouter } from 'vue-router'
+import MyImg from '@/components/myImg/myImg.vue'
+import { watch } from 'vue'
 const props = defineProps({
   id: {
     type: Number,
@@ -58,7 +53,7 @@ const props = defineProps({
   },
   profile_image_urls: {
     type: Object,
-    default: {},
+    default: () => ({}),
   },
   name: {
     type: String,
@@ -83,6 +78,16 @@ const props = defineProps({
 })
 const router = useRouter()
 const vipStore = useVip()
+
+// 调试：查看接收到的 props
+watch(
+  () => props.profile_image_urls,
+  (newVal) => {
+    console.log('🎨 artistCard profile_image_urls:', newVal)
+  },
+  { immediate: true },
+)
+
 const viewArtist = () => {
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1

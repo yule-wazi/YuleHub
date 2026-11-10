@@ -1,7 +1,9 @@
 <template>
   <div class="myImg" ref="imgContainerRef">
     <img v-if="isLoaded" :src="showImg" @error="triggerEmit" />
-    <div v-else class="img-placeholder"></div>
+    <div v-else class="img-placeholder">
+      <div class="loading-spinner"></div>
+    </div>
   </div>
 </template>
 
@@ -61,6 +63,8 @@ const loadImg = async () => {
       showImg.value = originalSrc
     }
   } catch (error) {
+    showImg.value = 'https://s.pximg.net/common/images/no_profile.png'
+    isLoaded.value = true
     console.error('Image load error:', error)
   }
 }
@@ -130,6 +134,18 @@ onMounted(() => {
   setupObserver()
 })
 
+// 监听 imgUrl 变化，重新加载图片
+watch(
+  () => props.imgUrl,
+  (newUrl, oldUrl) => {
+    if (newUrl && newUrl !== oldUrl) {
+      isLoaded.value = false
+      isInView.value = false
+      setupObserver()
+    }
+  },
+)
+
 onBeforeUnmount(() => {
   if (observer) {
     if (imgContainerRef.value) {
@@ -158,9 +174,29 @@ onBeforeUnmount(() => {
   .img-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(
+      90deg,
+      var(--comics-headerIcon-color, #f0f0f0) 25%,
+      var(--comics-cardBg-color, #e0e0e0) 50%,
+      var(--comics-headerIcon-color, #f0f0f0) 75%
+    );
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 0, 122, 0.1);
+      border-top-color: var(--primary-pink-color, #ff007a);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      position: relative;
+      z-index: 2;
+    }
   }
 
   @keyframes loading {
@@ -169,6 +205,15 @@ onBeforeUnmount(() => {
     }
     100% {
       background-position: -200% 0;
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 }

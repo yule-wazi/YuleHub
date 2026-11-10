@@ -4,14 +4,14 @@
       <template #headerLeft>
         <div class="artise">
           <div class="image">
-            <img :src="showImg" alt="" />
+            <MyImg :imgUrl="showImg" :lazyLoad="false" :key="showImg" />
           </div>
           <div class="info">
-            <div class="title">{{ title }}</div>
-            <div class="artist">{{ artist }}</div>
+            <div class="title">{{ title || '加载中...' }}</div>
+            <div class="artist">{{ artist || '加载中...' }}</div>
             <div class="date">
               <el-icon><Calendar /></el-icon>
-              <span class="text">{{ formatTime(create_date) }}</span>
+              <span class="text">{{ create_date ? formatTime(create_date) : '...' }}</span>
             </div>
           </div>
         </div>
@@ -67,18 +67,18 @@
 import Card from '@/view/comics/cpns/card.vue'
 import Tag from '@/components/tag/tag.vue'
 import { Calendar, Picture, View } from '@element-plus/icons-vue'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { onMounted, ref, useTemplateRef, watch, computed } from 'vue'
 import { formatTime } from '@/utils/formatTime'
 import useVip from '@/sotre/module/vip'
 import { useRouter } from 'vue-router'
 import myLocalCache from '@/utils/cacheStorage'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const props = defineProps({
   coverImg: {
     type: Object,
-    default: {},
+    default: () => ({}),
   },
   title: {
     type: String,
@@ -98,7 +98,7 @@ const props = defineProps({
   },
   tags: {
     type: Array,
-    default: [],
+    default: () => [],
   },
   height: {
     type: Number,
@@ -169,11 +169,8 @@ watch(
   () => vipStore.detailDataAll,
   () => {
     if (vipStore.detailDataAll.imgDetail?.coverImg?.large) {
-      const origin = switchImgResolutionUrl(
-        vipStore.detailDataAll.imgDetail?.coverImg?.large,
-        'origin',
-      )
-      preLoadImg(origin).then(({ src }) => (showImg.value = src))
+      // 直接使用原始 URL，MyImg 会自动处理
+      showImg.value = vipStore.detailDataAll.imgDetail.coverImg.large
     }
   },
   { deep: true },
@@ -188,10 +185,9 @@ watch(
 )
 onMounted(() => {
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
-  // 展示主图
+  // 展示主图 - 直接使用原始 URL
   if (vipStore.detailData?.coverImg?.large) {
-    const origin = switchImgResolutionUrl(vipStore.detailData.coverImg.large, 'origin')
-    preLoadImg(origin).then(({ src }) => (showImg.value = src))
+    showImg.value = vipStore.detailData.coverImg.large
   }
 })
 </script>
@@ -210,10 +206,12 @@ onMounted(() => {
       @media (max-width: 1000px) {
         display: none;
       }
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+      :deep(.myImg) {
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
       }
     }
     .info {

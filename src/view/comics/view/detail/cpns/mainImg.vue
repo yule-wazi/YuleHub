@@ -14,7 +14,7 @@
         >
           <template v-for="item in pageList" :key="item.id || item.image_urls?.large">
             <swiper-slide>
-              <MyImg :imgUrl="item.image_urls.large" :lazyLoad="false"/>
+              <MyImg :imgUrl="item.image_urls.large" :lazyLoad="false" />
             </swiper-slide>
           </template>
         </swiper>
@@ -180,31 +180,62 @@ const togglePlay = async () => {
   }
 }
 
-watch(
-  () => vipStore.detailDataAll,
-  async () => {
-    // 重置动图状态
-    stopUgoira()
-    isPlaying.value = false
-    ugoiraFrames.value = []
-    ugoiraDelays.value = []
+// 记录上一次的 pid，避免相同 pid 重复触发
+let lastPid = null
 
-    pageList.value = vipStore.detailDataAll?.imgDetail?.pageList ?? []
-    swiperInstance.value?.slideTo(0, 0)
-    currentIndex.value = 1
-    if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
-      showImg.value = vipStore.detailDataAll.imgDetail.coverImg.large
-    }
-    // 如果是动图，自动加载并播放
-    if (isUgoira.value) {
-      await loadUgoira()
-      if (ugoiraFrames.value.length > 0) {
-        isPlaying.value = true
-        playUgoira()
+// 监听 detailData 的变化（详情页内部切换时立即更新）
+watch(
+  () => vipStore.detailData?.pid,
+  (newPid) => {
+    if (newPid && newPid !== lastPid) {
+      // 立即更新主图显示
+      if (vipStore.detailData?.coverImg?.large) {
+        showImg.value = vipStore.detailData.coverImg.large
+      }
+      // 立即更新 pageList（如果是多图）
+      if (vipStore.detailData?.pageList) {
+        pageList.value = vipStore.detailData.pageList
+        currentIndex.value = 1
+        swiperInstance.value?.slideTo(0, 0)
       }
     }
   },
-  { deep: true },
+  { immediate: true },
+)
+
+// 监听 detailDataAll 的变化（请求完成后的完整数据）
+watch(
+  () => vipStore.detailDataAll?.imgDetail?.pid,
+  async (newPid) => {
+    // 只有 pid 真正改变时才重置
+    if (newPid && newPid !== lastPid) {
+      lastPid = newPid
+
+      // 重置动图状态
+      stopUgoira()
+      isPlaying.value = false
+      ugoiraFrames.value = []
+      ugoiraDelays.value = []
+
+      pageList.value = vipStore.detailDataAll?.imgDetail?.pageList ?? []
+      // 重置到第一页
+      swiperInstance.value?.slideTo(0, 0)
+      currentIndex.value = 1
+
+      if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
+        showImg.value = vipStore.detailDataAll.imgDetail.coverImg.large
+      }
+
+      // 如果是动图，自动加载并播放
+      if (isUgoira.value) {
+        await loadUgoira()
+        if (ugoiraFrames.value.length > 0) {
+          isPlaying.value = true
+          playUgoira()
+        }
+      }
+    }
+  },
 )
 
 onMounted(() => {

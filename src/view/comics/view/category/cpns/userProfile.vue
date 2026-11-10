@@ -3,7 +3,8 @@
     <!-- 背景图 -->
     <div class="profile-background">
       <MyImg
-        :imgUrl="userDetail.background_image_url ?? defaultImage?.coverImg.large"
+        v-if="userDetail.background_image_url || defaultImage?.coverImg?.large"
+        :imgUrl="userDetail.background_image_url ?? defaultImage.coverImg.large"
         alt="background"
         class="background-image"
         :lazyLoad="false"

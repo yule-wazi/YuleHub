@@ -8,7 +8,7 @@
       <UserProfile
         v-if="route.query.uid"
         :userDetail="authorDetail"
-        :defaultImage="vipSearchImgData[0]"
+        :defaultImage="vipSearchImgData[0] || {}"
       />
     </div>
     <div class="list">

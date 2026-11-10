@@ -71,12 +71,25 @@ const route = useRoute()
 // 进入详情页
 const getDetail = async () => {
   const pid = props.itemData.pid
+
+  // ✅ 立即更新 detailData，让主图能立即显示
+  vipStore.detailData = {
+    pid: props.itemData.pid,
+    uid: props.itemData.uid,
+    title: props.itemData.title,
+    coverImg: props.itemData.coverImg,
+    pageList: props.itemData.pageList,
+    tags: props.itemData.tags,
+    width: props.itemData.width,
+    height: props.itemData.height,
+    x_restrict: props.itemData.x_restrict,
+  }
+  vipStore.currentDetailShowImg = props.itemData.coverImg.large
+
   router.push({
     path: '/comics/detail',
     query: { pid },
   })
-  vipStore.detailData = props.itemData
-  vipStore.currentDetailShowImg = props.itemData.coverImg.large
 }
 // 搜索tag
 const getTag = (tag) => {

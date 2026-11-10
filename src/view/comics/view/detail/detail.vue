@@ -180,6 +180,8 @@ const saveToSession = (pid) => {
     },
     authorDetail: vipStore.authorDetail,
     currentDetailShowImg: vipStore.currentDetailShowImg,
+    comments: comments.value, // 保存评论
+    relatedArtist: relatedArtist.value, // 保存相关作者
     timestamp: Date.now(), // 更新时间戳
   }
 
@@ -222,29 +224,144 @@ const restoreScrollPosition = (scrollTop) => {
 let detailDataAll = ref({})
 let comments = ref([])
 let relatedArtist = ref([])
+let currentLoadingPid = null // 当前正在加载的 pid，防止快速切换时请求交叉
+
 const initDetailData = async () => {
   const pid = Number(route.query.pid)
   if (!pid) {
     return
   }
+
+  // 设置当前加载的 pid
+  currentLoadingPid = pid
+
+  // 🔄 立即清空所有旧数据，显示加载状态（包括外部进入的情况）
+  relatedArtist.value = []
+  comments.value = []
+  if (vipStore.detailDataAll) {
+    vipStore.detailDataAll.moreImgFromArtist = new Array(6) // ✅ 6个占位显示骨架屏
+    vipStore.detailDataAll.relatedImgList = { list: [], page: 1 }
+    vipStore.detailDataAll.artistDetail = {} // ✅ 清空作者详情
+    vipStore.detailDataAll.imgDetail = {} // ✅ 清空图片信息
+  }
+
+  // 先检查缓存
   const cached = restoreFromSession(pid)
   if (cached) {
     detailDataAll.value = cached.detailDataAll
+    // 恢复评论和相关作者
+    if (cached.comments) {
+      comments.value = cached.comments
+    }
+    if (cached.relatedArtist) {
+      relatedArtist.value = cached.relatedArtist
+    }
     // 恢复滚动位置
     const scrollTop = cached.detailDataAll?.scrollTop || 0
     restoreScrollPosition(scrollTop)
-  } else {
-    await vipStore.fetchImgDetailAll(pid, vipStore.detailData.uid)
-    detailDataAll.value = vipStore.detailDataAll
-    vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
-    // 首次加载，滚动到顶部
-    const scrollContainer = getScrollContainer()
-    if (scrollContainer) {
-      // scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
-    }
-    // 首次拿到数据缓存
-    saveToSession(pid)
+    console.log('✅ 从缓存恢复数据')
+    return
   }
+
+  // 🎯 第一层：立即使用路由传递的数据渲染（detailData）
+  // detailData 已经在跳转时设置，MainImg 组件可以立即展示
+  console.log('🎯 使用 detailData 立即渲染主图')
+
+  // 初始化 detailDataAll 结构（防止子组件访问 undefined）
+  if (!vipStore.detailDataAll || typeof vipStore.detailDataAll !== 'object') {
+    vipStore.detailDataAll = {}
+  }
+  detailDataAll.value = vipStore.detailDataAll
+
+  // ⚡ 第二层：并发请求核心数据（作品详情 + 作者详情）
+  console.log('⚡ 开始加载核心数据...')
+  const corePromises = [
+    vipStore.fetchImgDetailCore(pid, vipStore.detailData.uid).catch((err) => {
+      console.error('作品详情加载失败:', err)
+      return null
+    }),
+    vipStore.fetchArtistDetail(vipStore.detailData.uid).catch((err) => {
+      console.error('作者详情加载失败:', err)
+      return null
+    }),
+  ]
+
+  // 等待核心数据完成
+  await Promise.allSettled(corePromises)
+
+  // 检查是否已切换到其他页面
+  if (currentLoadingPid !== pid) {
+    console.log('⚠️ 已切换到其他页面，终止加载')
+    return
+  }
+
+  console.log('✅ 核心数据加载完成')
+
+  // 更新当前展示图片
+  if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
+    vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
+  }
+
+  // 首次加载，滚动到顶部
+  const scrollContainer = getScrollContainer()
+  if (scrollContainer) {
+    scrollContainer.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
+  // 保存核心数据到缓存
+  saveToSession(pid)
+
+  // 🌊 第三层：延迟 300ms 加载补充内容（作者更多作品 + 评论）
+  setTimeout(async () => {
+    if (currentLoadingPid !== pid) return
+
+    console.log('🌊 开始加载补充内容...')
+    const extraPromises = [
+      vipStore.fetchArtistMoreWorks(vipStore.detailData.uid),
+      getPixivImgComments(pid)
+        .then((res) => {
+          if (currentLoadingPid === pid) {
+            comments.value = res.data.comments
+          }
+        })
+        .catch((err) => {
+          console.error('评论加载失败:', err)
+        }),
+    ]
+
+    await Promise.allSettled(extraPromises)
+
+    if (currentLoadingPid === pid) {
+      console.log('✅ 补充内容加载完成')
+      saveToSession(pid)
+    }
+  }, 300)
+
+  // 🎨 第四层：延迟 500ms 加载扩展内容（相关作品 + 相关作者）
+  setTimeout(async () => {
+    if (currentLoadingPid !== pid) return
+
+    console.log('🎨 开始加载扩展内容...')
+    const expandPromises = [
+      vipStore.fetchRelatedImgInit(pid),
+      getPixivRelatedArtist(vipStore.detailData.uid)
+        .then((res) => {
+          if (currentLoadingPid === pid) {
+            relatedArtist.value = res.data.user_previews
+          }
+        })
+        .catch((err) => {
+          console.error('相关作者加载失败:', err)
+        }),
+    ]
+
+    await Promise.allSettled(expandPromises)
+
+    if (currentLoadingPid === pid) {
+      console.log('✅ 扩展内容加载完成')
+      saveToSession(pid)
+    }
+  }, 500)
 }
 // p站获取高清图片
 const showImg = ref('')
@@ -260,12 +377,23 @@ watch(
       if (oldPid && vipStore.detailDataAll && Object.keys(vipStore.detailDataAll).length > 0) {
         saveToSession(oldPid)
       }
+
+      // 🔄 立即清空所有旧数据，显示加载状态
+      comments.value = []
+      relatedArtist.value = []
+      // 清空 detailDataAll 中的延迟加载数据
+      if (vipStore.detailDataAll) {
+        vipStore.detailDataAll.moreImgFromArtist = new Array(6) // ✅ 6个占位显示骨架屏
+        vipStore.detailDataAll.relatedImgList = { list: [], page: 1 }
+        // ✅ 清空作者详情，显示默认值
+        vipStore.detailDataAll.artistDetail = {}
+        // ✅ 清空图片详情，显示默认值
+        vipStore.detailDataAll.imgDetail = {}
+      }
+
       // 再加载新的 pid 数据
       initDetailData()
     }
-    getPixivImgComments(route.query.pid).then((res) => {
-      comments.value = res.data.comments
-    })
   },
 )
 watch(
@@ -287,12 +415,7 @@ onMounted(async () => {
   if (!detailDataAll.value || Object.keys(detailDataAll.value).length === 0) {
     initDetailData()
   }
-  getPixivImgComments(route.query.pid).then((res) => {
-    comments.value = res.data.comments
-  })
-  getPixivRelatedArtist(vipStore.detailData.uid).then((res) => {
-    relatedArtist.value = res.data.user_previews
-  })
+  // 评论和相关作者会在 initDetailData 中异步加载，这里不需要重复请求
 })
 
 // 路由离开前保存数据

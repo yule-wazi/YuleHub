@@ -13,17 +13,13 @@
             </div>
           </div>
           <div class="showComments">
-            <template v-for="item in showAllComments ? comments : comments.slice(0, 3)">
+            <template
+              v-for="(item, index) in showAllComments ? comments : comments.slice(0, 3)"
+              :key="index"
+            >
               <div class="commentItem">
                 <div class="image">
-                  <img
-                    :src="switchImgResolutionUrl(item.user.profile_image_urls.medium)"
-                    @error="
-                      (e) => {
-                        e.target.src = 'https://s.pximg.net/common/images/no_profile.png'
-                      }
-                    "
-                  />
+                  <MyImg :imgUrl="item.user.profile_image_urls?.medium" :lazyLoad="false" />
                 </div>
                 <div class="data">
                   <div class="user">
@@ -52,14 +48,14 @@
 
 <script setup>
 import { formatTime } from '@/utils/formatTime'
-import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
 import Card from '@/view/comics/cpns/card.vue'
 import { computed, ref } from 'vue'
+import MyImg from '@/components/myImg/myImg.vue'
 
 const props = defineProps({
   comments: {
     type: Array,
-    default: [],
+    default: () => [],
   },
   commentsCount: {
     type: Number,
