@@ -23,14 +23,21 @@
         x5-video-player-fullscreen="true"
         autoplay="true"
         @play="onVideoPlay"
-        @pause="isPlay = false"
+        @pause="handleVideoPause"
         @timeupdate="updateCurrentTime"
         @loadedmetadata="handleLoadedMetadata"
-        @waiting="isLoading = true"
-        @canplay="isLoading = false"
-        @seeking="isLoading = true"
+        @loadstart="handleLoadStart"
+        @loadeddata="handleLoadedData"
+        @canplay="handleCanPlay"
+        @canplaythrough="handleCanPlayThrough"
+        @waiting="handleWaiting"
+        @seeking="handleSeeking"
         @seeked="onSeeked"
         @ended="onVideoEnded"
+        @error="handleVideoError"
+        @stalled="handleStalled"
+        @suspend="handleSuspend"
+        @abort="handleAbort"
         @click="onVideoClick"
         @dblclick="onVideoDblClick"
       ></video>
@@ -266,6 +273,48 @@ const handleLoadedMetadata = () => {
     duration.value = videoRef.value.duration
   }
 }
+
+const handleVideoPause = () => {
+  isPlay.value = false
+}
+
+const handleLoadStart = () => {}
+
+const handleLoadedData = () => {}
+
+const handleCanPlay = () => {
+  isLoading.value = false
+}
+
+const handleCanPlayThrough = () => {}
+
+const handleWaiting = () => {
+  isLoading.value = true
+}
+
+const handleSeeking = () => {
+  isLoading.value = true
+}
+
+const handleVideoError = (e) => {
+  if (videoRef.value && videoRef.value.error) {
+    const error = videoRef.value.error
+    const errorMessages = {
+      1: 'MEDIA_ERR_ABORTED - 用户中止',
+      2: 'MEDIA_ERR_NETWORK - 网络错误',
+      3: 'MEDIA_ERR_DECODE - 解码错误',
+      4: 'MEDIA_ERR_SRC_NOT_SUPPORTED - 不支持的格式',
+    }
+    console.error('视频加载错误:', errorMessages[error.code] || '未知错误')
+  }
+  isLoading.value = false
+}
+
+const handleStalled = () => {}
+
+const handleSuspend = () => {}
+
+const handleAbort = () => {}
 
 const handleProgressClick = (e) => {
   if (!progressRef.value || !videoRef.value || isDragging.value) return
@@ -544,9 +593,22 @@ const formatTime = (seconds) => {
 const loadVideo = async (url, autoPlay = false) => {
   if (url && videoRef.value) {
     isLoading.value = true
-    await parseM3U8(videoRef.value, url)
-    if (autoPlay) {
-      videoRef.value.play()
+
+    try {
+      await parseM3U8(videoRef.value, url)
+
+      if (autoPlay) {
+        const playPromise = videoRef.value.play()
+
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.error('视频自动播放失败:', error.message)
+          })
+        }
+      }
+    } catch (error) {
+      console.error('视频加载错误:', error)
+      isLoading.value = false
     }
   }
 }
