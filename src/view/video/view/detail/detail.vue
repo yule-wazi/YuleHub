@@ -55,7 +55,6 @@ const restoreFromSession = () => {
     }
     return true
   } else {
-    console.log('从animeList拿取数据')
     videoStore.recommendList = videoStore.animeList
       .filter((item) => item.vod_id !== videoStore.videoDetail.vod_id)
       .slice(0, 5)
@@ -78,7 +77,7 @@ const saveToSession = () => {
   try {
     sessionCache.set(STORAGE_KEY, cacheData)
   } catch (error) {
-    console.error('保存视频详情缓存失败:', error)
+    // 保存失败时静默处理
   }
 }
 

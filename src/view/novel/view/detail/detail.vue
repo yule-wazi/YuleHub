@@ -163,9 +163,7 @@ const startAudioBook = async () => {
     // 创建流式 TTS 处理器
     const ttsProcessor = new NovelTTSProcessor(ttsConfig)
 
-    // 设置回调
     ttsProcessor.onFirstReady = () => {
-      console.log('🎉 第一段音频准备好，开始播放')
       isLoading.value = false
       if (loadingInstance) {
         loadingInstance.close()
@@ -175,12 +173,10 @@ const startAudioBook = async () => {
     }
 
     ttsProcessor.onError = (error, index) => {
-      console.warn(`⚠️ 第 ${index + 1} 段音频失败:`, error)
+      // TTS 错误时静默处理
     }
 
     ttsProcessor.onComplete = () => {
-      console.log('✅ 播放完成')
-      // 播放完成后清除 store 中的引用
       if (novelStore.currentPlayingNovelId === detailData.id) {
         novelStore.currentTTSProcessor = null
         novelStore.currentPlayingNovelId = null
@@ -194,7 +190,6 @@ const startAudioBook = async () => {
     // 开始处理（分段大小 150 字符）
     await ttsProcessor.start(plainText, 150)
   } catch (error) {
-    console.error('❌ TTS 播放失败:', error)
     ElMessage.error('播放失败: ' + (error.message || '未知错误'))
     isLoading.value = false
     if (loadingInstance) {
@@ -209,9 +204,7 @@ const startAudioBook = async () => {
   }
 }
 
-// 停止播放当前小说
 const stopAudioBook = () => {
-  console.log('⏹️ 停止播放当前小说')
   novelStore.stopCurrentTTS()
   ElMessage.info('已停止播放')
 }
@@ -230,7 +223,6 @@ watch(
 // 组件卸载时不清理（允许后台播放）
 onUnmounted(() => {
   // 不做任何清理，让音频在后台继续播放
-  console.log('📄 离开详情页，音频继续在后台播放')
 })
 </script>
 

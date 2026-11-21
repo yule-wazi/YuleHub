@@ -66,11 +66,9 @@ const clearOldestCache = (count = 20) => {
     const cacheKeys = keys.filter((key) => key.startsWith(STORAGE_PREFIX))
 
     if (cacheKeys.length === 0) {
-      console.warn('没有可清理的缓存')
       return 0
     }
 
-    // 按时间戳排序，找到最旧的缓存
     const cacheData = cacheKeys
       .map((key) => {
         try {
@@ -82,7 +80,6 @@ const clearOldestCache = (count = 20) => {
       })
       .sort((a, b) => a.timestamp - b.timestamp)
 
-    // 删除最旧的 N 条缓存（最多删除现有缓存的一半）
     const deleteCount = Math.min(count, Math.ceil(cacheData.length / 2))
     const toDelete = cacheData.slice(0, deleteCount)
 
@@ -92,56 +89,41 @@ const clearOldestCache = (count = 20) => {
         sessionStorage.removeItem(item.key)
         deletedCount++
       } catch (err) {
-        console.error(`删除缓存失败: ${item.key}`, err)
+        // 忽略错误
       }
     })
 
-    console.log(`✅ 清理了 ${deletedCount} 条最旧的缓存`)
     return deletedCount
   } catch (error) {
-    console.error('清理缓存失败:', error)
     return 0
   }
 }
 
 // 设置 sessionCache 的配额超出回调
 sessionCache.onQuotaExceeded = (key, value, error) => {
-  console.warn('⚠️ SessionStorage 配额超出，开始清理最旧的 20 条缓存...')
-
-  // 一次性清理 20 条最旧的缓存
   const deletedCount = clearOldestCache(20)
 
   if (deletedCount === 0) {
-    console.error('❌ 没有可清理的缓存了')
     return false
   }
 
-  // 清理后尝试重新保存
   try {
     sessionStorage.setItem(key, JSON.stringify(value))
-    console.log(`✅ 清理 ${deletedCount} 条缓存后保存成功`)
     return true
   } catch (retryError) {
     if (retryError.name === 'QuotaExceededError') {
-      console.error('❌ 清理 20 条后仍然空间不足，尝试清理更多...')
-      // 再清理 20 条
       const secondDeleteCount = clearOldestCache(20)
       if (secondDeleteCount === 0) {
-        console.error('❌ 没有更多缓存可清理了')
         return false
       }
 
-      // 再次尝试保存
       try {
         sessionStorage.setItem(key, JSON.stringify(value))
-        console.log(`✅ 清理 ${deletedCount + secondDeleteCount} 条缓存后保存成功`)
         return true
       } catch (finalError) {
-        console.error('❌ 清理 40 条缓存后仍然失败，放弃保存')
         return false
       }
     } else {
-      console.error('❌ 重试时发生其他错误:', retryError)
       return false
     }
   }
@@ -185,12 +167,10 @@ const saveToSession = (pid) => {
     timestamp: Date.now(), // 更新时间戳
   }
 
-  // 直接保存，错误处理由 sessionCache.onQuotaExceeded 回调处理
   try {
     sessionCache.set(storageKey, cacheData)
   } catch (error) {
-    // 如果回调处理后仍然失败，这里只记录日志
-    console.error('保存缓存最终失败:', error)
+    // 保存失败时静默处理
   }
 }
 // 从 sessionStorage 恢复数据
@@ -311,11 +291,9 @@ const initDetailData = async () => {
   // 保存核心数据到缓存
   saveToSession(pid)
 
-  // 🌊 第三层：延迟 300ms 加载补充内容（作者更多作品 + 评论）
   setTimeout(async () => {
     if (currentLoadingPid !== pid) return
 
-    console.log('🌊 开始加载补充内容...')
     const extraPromises = [
       vipStore.fetchArtistMoreWorks(vipStore.detailData.uid),
       getPixivImgComments(pid)
@@ -325,23 +303,20 @@ const initDetailData = async () => {
           }
         })
         .catch((err) => {
-          console.error('评论加载失败:', err)
+          // 评论加载失败时静默处理
         }),
     ]
 
     await Promise.allSettled(extraPromises)
 
     if (currentLoadingPid === pid) {
-      console.log('✅ 补充内容加载完成')
       saveToSession(pid)
     }
   }, 300)
 
-  // 🎨 第四层：延迟 500ms 加载扩展内容（相关作品 + 相关作者）
   setTimeout(async () => {
     if (currentLoadingPid !== pid) return
 
-    console.log('🎨 开始加载扩展内容...')
     const expandPromises = [
       vipStore.fetchRelatedImgInit(pid),
       getPixivRelatedArtist(vipStore.detailData.uid)
@@ -351,14 +326,13 @@ const initDetailData = async () => {
           }
         })
         .catch((err) => {
-          console.error('相关作者加载失败:', err)
+          // 相关作者加载失败时静默处理
         }),
     ]
 
     await Promise.allSettled(expandPromises)
 
     if (currentLoadingPid === pid) {
-      console.log('✅ 扩展内容加载完成')
       saveToSession(pid)
     }
   }, 500)

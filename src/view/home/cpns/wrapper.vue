@@ -86,7 +86,7 @@ const autoplay = {
   pauseOnMouseEnter: true,
 }
 const bannerList = ref([])
-const yourLike = ref(new Array(6))
+const yourLike = ref(Array(6).fill(null))
 // bannerList
 const getBannerList = async () => {
   const res = await getPixivsionSpotlights()
@@ -135,11 +135,10 @@ const streamYourLike = async () => {
         return []
       }
 
-      // 处理单个请求的数据
       const validItems = data.illusts
         .filter((item) => item && item.id && !loadedIds.has(item.id))
         .map((item) => {
-          loadedIds.add(item.id) // 立即标记为已加载
+          loadedIds.add(item.id)
           return {
             img: item.image_urls.large,
             title: item.title,
@@ -152,47 +151,24 @@ const streamYourLike = async () => {
           }
         })
 
-      // 随机打乱本批数据
       const shuffledItems = validItems.sort(() => Math.random() - 0.5)
 
-      // 立即添加到推荐池
       recommendPool.value.push(...shuffledItems)
 
-      // 实时更新展示：如果当前展示数量不足，立即补充
       updateDisplay()
 
       return shuffledItems
     } catch (err) {
-      console.warn(`获取相关推荐失败 (pid: ${pid}):`, err)
       return []
     }
   })
 
-  // 兜底方案：如果500ms后仍无数据，使用降级推荐
-  setTimeout(async () => {
-    if (recommendPool.value.length === 0) {
-      console.warn('推荐数据加载较慢，触发兜底方案')
-      try {
-        const res = await getPixivsionSpotlights()
-        const fallbackItems = res.data.spotlight_articles
-          .filter((item) => !loadedIds.has(item.id))
-          .slice(0, DISPLAY_COUNT)
-          .map((item) => {
-            loadedIds.add(item.id)
-            return {
-              img: item.thumbnail,
-              title: item.title,
-              pid: item.id,
-            }
-          })
-
-        recommendPool.value.push(...fallbackItems)
-        updateDisplay()
-      } catch (fallbackErr) {
-        console.error('降级推荐也失败了:', fallbackErr)
-      }
+  // 兜底方案：如果2秒后仍无数据，显示空状态
+  setTimeout(() => {
+    if (recommendPool.value.length === 0 && !isLoading.value) {
+      // 保持空白显示，不使用 bannerList 作为兜底
     }
-  }, 500)
+  }, 2000)
 
   // 等待所有请求完成
   await Promise.allSettled(loadPromises)
@@ -205,21 +181,36 @@ const updateDisplay = () => {
 
   if (recommendPool.value.length === 0) return
 
-  // 如果当前展示的数量已满，不自动替换（等待用户点击"换一批"）
   const currentValidCount = yourLike.value.filter((item) => item?.pid).length
-  if (currentValidCount >= DISPLAY_COUNT) {
-    return
-  }
 
-  // 从推荐池中随机抽取并移除
+  if (currentValidCount >= DISPLAY_COUNT) return
+
+  const needCount = DISPLAY_COUNT - currentValidCount
+  const availableCount = Math.min(needCount, recommendPool.value.length)
+
+  if (availableCount === 0) return
+
   const shuffled = [...recommendPool.value].sort(() => Math.random() - 0.5)
-  const selected = shuffled.slice(0, DISPLAY_COUNT)
+  const selected = shuffled.slice(0, availableCount)
 
-  // 从推荐池中移除已展示的
   const selectedIds = new Set(selected.map((item) => item.pid))
   recommendPool.value = recommendPool.value.filter((item) => !selectedIds.has(item.pid))
 
-  yourLike.value = selected
+  let fillIndex = 0
+  const newYourLike = []
+
+  for (let i = 0; i < DISPLAY_COUNT; i++) {
+    const currentItem = yourLike.value[i]
+    if (currentItem?.pid) {
+      newYourLike.push(currentItem)
+    } else if (fillIndex < selected.length) {
+      newYourLike.push(selected[fillIndex++])
+    } else {
+      newYourLike.push(null)
+    }
+  }
+
+  yourLike.value = newYourLike
 }
 
 // 发起猜你喜欢请求
@@ -231,9 +222,8 @@ const changeList = () => {
 
   // 如果推荐池数据不足6条，清空并重新加载
   if (recommendPool.value.length < DISPLAY_COUNT) {
-    console.log('推荐池数据不足，重新加载...')
     // 清空当前展示
-    yourLike.value = new Array(6)
+    yourLike.value = Array(6).fill(null)
     // 清空推荐池
     recommendPool.value = []
     // 重新请求
@@ -251,8 +241,6 @@ const changeList = () => {
 
   // 更新展示
   yourLike.value = selected
-
-  console.log(`已展示 ${selected.length} 条，推荐池剩余 ${recommendPool.value.length} 条`)
 }
 
 // 进入详情页
