@@ -124,7 +124,13 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  externalBookmarkTrigger: {
+    type: Number,
+    default: 0,
+  },
 })
+
+const emit = defineEmits(['bookmark-change'])
 const vipStore = useVip()
 const router = useRouter()
 const showImg = ref('')
@@ -140,16 +146,46 @@ const followBtnRes = useTemplateRef('followBtn')
 
 // 点击收藏
 const followClick = () => {
+  // 从 localStorage 读取当前收藏列表
+  const currentList = myLocalCache.get(collectionKey.value) ?? []
+
   if (isFollow.value) {
-    collectionList.value.splice(collectionList.value.indexOf(props.pid), 1)
+    const index = currentList.indexOf(props.pid)
+    if (index > -1) {
+      currentList.splice(index, 1)
+    }
   } else {
-    collectionList.value.push(props.pid)
+    if (!currentList.includes(props.pid)) {
+      currentList.push(props.pid)
+    }
   }
 
-  myLocalCache.set(collectionKey.value, collectionList.value)
+  myLocalCache.set(collectionKey.value, currentList)
   isFollow.value = !isFollow.value
   followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+
+  // 发出事件通知其他组件收藏状态改变
+  emit('bookmark-change', { pid: props.pid, isBookmarked: isFollow.value })
 }
+
+// 更新收藏状态的通用函数
+const updateFollowState = () => {
+  const currentList = myLocalCache.get(collectionKey.value) ?? []
+  isFollow.value = currentList.includes(props.pid)
+  if (followBtnRes.value) {
+    followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+  }
+}
+
+// 监听外部收藏触发器（从 imageInfoAndDownoad 组件触发）
+watch(
+  () => props.externalBookmarkTrigger,
+  (newVal) => {
+    if (props.pid && props.pid !== -1) {
+      updateFollowState()
+    }
+  },
+)
 // tag搜索
 const getTag = (tag) => {
   // 删除之前列表
@@ -179,8 +215,7 @@ watch(
   () => props.pid,
   () => {
     // 判断是否收藏过
-    isFollow.value = collectionList.value.includes(props.pid)
-    followBtnRes.value.classList.toggle('notFollow', !isFollow.value)
+    updateFollowState()
   },
 )
 onMounted(() => {

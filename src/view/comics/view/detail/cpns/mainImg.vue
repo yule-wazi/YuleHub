@@ -38,6 +38,14 @@
       <template v-else>
         <MyImg :imgUrl="showImg" :showOriginal="true" :key="showImg" />
       </template>
+
+      <!-- 弹幕层 -->
+      <Danmaku
+        v-if="props.showDanmaku && danmakuList.length > 0"
+        ref="danmakuRef"
+        :danmakuList="danmakuList"
+        :config="danmakuConfig"
+      />
     </div>
   </div>
 </template>
@@ -56,6 +64,21 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import MyImg from '@/components/myImg/myImg.vue'
+import Danmaku from '@/components/Danmaku/Danmaku.vue'
+
+// 接收父组件传递的评论数据和弹幕显示状态
+const props = defineProps({
+  comments: {
+    type: Array,
+    default: () => [],
+  },
+  showDanmaku: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+const emit = defineEmits(['update:showDanmaku'])
 
 const showImg = ref('')
 const vipStore = useVip()
@@ -78,6 +101,58 @@ const isLoading = ref(false)
 const ugoiraFrames = ref([])
 const ugoiraDelays = ref([])
 let animationFrameId = null
+
+// 弹幕相关
+const danmakuRef = ref(null)
+
+// 弹幕配置
+const danmakuConfig = ref({
+  speed: 8, // 弹幕速度（秒），数值越小越快
+  trackCount: 6, // 轨道数量
+  loop: true, // 循环播放
+  loopInterval: 3, // 循环间隔（秒）
+  frequency: 1000, // 弹幕发射频率（毫秒），控制每条弹幕之间的时间间隔
+  fontSize: 20, // 字体大小
+  fontColor: '#FFFFFF', // 字体颜色
+  opacity: 0.85, // 透明度
+  strokeColor: '#000000', // 描边颜色
+  strokeWidth: 2, // 描边宽度
+  stampSize: 50, // 表情包大小
+  pointerEvents: 'none', // 鼠标穿透，避免遮挡翻页
+  zIndex: 8, // z-index层级（低于页面指示器和控制按钮）
+  performance: true, // 性能模式（使用 rAF）
+})
+
+// 处理评论数据转换为弹幕格式
+const danmakuList = computed(() => {
+  if (!props.comments || props.comments.length === 0) {
+    console.log('弹幕数据为空:', props.comments)
+    return []
+  }
+
+  const result = props.comments
+    .map((comment) => {
+      // 如果有表情包，优先使用表情包
+      if (comment.stamp && comment.stamp.stamp_url) {
+        return {
+          type: 'stamp',
+          content: comment.stamp.stamp_url,
+        }
+      }
+      // 否则使用文字评论
+      if (comment.comment) {
+        return {
+          type: 'text',
+          content: comment.comment,
+        }
+      }
+      return null
+    })
+    .filter(Boolean) // 过滤掉无效数据
+
+  console.log('弹幕列表:', result.length, result)
+  return result
+})
 
 // 播放动图
 const playUgoira = () => {

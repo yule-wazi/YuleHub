@@ -2,9 +2,18 @@
   <div class="detail">
     <div class="gridArea">
       <div class="main">
-        <MainImg />
-        <ImageInfoAndDownoad v-model="detailDataAll.imgDetail" />
-        <ImageInfoCard v-bind="detailDataAll.imgDetail" />
+        <MainImg :comments="comments" v-model:showDanmaku="showDanmaku" />
+        <ImageInfoAndDownoad
+          v-model="detailDataAll.imgDetail"
+          v-model:showDanmaku="showDanmaku"
+          @bookmark-change="handleBookmarkChange"
+          :externalBookmarkTrigger="bookmarkTriggerFromInfoCard"
+        />
+        <ImageInfoCard
+          v-bind="detailDataAll.imgDetail"
+          :externalBookmarkTrigger="externalBookmarkTrigger"
+          @bookmark-change="handleBookmarkChangeFromInfoCard"
+        />
         <div class="comment pc">
           <CommentsCard
             :comments="comments"
@@ -254,7 +263,53 @@ const loadAllComments = async (pid) => {
 let detailDataAll = ref({})
 let comments = ref([])
 let relatedArtist = ref([])
+
+// 弹幕显示状态 - 从 localStorage 读取，默认为 true
+const DANMAKU_STORAGE_KEY = 'COMICS_DANMAKU_ENABLED'
+const getDanmakuState = () => {
+  try {
+    const saved = localStorage.getItem(DANMAKU_STORAGE_KEY)
+    return saved === null ? true : saved === 'true'
+  } catch {
+    return true
+  }
+}
+let showDanmaku = ref(getDanmakuState())
+
+// 监听弹幕状态变化，保存到 localStorage
+watch(showDanmaku, (newVal) => {
+  try {
+    localStorage.setItem(DANMAKU_STORAGE_KEY, String(newVal))
+  } catch (err) {
+    console.error('保存弹幕状态失败:', err)
+  }
+})
+
+// 外部收藏触发器 - 用于通知 imgInfoCard 更新收藏状态
+let externalBookmarkTrigger = ref(0)
+// 外部收藏触发器 - 用于通知 imageInfoAndDownoad 更新收藏状态
+let bookmarkTriggerFromInfoCard = ref(0)
+
+// 处理收藏状态变化（从 imageInfoAndDownoad 组件触发）
+const handleBookmarkChange = ({ pid, isBookmarked }) => {
+  externalBookmarkTrigger.value++
+}
+
+// 处理收藏状态变化（从 imgInfoCard 组件触发）
+const handleBookmarkChangeFromInfoCard = ({ pid, isBookmarked }) => {
+  bookmarkTriggerFromInfoCard.value++
+}
+
 let currentLoadingPid = null // 当前正在加载的 pid，防止快速切换时请求交叉
+
+// 调试：监听 comments 变化
+watch(
+  () => comments.value,
+  (newVal) => {
+    console.log('评论数据更新:', newVal?.length, newVal)
+  },
+  { deep: true, immediate: true },
+)
 
 const initDetailData = async () => {
   const pid = Number(route.query.pid)
