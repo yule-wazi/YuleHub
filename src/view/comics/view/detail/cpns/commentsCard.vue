@@ -26,7 +26,12 @@
                     <div class="name">{{ item.user?.name }}</div>
                     <div class="date">{{ formatTime(item.date) }}</div>
                   </div>
-                  <div class="text">{{ item.comment }}</div>
+                  <!-- 文字评论 -->
+                  <div v-if="item.comment" class="text">{{ item.comment }}</div>
+                  <!-- 表情包 stamp -->
+                  <div v-if="item.stamp && item.stamp.stamp_url" class="stamp">
+                    <img :src="item.stamp.stamp_url" alt="stamp" class="stamp-img" />
+                  </div>
                 </div>
               </div>
             </template>
@@ -138,6 +143,21 @@ const input = ref('')
           }
           .text {
             margin-top: 4px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+            max-width: 100%;
+          }
+          .stamp {
+            margin-top: 6px;
+            .stamp-img {
+              width: 80px;
+              height: 80px;
+              object-fit: contain;
+              border-radius: 4px;
+              background-color: var(--comics-tagBg-color);
+            }
           }
         }
       }

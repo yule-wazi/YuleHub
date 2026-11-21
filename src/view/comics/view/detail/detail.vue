@@ -43,7 +43,7 @@ import ImageInfoAndDownoad from './cpns/imageInfoAndDownoad.vue'
 import ArtistMoreCard from './cpns/artistMoreCard.vue'
 import RelatedArtistCard from './cpns/relatedArtistCard.vue'
 import CommentsCard from './cpns/commentsCard.vue'
-import { getPixivImgComments, getPixivRelatedArtist } from '@/service/module/vip'
+import { getPixivImgComments, getPixivRelatedArtist, getPixivImgDetail } from '@/service/module/vip'
 import MainImg from './cpns/mainImg.vue'
 import RelatedImgCard from './cpns/relatedImgCard.vue'
 
@@ -200,6 +200,56 @@ const restoreScrollPosition = (scrollTop) => {
   }
 }
 
+// 加载所有评论（分页加载）
+const loadAllComments = async (pid) => {
+  try {
+    // 先获取作品详情，获取评论总数
+    const detailRes = await getPixivImgDetail(pid)
+    const totalComments = detailRes.data?.illust?.total_comments || 0
+
+    if (totalComments === 0) {
+      comments.value = []
+      return
+    }
+
+    // 计算需要请求的页数（每页30条）
+    const totalPages = Math.ceil(totalComments / 30)
+
+    // 初始化评论数组
+    const allComments = []
+
+    // 逐页请求评论（不使用 Promise.all，避免相互影响）
+    for (let page = 1; page <= totalPages; page++) {
+      try {
+        const res = await getPixivImgComments(pid, page)
+        if (res.data?.comments && Array.isArray(res.data.comments)) {
+          allComments.push(...res.data.comments)
+        }
+      } catch (err) {
+        // 单个页面失败不影响其他页面，继续请求下一页
+      }
+    }
+
+    // 检查是否还在当前页面
+    if (currentLoadingPid === pid) {
+      comments.value = allComments
+    }
+  } catch (err) {
+    // 获取详情失败时，降级为只获取第一页
+    try {
+      const res = await getPixivImgComments(pid, 1)
+      if (currentLoadingPid === pid && res.data?.comments) {
+        comments.value = res.data.comments
+      }
+    } catch (fallbackErr) {
+      // 完全失败时设置为空数组
+      if (currentLoadingPid === pid) {
+        comments.value = []
+      }
+    }
+  }
+}
+
 // 初始化详情数据
 let detailDataAll = ref({})
 let comments = ref([])
@@ -296,15 +346,7 @@ const initDetailData = async () => {
 
     const extraPromises = [
       vipStore.fetchArtistMoreWorks(vipStore.detailData.uid),
-      getPixivImgComments(pid)
-        .then((res) => {
-          if (currentLoadingPid === pid) {
-            comments.value = res.data.comments
-          }
-        })
-        .catch((err) => {
-          // 评论加载失败时静默处理
-        }),
+      loadAllComments(pid),
     ]
 
     await Promise.allSettled(extraPromises)
