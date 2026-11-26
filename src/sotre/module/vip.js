@@ -25,11 +25,26 @@ const useVip = defineStore('vip', {
       detailDataAll: {},
       authorDetail: {},
       currentDetailShowImg: '',
+      // L3 令牌机制：reqId 单调递增，每次导航 ++，用于作废旧的异步加载
+      reqId: 0,
+      // 当前真正在加载的 pid，兼作缓存落盘的闸门
+      loadingPid: null,
       isNSFW: false,
       validDate: null, // 存储有效的排名日期
     }
   },
   actions: {
+    // ==== L3 代次令牌 ====
+    // 开始一次新的导航：作废旧令牌，记录本次加载的 pid，返回新令牌
+    beginNavigation(pid) {
+      this.reqId++
+      this.loadingPid = pid
+      return this.reqId
+    },
+    // 令牌是否已过期（过期 = 期间又切了页面，本次异步结果必须丢弃）
+    isStale(myReqId) {
+      return myReqId !== this.reqId
+    },
     // 请求组图片
     async fetchGroupImgList({ isRefresh = false, options } = {}) {
       // 如果是刷新，重置有效日期；否则使用已存储的有效日期
@@ -195,6 +210,7 @@ const useVip = defineStore('vip', {
       }
     },
     // 【优化】获取核心详情数据（作品详情 + 作者详情）
+    // 注意：只组装并返回数据，不直接写 store；由调用方在令牌有效时写入，避免并发竞态污染
     async fetchImgDetailCore(pid, uid) {
       try {
         const imgRes = await getPixivImgDetail(pid)
@@ -217,8 +233,7 @@ const useVip = defineStore('vip', {
           user,
         } = imgRes.data.illust
 
-        // 立即更新作品详情
-        this.detailDataAll.imgDetail = {
+        return {
           pid: id,
           uid: uid,
           artist: user.name,
@@ -237,70 +252,59 @@ const useVip = defineStore('vip', {
           x_restrict,
           sanity_level,
         }
-
-        return imgRes
       } catch (error) {
         console.error('获取作品详情失败:', error)
         throw error
       }
     },
     // 【优化】获取作者详情
+    // 只返回 { artistDetail, authorDetail }，不写 store
     async fetchArtistDetail(uid) {
       try {
         const artistRes = await getPixivArtistDetail(uid)
         const { name, account, profile_image_urls } = artistRes.data.user
         const { total_illusts, total_follow_users, total_mypixiv_users } = artistRes.data.profile
 
-        // 立即更新作者详情
-        this.detailDataAll.artistDetail = {
-          id: uid,
-          name,
-          account,
-          profile_image_urls,
-          total_illusts,
-          total_follow_users,
-          total_mypixiv_users,
+        return {
+          artistDetail: {
+            id: uid,
+            name,
+            account,
+            profile_image_urls,
+            total_illusts,
+            total_follow_users,
+            total_mypixiv_users,
+          },
+          authorDetail: { ...artistRes.data.user, ...artistRes.data.profile },
         }
-        this.authorDetail = { ...artistRes.data.user, ...artistRes.data.profile }
-
-        return artistRes
       } catch (error) {
         console.error('获取作者详情失败:', error)
         throw error
       }
     },
     // 【优化】获取作者更多作品
+    // 只返回切片后的作品数组，不写 store
     async fetchArtistMoreWorks(uid) {
       try {
         const moreImgRes = await getPixivMemberIllust({ id: uid, page: 1 })
-        this.detailDataAll.moreImgFromArtist = moreImgRes.data.illusts.slice(0, 6)
-        return moreImgRes
+        return moreImgRes.data.illusts.slice(0, 6)
       } catch (error) {
         console.error('获取作者更多作品失败:', error)
         // 失败不阻塞，返回空数组
-        this.detailDataAll.moreImgFromArtist = []
-        return null
+        return []
       }
     },
     // 【优化】初始化相关作品（第一页）
+    // 只返回 { list, page }，不写 store
     async fetchRelatedImgInit(pid) {
       try {
         const relatedImgRes = await getPixivRelatedImg(pid, 1)
         const { illusts } = relatedImgRes.data
-
-        this.detailDataAll.relatedImgList = {
-          list: illusts,
-          page: 1,
-        }
-        return relatedImgRes
+        return { list: illusts, page: 1 }
       } catch (error) {
         console.error('获取相关作品失败:', error)
         // 失败不阻塞，返回空数组
-        this.detailDataAll.relatedImgList = {
-          list: [],
-          page: 1,
-        }
-        return null
+        return { list: [], page: 1 }
       }
     },
     // 获取相关作品（支持加载更多）
@@ -316,6 +320,11 @@ const useVip = defineStore('vip', {
       const currentPage = isRefresh ? 1 : this.detailDataAll.relatedImgList.page + 1
       const res = await getPixivRelatedImg(pid, currentPage)
       const illusts = res.data.illusts || []
+
+      // 🚦 令牌闸门：加载更多期间若已切到别的作品，丢弃结果，避免旧作品相关图串进新作品
+      if (pid && this.loadingPid !== Number(pid)) {
+        return
+      }
 
       if (isRefresh) {
         // 刷新：重置数据

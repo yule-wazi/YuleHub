@@ -158,8 +158,20 @@ const getScrollContainer = () => {
 }
 
 // 保存数据到 sessionStorage
-const saveToSession = (pid) => {
+const saveToSession = (rawPid) => {
+  // 路由里 pid 是字符串，接口里是数字，统一转成数字再比较，避免 === 永不相等
+  const pid = Number(rawPid)
   if (!pid || !vipStore.detailDataAll || Object.keys(vipStore.detailDataAll).length === 0) {
+    return
+  }
+
+  const imgDetail = vipStore.detailDataAll?.imgDetail
+
+  // 🔒 L1 完整性闸门：
+  // 只有“作品核心详情确实属于该 pid”才允许落缓存。
+  // 这样“刚进下一张就立刻退回”这种没加载完的情况，根本不会写出空壳脏缓存，
+  // 刷新时自然也就会走网络重新拉取，而不是拿到坏缓存。
+  if (!imgDetail || Number(imgDetail.pid) !== pid) {
     return
   }
 
@@ -168,20 +180,17 @@ const saveToSession = (pid) => {
   const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0
   const storageKey = getStorageKey(pid)
 
-  // ⚠️ 根因修复：
   // vipStore.detailData / currentDetailShowImg 是“全局可变状态”，
-  // 点击下一张作品时会被点击处理器（如 imageItem.vue getDetail）提前覆盖为新作品的数据，
-  // 而此处保存的却是“旧作品”的缓存，于是把新作品的信息写进了旧作品的缓存。
+  // 点击下一张作品时会被点击处理器（如 imageItem.vue getDetail）提前覆盖为新作品的数据。
   // 因此只有当全局状态确实属于当前 pid 时才采用；
-  // 否则用 detailDataAll.imgDetail（完整且属于该 pid）重建，避免缓存串味。
-  const imgDetail = vipStore.detailDataAll?.imgDetail
+  // 否则用 detailDataAll.imgDetail（完整且属于该 pid）重建。
   const globalDetailData = vipStore.detailData
   let detailData
-  if (globalDetailData && globalDetailData.pid === pid) {
+  if (globalDetailData && Number(globalDetailData.pid) === pid) {
     detailData = globalDetailData
-  } else if (imgDetail && imgDetail.pid === pid) {
+  } else {
     detailData = {
-      pid: imgDetail.pid,
+      pid,
       uid: imgDetail.uid,
       title: imgDetail.title,
       coverImg: imgDetail.coverImg,
@@ -191,25 +200,31 @@ const saveToSession = (pid) => {
       height: imgDetail.height,
       x_restrict: imgDetail.x_restrict,
     }
-  } else {
-    // 无法确定属于该 pid 的数据（例如旧作品详情加载失败），存空对象避免把其它作品信息写进本缓存
-    detailData = {}
   }
 
   // currentDetailShowImg 同理：只有属于本 pid（封面或某一页）才保存，否则留空
   const currentImgBelongsToPid =
     !!vipStore.currentDetailShowImg &&
-    (vipStore.currentDetailShowImg === imgDetail?.coverImg?.large ||
-      (imgDetail?.pageList || []).some((p) => p.image_urls?.large === vipStore.currentDetailShowImg))
+    (vipStore.currentDetailShowImg === imgDetail.coverImg?.large ||
+      (imgDetail.pageList || []).some((p) => p.image_urls?.large === vipStore.currentDetailShowImg))
   const currentDetailShowImg = currentImgBelongsToPid ? vipStore.currentDetailShowImg : ''
 
   const cacheData = {
     detailData,
     detailDataAll: {
       ...vipStore.detailDataAll,
+      // moreImgFromArtist 未加载完时是骨架 new Array(6)，经 JSON 序列化会
+      // 变成 [null,null,...]，恢复后遍历会崩；这里过滤掉空项，只存真实数据
+      moreImgFromArtist: (vipStore.detailDataAll.moreImgFromArtist || []).filter(Boolean),
       scrollTop: scrollTop, // 保存滚动位置
     },
-    authorDetail: vipStore.authorDetail,
+    // 🔒 作者防串味：authorDetail 是全局单例，秒退时它的作者请求可能还没回来，
+    // 此时仍是上一个作品的作者。只有它确实属于本 pid（id 对得上 imgDetail.uid）
+    // 才持久化，否则存空对象——避免把上一副作者迁移进本作品缓存。
+    authorDetail:
+      vipStore.authorDetail && Number(vipStore.authorDetail.id) === Number(imgDetail.uid)
+        ? vipStore.authorDetail
+        : {},
     currentDetailShowImg,
     comments: comments.value, // 保存评论
     relatedArtist: relatedArtist.value, // 保存相关作者
@@ -224,18 +239,42 @@ const saveToSession = (pid) => {
   }
 }
 // 从 sessionStorage 恢复数据
-const restoreFromSession = (pid) => {
+const restoreFromSession = (rawPid) => {
+  const pid = Number(rawPid)
   if (!pid) return null
   const storageKey = getStorageKey(pid)
   const cached = sessionCache.get(storageKey)
-  if (cached && cached.detailDataAll) {
-    vipStore.detailDataAll = cached.detailDataAll
-    vipStore.detailData = cached.detailData
-    vipStore.authorDetail = cached.authorDetail
-    vipStore.currentDetailShowImg = cached.currentDetailShowImg
-    return cached
+  const cachedImg = cached?.detailDataAll?.imgDetail
+
+  // 🔒 L2 校验：缓存必须含有属于该 pid 的核心详情，否则视为脏缓存（旧版本写入的空壳），
+  // 直接忽略并返回 null，让调用方走正常网络请求，实现“刷新即可自愈”。
+  if (!cached || !cached.detailDataAll || !cachedImg || Number(cachedImg.pid) !== pid) {
+    return null
   }
-  return null
+
+  // 🔒 作者校验：authorDetail 是全局单例，秒退时可能把上一个作品的作者串味写进本缓存。
+  // 这里只在它确实属于本 pid（id 对得上 imgDetail.uid）时才采纳，否则置空，
+  // 避免“上一副作者迁移到这一份”并持久保存。置空后 loadDeferred 会后台补拉。
+  const cachedAuthorBelongs =
+    cached.authorDetail && Number(cached.authorDetail.id) === Number(cachedImg.uid)
+  vipStore.detailDataAll = cached.detailDataAll
+  vipStore.detailData = cached.detailData
+  vipStore.authorDetail = cachedAuthorBelongs ? cached.authorDetail : {}
+  vipStore.currentDetailShowImg = cached.currentDetailShowImg
+
+  // 缓存里作者缺失（早存或被串味清理）时，后台补拉一次，恢复完整
+  if (!vipStore.authorDetail || !vipStore.authorDetail.id) {
+    setTimeout(() => {
+      if (vipStore.isStale(vipStore.reqId)) return
+      vipStore.fetchArtistDetail(cachedImg.uid).then((res) => {
+        if (vipStore.isStale(vipStore.reqId) || !res) return
+        vipStore.detailDataAll.artistDetail = res.artistDetail
+        vipStore.authorDetail = res.authorDetail
+        saveToSession(pid)
+      }).catch(() => {})
+    }, 0)
+  }
+  return cached
 }
 // 恢复滚动位置
 const restoreScrollPosition = (scrollTop) => {
@@ -251,10 +290,13 @@ const restoreScrollPosition = (scrollTop) => {
 }
 
 // 加载所有评论（分页加载）
-const loadAllComments = async (pid) => {
+const loadAllComments = async (pid, myReqId) => {
+  // 令牌当前是否已过期；过期即代表期间已切走，任何写入都要丢弃
+  const stale = () => vipStore.isStale(myReqId)
   try {
     // 先获取作品详情，获取评论总数
     const detailRes = await getPixivImgDetail(pid)
+    if (stale()) return
     const totalComments = detailRes.data?.illust?.total_comments || 0
 
     if (totalComments === 0) {
@@ -270,6 +312,7 @@ const loadAllComments = async (pid) => {
 
     // 逐页请求评论（不使用 Promise.all，避免相互影响）
     for (let page = 1; page <= totalPages; page++) {
+      if (stale()) return
       try {
         const res = await getPixivImgComments(pid, page)
         if (res.data?.comments && Array.isArray(res.data.comments)) {
@@ -280,20 +323,19 @@ const loadAllComments = async (pid) => {
       }
     }
 
-    // 检查是否还在当前页面
-    if (currentLoadingPid === pid) {
-      comments.value = allComments
-    }
+    // 写回前再验一次令牌
+    if (stale()) return
+    comments.value = allComments
   } catch (err) {
     // 获取详情失败时，降级为只获取第一页
     try {
       const res = await getPixivImgComments(pid, 1)
-      if (currentLoadingPid === pid && res.data?.comments) {
+      if (!stale() && res.data?.comments) {
         comments.value = res.data.comments
       }
     } catch (fallbackErr) {
       // 完全失败时设置为空数组
-      if (currentLoadingPid === pid) {
+      if (!stale()) {
         comments.value = []
       }
     }
@@ -341,7 +383,29 @@ const handleBookmarkChangeFromInfoCard = ({ pid, isBookmarked }) => {
   bookmarkTriggerFromInfoCard.value++
 }
 
-let currentLoadingPid = null // 当前正在加载的 pid，防止快速切换时请求交叉
+// 延迟补全：作者更多作品 + 相关作品 / 相关作者
+// 首次加载会调用；缓存恢复时若这两块缺失（上次没加载完就离开），也用它后台补拉
+const loadDeferred = async (pid, myReqId) => {
+  if (vipStore.isStale(myReqId)) return
+
+  const [moreWorks] = await Promise.all([
+    vipStore.fetchArtistMoreWorks(vipStore.detailData.uid),
+    loadAllComments(pid, myReqId),
+  ])
+  if (vipStore.isStale(myReqId)) return
+  if (moreWorks) vipStore.detailDataAll.moreImgFromArtist = moreWorks
+  saveToSession(pid)
+
+  if (vipStore.isStale(myReqId)) return
+  const [relatedInit, relatedArtistRes] = await Promise.all([
+    vipStore.fetchRelatedImgInit(pid),
+    getPixivRelatedArtist(vipStore.detailData.uid).catch(() => null),
+  ])
+  if (vipStore.isStale(myReqId)) return
+  if (relatedInit) vipStore.detailDataAll.relatedImgList = relatedInit
+  if (relatedArtistRes?.data?.user_previews) relatedArtist.value = relatedArtistRes.data.user_previews
+  saveToSession(pid)
+}
 
 const initDetailData = async () => {
   const pid = Number(route.query.pid)
@@ -349,8 +413,8 @@ const initDetailData = async () => {
     return
   }
 
-  // 设置当前加载的 pid
-  currentLoadingPid = pid
+  // 🎫 发令牌：reqId 自增，作废上一次导航所有未完成的异步写入
+  const myReqId = vipStore.beginNavigation(pid)
 
   // 🔄 立即清空所有旧数据，显示加载状态（包括外部进入的情况）
   relatedArtist.value = []
@@ -362,7 +426,7 @@ const initDetailData = async () => {
     vipStore.detailDataAll.imgDetail = {} // ✅ 清空图片信息
   }
 
-  // 先检查缓存
+  // 先检查缓存（restoreFromSession 内部已带 L2 校验，脏缓存会被忽略并走网络）
   const cached = restoreFromSession(pid)
   if (cached) {
     detailDataAll.value = cached.detailDataAll
@@ -376,6 +440,14 @@ const initDetailData = async () => {
     // 恢复滚动位置
     const scrollTop = cached.detailDataAll?.scrollTop || 0
     restoreScrollPosition(scrollTop)
+
+    // 若缓存里“更多作品 / 相关作品”缺失（说明上次没加载完就离开），后台补拉，避免恢复出空白
+    const deferredMissing =
+      !cached.detailDataAll?.moreImgFromArtist?.length ||
+      !cached.detailDataAll?.relatedImgList?.list?.length
+    if (deferredMissing) {
+      setTimeout(() => loadDeferred(pid, myReqId), 0)
+    }
     // console.log('✅ 从缓存恢复数据', cached)
     return
   }
@@ -389,29 +461,37 @@ const initDetailData = async () => {
   detailDataAll.value = vipStore.detailDataAll
 
   // ⚡ 第二层：并发请求核心数据（作品详情 + 作者详情）
-  const corePromises = [
-    vipStore.fetchImgDetailCore(pid, vipStore.detailData.uid).catch((err) => {
-      console.error('作品详情加载失败:', err)
-      return null
-    }),
-    vipStore.fetchArtistDetail(vipStore.detailData.uid).catch((err) => {
-      console.error('作者详情加载失败:', err)
-      return null
-    }),
-  ]
+  // action 只返回数据、不写 store；这里在各自返回时先做令牌校验再写入，
+  // 既保证“谁先回来谁先渲染”，又保证过期的结果绝不落地。
+  await Promise.all([
+    vipStore
+      .fetchImgDetailCore(pid, vipStore.detailData.uid)
+      .then((res) => {
+        if (vipStore.isStale(myReqId) || !res) return
+        vipStore.detailDataAll.imgDetail = res
+        if (res.coverImg?.large) {
+          vipStore.currentDetailShowImg = res.coverImg.large
+        }
+      })
+      .catch((err) => {
+        console.error('作品详情加载失败:', err)
+      }),
+    vipStore
+      .fetchArtistDetail(vipStore.detailData.uid)
+      .then((res) => {
+        if (vipStore.isStale(myReqId) || !res) return
+        vipStore.detailDataAll.artistDetail = res.artistDetail
+        vipStore.authorDetail = res.authorDetail
+      })
+      .catch((err) => {
+        console.error('作者详情加载失败:', err)
+      }),
+  ])
 
-  // 等待核心数据完成
-  await Promise.allSettled(corePromises)
-
-  // 检查是否已切换到其他页面
-  if (currentLoadingPid !== pid) {
-    console.log('⚠️ 已切换到其他页面，终止加载')
+  // 🚦 令牌判决：期间已切走（或被新导航作废），丢弃后续动作（滚动、落缓存）
+  if (vipStore.isStale(myReqId)) {
+    console.log('⚠️ 令牌已过期，终止本次详情后续流程')
     return
-  }
-
-  // 更新当前展示图片
-  if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {
-    vipStore.currentDetailShowImg = vipStore.detailDataAll.imgDetail.coverImg.large
   }
 
   // 首次加载，滚动到顶部
@@ -423,43 +503,8 @@ const initDetailData = async () => {
   // 保存核心数据到缓存
   saveToSession(pid)
 
-  setTimeout(async () => {
-    if (currentLoadingPid !== pid) return
-
-    const extraPromises = [
-      vipStore.fetchArtistMoreWorks(vipStore.detailData.uid),
-      loadAllComments(pid),
-    ]
-
-    await Promise.allSettled(extraPromises)
-
-    if (currentLoadingPid === pid) {
-      saveToSession(pid)
-    }
-  }, 300)
-
-  setTimeout(async () => {
-    if (currentLoadingPid !== pid) return
-
-    const expandPromises = [
-      vipStore.fetchRelatedImgInit(pid),
-      getPixivRelatedArtist(vipStore.detailData.uid)
-        .then((res) => {
-          if (currentLoadingPid === pid) {
-            relatedArtist.value = res.data.user_previews
-          }
-        })
-        .catch((err) => {
-          // 相关作者加载失败时静默处理
-        }),
-    ]
-
-    await Promise.allSettled(expandPromises)
-
-    if (currentLoadingPid === pid) {
-      saveToSession(pid)
-    }
-  }, 500)
+  // 延迟补全（300ms 后，避免和核心数据抢资源）
+  setTimeout(() => loadDeferred(pid, myReqId), 300)
 }
 // p站获取高清图片
 const showImg = ref('')
@@ -502,9 +547,10 @@ watch(
       preLoadImg(origin).then(({ src }) => (showImg.value = src))
     }
     //遍历展示所有图片
-    imgList.value = detailDataAll.value.moreImgFromArtist?.map((item) =>
-      switchImgResolutionUrl(item.image_urls.large, 'origin'),
-    )
+    // 过滤掉骨架数组经 JSON 序列化后产生的 null 项，避免 item.image_urls 崩溃
+    imgList.value = (detailDataAll.value.moreImgFromArtist || [])
+      .filter((item) => item && item.image_urls)
+      .map((item) => switchImgResolutionUrl(item.image_urls.large, 'origin'))
   },
   { deep: true },
 )
