@@ -167,14 +167,50 @@ const saveToSession = (pid) => {
   const scrollContainer = getScrollContainer()
   const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0
   const storageKey = getStorageKey(pid)
+
+  // ⚠️ 根因修复：
+  // vipStore.detailData / currentDetailShowImg 是“全局可变状态”，
+  // 点击下一张作品时会被点击处理器（如 imageItem.vue getDetail）提前覆盖为新作品的数据，
+  // 而此处保存的却是“旧作品”的缓存，于是把新作品的信息写进了旧作品的缓存。
+  // 因此只有当全局状态确实属于当前 pid 时才采用；
+  // 否则用 detailDataAll.imgDetail（完整且属于该 pid）重建，避免缓存串味。
+  const imgDetail = vipStore.detailDataAll?.imgDetail
+  const globalDetailData = vipStore.detailData
+  let detailData
+  if (globalDetailData && globalDetailData.pid === pid) {
+    detailData = globalDetailData
+  } else if (imgDetail && imgDetail.pid === pid) {
+    detailData = {
+      pid: imgDetail.pid,
+      uid: imgDetail.uid,
+      title: imgDetail.title,
+      coverImg: imgDetail.coverImg,
+      pageList: imgDetail.pageList,
+      tags: imgDetail.tags,
+      width: imgDetail.width,
+      height: imgDetail.height,
+      x_restrict: imgDetail.x_restrict,
+    }
+  } else {
+    // 无法确定属于该 pid 的数据（例如旧作品详情加载失败），存空对象避免把其它作品信息写进本缓存
+    detailData = {}
+  }
+
+  // currentDetailShowImg 同理：只有属于本 pid（封面或某一页）才保存，否则留空
+  const currentImgBelongsToPid =
+    !!vipStore.currentDetailShowImg &&
+    (vipStore.currentDetailShowImg === imgDetail?.coverImg?.large ||
+      (imgDetail?.pageList || []).some((p) => p.image_urls?.large === vipStore.currentDetailShowImg))
+  const currentDetailShowImg = currentImgBelongsToPid ? vipStore.currentDetailShowImg : ''
+
   const cacheData = {
-    detailData: { ...vipStore.detailData },
+    detailData,
     detailDataAll: {
       ...vipStore.detailDataAll,
       scrollTop: scrollTop, // 保存滚动位置
     },
     authorDetail: vipStore.authorDetail,
-    currentDetailShowImg: vipStore.currentDetailShowImg,
+    currentDetailShowImg,
     comments: comments.value, // 保存评论
     relatedArtist: relatedArtist.value, // 保存相关作者
     timestamp: Date.now(), // 更新时间戳
@@ -182,6 +218,7 @@ const saveToSession = (pid) => {
 
   try {
     sessionCache.set(storageKey, cacheData)
+    // console.log("存入缓存",storageKey,cacheData)
   } catch (error) {
     // 保存失败时静默处理
   }
@@ -306,15 +343,6 @@ const handleBookmarkChangeFromInfoCard = ({ pid, isBookmarked }) => {
 
 let currentLoadingPid = null // 当前正在加载的 pid，防止快速切换时请求交叉
 
-// 调试：监听 comments 变化
-watch(
-  () => comments.value,
-  (newVal) => {
-    console.log('评论数据更新:', newVal?.length, newVal)
-  },
-  { deep: true, immediate: true },
-)
-
 const initDetailData = async () => {
   const pid = Number(route.query.pid)
   if (!pid) {
@@ -348,13 +376,11 @@ const initDetailData = async () => {
     // 恢复滚动位置
     const scrollTop = cached.detailDataAll?.scrollTop || 0
     restoreScrollPosition(scrollTop)
-    console.log('✅ 从缓存恢复数据')
+    // console.log('✅ 从缓存恢复数据', cached)
     return
   }
 
   // 🎯 第一层：立即使用路由传递的数据渲染（detailData）
-  // detailData 已经在跳转时设置，MainImg 组件可以立即展示
-  console.log('🎯 使用 detailData 立即渲染主图')
 
   // 初始化 detailDataAll 结构（防止子组件访问 undefined）
   if (!vipStore.detailDataAll || typeof vipStore.detailDataAll !== 'object') {
@@ -363,7 +389,6 @@ const initDetailData = async () => {
   detailDataAll.value = vipStore.detailDataAll
 
   // ⚡ 第二层：并发请求核心数据（作品详情 + 作者详情）
-  console.log('⚡ 开始加载核心数据...')
   const corePromises = [
     vipStore.fetchImgDetailCore(pid, vipStore.detailData.uid).catch((err) => {
       console.error('作品详情加载失败:', err)
@@ -383,8 +408,6 @@ const initDetailData = async () => {
     console.log('⚠️ 已切换到其他页面，终止加载')
     return
   }
-
-  console.log('✅ 核心数据加载完成')
 
   // 更新当前展示图片
   if (vipStore.detailDataAll?.imgDetail?.coverImg?.large) {

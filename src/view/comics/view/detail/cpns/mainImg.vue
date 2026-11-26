@@ -126,7 +126,7 @@ const danmakuConfig = ref({
 // 处理评论数据转换为弹幕格式
 const danmakuList = computed(() => {
   if (!props.comments || props.comments.length === 0) {
-    console.log('弹幕数据为空:', props.comments)
+    // console.log('弹幕数据为空:', props.comments)
     return []
   }
 
@@ -150,7 +150,6 @@ const danmakuList = computed(() => {
     })
     .filter(Boolean) // 过滤掉无效数据
 
-  console.log('弹幕列表:', result.length, result)
   return result
 })
 

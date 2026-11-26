@@ -79,15 +79,6 @@ const props = defineProps({
 const router = useRouter()
 const vipStore = useVip()
 
-// 调试：查看接收到的 props
-watch(
-  () => props.profile_image_urls,
-  (newVal) => {
-    console.log('🎨 artistCard profile_image_urls:', newVal)
-  },
-  { immediate: true },
-)
-
 const viewArtist = () => {
   vipStore.vipSearchImgData = []
   vipStore.searchCurrentPage = 1
