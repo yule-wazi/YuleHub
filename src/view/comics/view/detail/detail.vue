@@ -2,7 +2,7 @@
   <div class="detail">
     <div class="gridArea">
       <div class="main">
-        <MainImg :comments="comments" v-model:showDanmaku="showDanmaku" />
+        <MainImg ref="mainImgRef" :comments="comments" v-model:showDanmaku="showDanmaku" />
         <ImageInfoAndDownoad
           v-model="detailDataAll.imgDetail"
           v-model:showDanmaku="showDanmaku"
@@ -36,11 +36,12 @@
     <div class="relatedImg">
       <RelatedImgCard />
     </div>
+    <MiniWindow :target="mainImgRef?.$el" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, useTemplateRef } from 'vue'
 import useVip from '@/sotre/module/vip'
 import { preLoadImg } from '@/utils/preLoadImg'
 import { switchImgResolutionUrl } from '@/utils/ProxyUrl'
@@ -54,10 +55,13 @@ import RelatedArtistCard from './cpns/relatedArtistCard.vue'
 import CommentsCard from './cpns/commentsCard.vue'
 import { getPixivImgComments, getPixivRelatedArtist, getPixivImgDetail } from '@/service/module/vip'
 import MainImg from './cpns/mainImg.vue'
+import MiniWindow from './cpns/miniWindow.vue'
 import RelatedImgCard from './cpns/relatedImgCard.vue'
 
 const vipStore = useVip()
 const route = useRoute()
+// 主图容器，用于小窗判断主图是否被滚出可视区域
+const mainImgRef = useTemplateRef('mainImgRef')
 
 // SessionStorage key 前缀
 const STORAGE_PREFIX = 'COMICS_DETAIL_CACHE:'
