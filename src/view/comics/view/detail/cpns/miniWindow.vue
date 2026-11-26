@@ -1,37 +1,39 @@
 <template>
   <Transition name="miniWindow">
-    <div v-show="visible" class="miniWindow" @click="backToMainImg">
+    <div v-show="visible" ref="miniWindowRef" class="miniWindow" :class="{ 'is-hover': isHover }">
       <div class="preview">
         <MyImg :imgUrl="showImg" :lazyLoad="false" :key="showImg" />
       </div>
       <div class="info">
-        <div class="title" :title="title">{{ title }}</div>
-        <div v-if="artist" class="artist">{{ artist }}</div>
-        <div class="stats">
-          <div class="stat">
+        <div class="row row-top">
+          <span v-if="artist" class="artist">@{{ artist }}</span>
+          <span class="views">
             <el-icon><View /></el-icon>
-            <span class="count">{{ formatCount(viewCount) }}</span>
-          </div>
-          <div class="stat">
-            <el-icon><Star /></el-icon>
-            <span class="count">{{ formatCount(bookmarkCount) }}</span>
-          </div>
+            {{ formatCount(viewCount) }}
+          </span>
         </div>
-        <div class="pid">PID：{{ pid }}</div>
         <div v-if="tags.length" class="tagList">
           <span v-for="item in tags" :key="item.name" class="tag">#{{ item.name }}</span>
         </div>
-        <div class="hint">
-          <el-icon><ArrowUp /></el-icon>
-          <span>点按返回作品主图</span>
+        <div class="row row-bottom">
+          <span class="pid">PID：{{ pid }}</span>
+          <span class="bookmark">
+            <el-icon><Star /></el-icon>
+            {{ formatCount(bookmarkCount) }}
+          </span>
         </div>
+        <div class="title" :title="title">{{ title }}</div>
+      </div>
+      <div class="hint">
+        <el-icon><ArrowUp /></el-icon>
+        <span>点按返回作品主图</span>
       </div>
     </div>
   </Transition>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import useVip from '@/sotre/module/vip'
 import MyImg from '@/components/myImg/myImg.vue'
 import { ArrowUp, Star, View } from '@element-plus/icons-vue'
@@ -52,6 +54,8 @@ const HEADER_HEIGHT = 60
 // 主图是否已经完整滚出可视区域
 const visible = ref(false)
 let observer = null
+// 小窗 DOM，用来判断点击坐标是否落在小窗区域内
+const miniWindowRef = ref(null)
 
 // 向上查找最近的滚动容器
 const getScrollContainer = (element) => {
@@ -104,6 +108,62 @@ const backToMainImg = () => {
   scrollContainer.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// 小窗用 pointer-events: none 让滚轮事件穿透到下层滚动容器，
+// 代价是小窗自身收不到点击。这里在 document 捕获阶段监听点击，
+// 判断落点是否在小窗区域内，命中则拦截并模拟“点击小窗回主图”。
+const handleDocumentClick = (e) => {
+  if (!visible.value || !miniWindowRef.value) return
+  const rect = miniWindowRef.value.getBoundingClientRect()
+  const { clientX, clientY } = e
+  if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+    return
+  }
+  // 阻止事件继续下传到下层元素，避免误触点击穿透
+  e.stopPropagation()
+  e.preventDefault()
+  backToMainImg()
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick, true)
+  window.removeEventListener('mousemove', handleMousemove)
+  document.body.style.cursor = ''
+})
+
+// pointer-events: none 让小窗无法触发 CSS :hover，
+// 这里用 mousemove 判断光标是否在小窗区域内，手动维护 hover 态
+const isHover = ref(false)
+const handleMousemove = (e) => {
+  const el = miniWindowRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const inside =
+    e.clientX >= rect.left &&
+    e.clientX <= rect.right &&
+    e.clientY >= rect.top &&
+    e.clientY <= rect.bottom
+  if (inside !== isHover.value) {
+    isHover.value = inside
+    // pointer-events: none 下卡片自身的 cursor 不生效，手动在 body 上设置光标
+    document.body.style.cursor = inside ? 'pointer' : ''
+  }
+}
+
+// 只在可见时监听 mousemove，隐藏时移除并复位，避免无谓开销
+watch(visible, (val) => {
+  if (val) {
+    window.addEventListener('mousemove', handleMousemove)
+  } else {
+    window.removeEventListener('mousemove', handleMousemove)
+    isHover.value = false
+    document.body.style.cursor = ''
+  }
+})
+
 // 详情接口返回前，先用跳转时带过来的 detailData 兜底
 const imgDetail = computed(() => vipStore.detailDataAll?.imgDetail ?? {})
 const title = computed(() => imgDetail.value.title || vipStore.detailData?.title || '')
@@ -133,18 +193,102 @@ const formatCount = (num) => (Number.isFinite(num) ? num.toLocaleString('en-US')
   right: 24px;
   bottom: 24px;
   z-index: 9;
-  width: 280px;
-  overflow: hidden;
-  cursor: pointer;
+  width: 320px;
   border-radius: 10px;
+  overflow: hidden;
   border: 1px solid var(--comics-border-color);
-  background-color: var(--comics-cardBg-color);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  color: var(--comics-cardText-color);
+  // 让滚轮事件穿透到下层滚动容器（悬停小窗也能正常滚动）
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  color: #fff;
+  // 图片铺满整个卡片（长方形）
+  .preview {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--comics-tagBg-color);
+    :deep(.myImg) {
+      width: 100%;
+      height: 100%;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+  // 文字信息统一压在图片底部
+  .info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px 14px 12px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0));
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .artist {
+      font-weight: 600;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .views {
+      display: flex;
+      align-items: center;
+      flex: none;
+      .el-icon {
+        margin-right: 4px;
+      }
+    }
+    .tagList {
+      display: flex;
+      margin-top: 6px;
+      overflow: hidden;
+      white-space: nowrap;
+      .tag {
+        margin-right: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary-pink-color);
+      }
+    }
+    .row-bottom {
+      margin-top: 6px;
+    }
+    .bookmark {
+      display: flex;
+      align-items: center;
+      flex: none;
+      .el-icon {
+        margin-right: 4px;
+        color: var(--primary-pink-color);
+      }
+    }
+    .title {
+      margin-top: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+  .hint {
+    display: none;
+  }
   @media (min-width: 1000px) {
-    &:hover {
+    // pointer-events: none 下 :hover 不生效，改用 JS 维护的 .is-hover 类
+    &.is-hover {
       border-color: var(--primary-pink-color);
-      box-shadow: 0 8px 24px rgba(255, 0, 122, 0.25);
+      cursor: pointer !important;
       .preview :deep(.myImg) img {
         transform: scale(1.05);
       }
@@ -164,122 +308,65 @@ const formatCount = (num) => (Number.isFinite(num) ? num.toLocaleString('en-US')
     box-sizing: border-box;
     border-radius: 0;
     border: none;
-    border-bottom: 1px solid var(--comics-border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  .preview {
-    width: 100%;
-    height: 160px;
-    background-color: var(--comics-tagBg-color);
-    @media (max-width: 1000px) {
+    // 移动端恢复原有布局：小缩略图 + 信息列
+    .preview {
       width: 36px;
       height: 48px;
       flex: none;
+      aspect-ratio: auto;
       border-radius: 4px;
+      :deep(.myImg) img {
+        border-radius: 4px;
+      }
     }
-  }
-  .info {
-    padding: 12px 14px 14px;
-    @media (max-width: 1000px) {
+    .info {
+      position: static;
       flex: 1;
       min-width: 0;
       padding: 0;
-    }
-    .title {
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.4;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      @media (max-width: 1000px) {
+      background: none;
+      .row,
+      .tagList {
+        display: none;
+      }
+      .title {
+        margin-top: 0;
         font-size: 14px;
         line-height: 1.3;
-      }
-    }
-    .artist {
-      margin-top: 3px;
-      font-size: 12px;
-      color: var(--comics-cardSubTitle-color);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      @media (max-width: 1000px) {
-        display: none;
-      }
-    }
-    .stats {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--comics-cardSubTitle-color);
-      @media (max-width: 1000px) {
-        display: none;
-      }
-      .stat {
-        display: flex;
-        align-items: center;
-        .count {
-          margin-left: 4px;
-        }
-      }
-    }
-    .pid {
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--comics-cardSubTitle-color);
-      @media (max-width: 1000px) {
-        display: none;
-      }
-    }
-    .tagList {
-      display: flex;
-      margin-top: 8px;
-      overflow: hidden;
-      white-space: nowrap;
-      @media (max-width: 1000px) {
-        display: none;
-      }
-      .tag {
-        margin-right: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--primary-pink-color);
+        color: var(--comics-cardText-color);
+        text-shadow: none;
       }
     }
     .hint {
-      display: none;
-      @media (max-width: 1000px) {
-        display: flex;
-        align-items: center;
-        margin-top: 1px;
-        font-size: 11px;
-        letter-spacing: 1px;
-        color: var(--primary-pink-color);
-        .el-icon {
-          margin-right: 3px;
-          font-size: 12px;
-        }
+      display: flex;
+      align-items: center;
+      flex: none;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--primary-pink-color);
+      .el-icon {
+        margin-right: 3px;
+        font-size: 12px;
       }
     }
   }
 }
 
-// PC 从下方滑入，移动端从 header 下方滑出
-.miniWindow-enter-active,
-.miniWindow-leave-active {
+// 出现时播放过渡动画（PC 从下方滑入，移动端从 header 下方滑出）
+.miniWindow-enter-active {
   transition:
     transform 0.28s ease,
     opacity 0.28s ease;
 }
-.miniWindow-enter-from,
-.miniWindow-leave-to {
+.miniWindow-enter-from {
   opacity: 0;
   transform: translateY(16px);
   @media (max-width: 1000px) {
     transform: translateY(-100%);
   }
+}
+// 隐藏时不播放动画：切换到新图片回到顶部时，不会出现上一张的收回动画
+.miniWindow-leave-active {
+  transition: none;
 }
 </style>
